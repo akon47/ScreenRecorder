@@ -10,8 +10,6 @@ namespace ScreenRecorder
 {
 	public sealed class AppConfig : NotifyPropertyBase, IConfigFile, IDisposable
 	{
-		private static readonly string AppDataConfigFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\ScreenRecorder";
-
 		#region 생성자
 		private static volatile AppConfig instance;
 		private static object syncRoot = new object();
@@ -34,7 +32,7 @@ namespace ScreenRecorder
 			}
 		}
 
-		private readonly string ConfigFilePath = System.IO.Path.Combine(AppConfig.AppDataConfigFolderPath, "config");
+		private readonly string ConfigFilePath = System.IO.Path.Combine(AppConstants.AppDataFolderPath, "config");
 
 		private Object SyncObject = new object();
 		private ConfigFileSaveWorker configFileSaveWorker;

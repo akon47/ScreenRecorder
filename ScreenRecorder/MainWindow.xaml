@@ -5,8 +5,240 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ScreenRecorder"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+        WindowStyle="None" ResizeMode="NoResize" Background="Transparent" AllowsTransparency="False" Topmost="True" WindowStartupLocation="Manual"
+        Title="" Height="72" SizeToContent="Width">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Icons.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Close" Executed="CloseCommand_Executed" CanExecute="CloseCommand_CanExecute" />
+    </Window.CommandBindings>
+    <Border CornerRadius="2" Background="#454545" BorderBrush="Black" BorderThickness="1" MouseDown="Border_MouseDown">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Margin="5,5,3,5" CornerRadius="2" Background="#212121" BorderBrush="Black" BorderThickness="1">
+                <Grid Grid.Column="2" Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="5" VerticalAlignment="Center" FontWeight="Bold" Margin="6,3,0,3">
+                        <TextBlock.Style>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Text" Value="녹화 대기중" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=Encoder.IsStarted, Mode=OneWay}" Value="True">
+                                        <Setter Property="Text" Value="녹화중" />
+                                        <Setter Property="Foreground" Value="Red" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=Encoder.IsPaused, Mode=OneWay}" Value="True">
+                                        <Setter Property="Text" Value="녹화중 (일시정지)" />
+                                        <Setter Property="Foreground" Value="Red" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <Grid Grid.Column="1" Grid.Row="1" Margin="3,3,1,3">
+                        <Viewbox>
+                            <Viewbox.Style>
+                                <Style TargetType="{x:Type Viewbox}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=Encoder.IsStarted, Mode=OneWay}" Value="True">
+                                            <Setter Property="Visibility" Value="Hidden" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Viewbox.Style>
+                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=Commands.StartRecordCommand}">
+                                <Button.Style>
+                                    <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <Ellipse Width="18" Height="18" StrokeThickness="1">
+                                                    <Ellipse.Fill>
+                                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                            <GradientStop Color="Red" Offset="0.0"/>
+                                                            <GradientStop Color="#702020" Offset="0.5"/>
+                                                            <GradientStop Color="DarkRed" Offset="1.0"/>
+                                                        </LinearGradientBrush>
+                                                    </Ellipse.Fill>
+                                                    <Ellipse.Stroke>
+                                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                            <GradientStop Color="#902020" Offset="0.0"/>
+                                                            <GradientStop Color="#702020" Offset="0.5"/>
+                                                            <GradientStop Color="#502020" Offset="1.0"/>
+                                                        </LinearGradientBrush>
+                                                    </Ellipse.Stroke>
+                                                </Ellipse>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Viewbox>
+
+                        <Viewbox>
+                            <Viewbox.Style>
+                                <Style TargetType="{x:Type Viewbox}">
+                                    <Setter Property="Visibility" Value="Hidden" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=Encoder.IsStarted, Mode=OneWay}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Viewbox.Style>
+                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=Commands.PauseRecordCommand}">
+                                <Button.Style>
+                                    <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Rectangle Grid.Column="0" Width="7" Height="18" StrokeThickness="1" Margin="0,0,2,0">
+                                                        <Rectangle.Fill>
+                                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                                <GradientStop Color="Red" Offset="0.0"/>
+                                                                <GradientStop Color="#702020" Offset="0.5"/>
+                                                                <GradientStop Color="DarkRed" Offset="1.0"/>
+                                                            </LinearGradientBrush>
+                                                        </Rectangle.Fill>
+                                                        <Rectangle.Stroke>
+                                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                                <GradientStop Color="#902020" Offset="0.0"/>
+                                                                <GradientStop Color="#702020" Offset="0.5"/>
+                                                                <GradientStop Color="#502020" Offset="1.0"/>
+                                                            </LinearGradientBrush>
+                                                        </Rectangle.Stroke>
+                                                    </Rectangle>
+                                                    <Rectangle Grid.Column="1" Width="7" Height="18" StrokeThickness="1" Margin="2,0,0,0">
+                                                        <Rectangle.Fill>
+                                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                                <GradientStop Color="Red" Offset="0.0"/>
+                                                                <GradientStop Color="#702020" Offset="0.5"/>
+                                                                <GradientStop Color="DarkRed" Offset="1.0"/>
+                                                            </LinearGradientBrush>
+                                                        </Rectangle.Fill>
+                                                        <Rectangle.Stroke>
+                                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                                <GradientStop Color="#902020" Offset="0.0"/>
+                                                                <GradientStop Color="#702020" Offset="0.5"/>
+                                                                <GradientStop Color="#502020" Offset="1.0"/>
+                                                            </LinearGradientBrush>
+                                                        </Rectangle.Stroke>
+                                                    </Rectangle>
+                                                </Grid>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Viewbox>
+                    </Grid>
+                    <Grid Grid.Column="2" Grid.Row="1" Margin="1,3,3,3">
+                        <Viewbox>
+                            <Viewbox.Style>
+                                <Style TargetType="{x:Type Viewbox}">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=Encoder.IsStopped, Mode=OneWay}" Value="False">
+                                            <Setter Property="IsEnabled" Value="True" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Viewbox.Style>
+                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=Commands.StopRecordCommand}">
+                                <Button.Style>
+                                    <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <Rectangle Width="18" Height="18" StrokeThickness="1">
+                                                    <Rectangle.Fill>
+                                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                            <GradientStop Color="Red" Offset="0.0"/>
+                                                            <GradientStop Color="#702020" Offset="0.5"/>
+                                                            <GradientStop Color="DarkRed" Offset="1.0"/>
+                                                        </LinearGradientBrush>
+                                                    </Rectangle.Fill>
+                                                    <Rectangle.Stroke>
+                                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                            <GradientStop Color="#902020" Offset="0.0"/>
+                                                            <GradientStop Color="#702020" Offset="0.5"/>
+                                                            <GradientStop Color="#502020" Offset="1.0"/>
+                                                        </LinearGradientBrush>
+                                                    </Rectangle.Stroke>
+                                                </Rectangle>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter Property="Content">
+                                                    <Setter.Value>
+                                                        <Rectangle Width="15" Height="15" StrokeThickness="1">
+                                                            <Rectangle.Fill>
+                                                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                                    <GradientStop Color="Gray" Offset="0.0"/>
+                                                                    <GradientStop Color="#202020" Offset="0.5"/>
+                                                                    <GradientStop Color="DarkGray" Offset="1.0"/>
+                                                                </LinearGradientBrush>
+                                                            </Rectangle.Fill>
+                                                            <Rectangle.Stroke>
+                                                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                                    <GradientStop Color="#909090" Offset="0.0"/>
+                                                                    <GradientStop Color="#202020" Offset="0.5"/>
+                                                                    <GradientStop Color="#505050" Offset="1.0"/>
+                                                                </LinearGradientBrush>
+                                                            </Rectangle.Stroke>
+                                                        </Rectangle>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Viewbox>
+                    </Grid>
+
+                    <Border Grid.Column="4" Grid.Row="1" CornerRadius="5" Background="#101010" Margin="0,3,3,3">
+                        <Grid>
+                            <TextBlock Text="00:00:00.00" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Margin="5,2,5,2" TextOptions.TextFormattingMode="Display" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Column="1" Margin="0,5,3,5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Button Grid.Column="0" Grid.Row="0" Margin="3" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_Close}" Foreground="DarkGray" Focusable="False" ToolTip="종료" Command="ApplicationCommands.Close"/>
+                <Button Grid.Column="0" Grid.Row="1" Margin="3" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_Settings}" Foreground="DarkGray" Focusable="False" ToolTip="설정" />
+            </Grid>
+        </Grid>
+    </Border>
 </Window>

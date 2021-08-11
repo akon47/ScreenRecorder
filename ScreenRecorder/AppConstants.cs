@@ -10,5 +10,5 @@ static class AppConstants
 	public const int Height = 1080;
 	public const double Framerate = 60.0d;
 
-
+	public static readonly string AppDataFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\ScreenRecorder";
 }

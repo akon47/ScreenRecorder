@@ -56,6 +56,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -75,9 +76,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AppCommands.cs" />
     <Compile Include="AppConfig.cs" />
     <Compile Include="AppConstants.cs" />
+    <Compile Include="AppManager.cs" />
     <Compile Include="AudioSource\IAudioSource.cs" />
+    <Compile Include="Command\DelegateCommand.cs" />
     <Compile Include="Config\ConfigFileSaveWorker.cs" />
     <Compile Include="Config\IConfig.cs" />
     <Compile Include="Config\XmlConfig.cs" />
@@ -89,6 +93,7 @@
     <Compile Include="Encoder\EncoderFormat.cs" />
     <Compile Include="Encoder\Encoder.cs" />
     <Compile Include="Encoder\EncoderStatus.cs" />
+    <Compile Include="Shortcut\IShortcut.cs" />
     <Compile Include="VideoSource\IVideoSource.cs" />
     <Compile Include="NotifyPropertyBase.cs" />
     <Compile Include="ReactiveExtensions.cs" />
@@ -96,6 +101,10 @@
     <Compile Include="SystemClockEvent.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="VideoSource\VideoSize.cs" />
+    <Page Include="Icons.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
