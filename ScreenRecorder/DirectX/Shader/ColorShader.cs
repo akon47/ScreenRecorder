@@ -110,26 +110,11 @@ float4 PShader(PSInput input) : SV_Target
 
 		public void Dispose()
 		{
-			if (inputLayout != null)
-			{
-				inputLayout.Dispose();
-			}
-			if (inputSignature != null)
-			{
-				inputSignature.Dispose();
-			}
-			if (vertexShader != null)
-			{
-				vertexShader.Dispose();
-			}
-			if (pixelShader != null)
-			{
-				pixelShader.Dispose();
-			}
-			if (samplerState != null)
-			{
-				samplerState.Dispose();
-			}
+			inputLayout?.Dispose();
+			inputSignature?.Dispose();
+			vertexShader?.Dispose();
+			pixelShader?.Dispose();
+			samplerState?.Dispose();
 		}
 	}
 }

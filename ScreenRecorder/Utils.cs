@@ -8,6 +8,27 @@ namespace ScreenRecorder
 {
 	public class Utils
 	{
+		static public TimeSpan VideoFramesCountToTimeSpan(ulong videoFramesCount)
+		{
+			return TimeSpan.FromSeconds(videoFramesCount / AppConstants.Framerate);
+		}
+
+		static public string VideoFramesCountToStringTime(ulong videoFramesCount)
+		{
+			ulong totalSecond = (ulong)(videoFramesCount / AppConstants.Framerate);
+			ulong hour = totalSecond / 3600;
+			ulong minute = (totalSecond % 3600) / 60;
+			ulong second = (totalSecond % 3600) % 60;
+			ulong frames = videoFramesCount % (ulong)AppConstants.Framerate;
+
+			return string.Format("{0:00}:{1:00}:{2:00}.{3:00}", hour, minute, second, frames);
+		}
+
+		static public ulong VideoFramesCountToSeconds(ulong videoFramesCount)
+		{
+			return (ulong)(videoFramesCount / AppConstants.Framerate);
+		}
+
 		[DllImport("user32.dll")]
         static extern bool SetWindowDisplayAffinity(IntPtr hwnd, uint affinity);
 

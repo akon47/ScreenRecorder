@@ -111,12 +111,10 @@ namespace ScreenRecorder.DirectX
 		private System.Windows.Size destScaleFactor;
 		private System.Windows.Rect destBounds;
 
-		private int width, height;
+		private int screenWidth, screenHeight;
 
-		public DuplicatorCapture(int width, int height, string deviceName = null, bool drawCursor = true)
+		public DuplicatorCapture(string deviceName = null, bool drawCursor = true)
 		{
-			this.width = width;
-			this.height = height;
 			this.drawCursor = drawCursor;
 			using (Factory1 factory = new Factory1())
 			{
@@ -135,14 +133,17 @@ namespace ScreenRecorder.DirectX
 							output = adapter.GetOutput(j);
 							if (output.Description.IsAttachedToDesktop && output.Description.DeviceName.Equals(deviceName))
 							{
+								this.screenWidth = Math.Abs(output.Description.DesktopBounds.Right - output.Description.DesktopBounds.Left);
+								this.screenHeight = Math.Abs(output.Description.DesktopBounds.Bottom - output.Description.DesktopBounds.Top);
+
 								output1 = output.QueryInterface<Output1>();
 								device = new SharpDX.Direct3D11.Device(adapter, DeviceCreationFlags.SingleThreaded);
 								context = device.ImmediateContext;
 								duplicatedOutput = output1.DuplicateOutput(device);
 								Texture2DDescription renderTargetTexture2DDescription = new Texture2DDescription()
 								{
-									Width = width,
-									Height = height,
+									Width = screenWidth,
+									Height = screenHeight,
 									MipLevels = 1,
 									ArraySize = 1,
 									Format = Format.B8G8R8A8_UNorm,
@@ -171,8 +172,8 @@ namespace ScreenRecorder.DirectX
 								//
 								Texture2DDescription nv12TextureDesc = new Texture2DDescription()
 								{
-									Width = width,
-									Height = height,
+									Width = screenWidth,
+									Height = screenHeight,
 									MipLevels = 1,
 									ArraySize = 1,
 									Format = Format.NV12,
@@ -215,7 +216,7 @@ namespace ScreenRecorder.DirectX
 									SlopeScaledDepthBias = 0.0f
 								});
 
-								context.Rasterizer.SetViewport(new Viewport(0, 0, width, height, 0.0f, 1.0f));
+								context.Rasterizer.SetViewport(new Viewport(0, 0, screenWidth, screenHeight, 0.0f, 1.0f));
 
 								colorShader = new ColorShader();
 								colorShader.Initialize(device);
@@ -227,13 +228,13 @@ namespace ScreenRecorder.DirectX
 								context.OutputMerger.SetTargets(renderTargetView);
 								context.ClearRenderTargetView(renderTargetView, new Color4(0, 0, 0, 0));
 
-								System.Windows.Rect availableBounds = new System.Windows.Rect(0, 0, width, height);
+								System.Windows.Rect availableBounds = new System.Windows.Rect(0, 0, screenWidth, screenHeight);
 								System.Windows.Size contentSize = new System.Windows.Size((output.Description.DesktopBounds.Right - output.Description.DesktopBounds.Left), (output.Description.DesktopBounds.Bottom - output.Description.DesktopBounds.Top));
 								destScaleFactor = Utils.ComputeScaleFactor(availableBounds.Size, contentSize, System.Windows.Media.Stretch.Uniform);
 								destBounds = Utils.ComputeUniformBounds(availableBounds, contentSize);
 								context.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
 
-								dataPointer = Marshal.AllocHGlobal(width * height * 4);
+								dataPointer = Marshal.AllocHGlobal(screenWidth * screenHeight * 4);
 								return;
 							}
 							else
@@ -319,7 +320,7 @@ namespace ScreenRecorder.DirectX
 			public long LastTimeStamp;
 		}
 
-		public bool AcquireNextFrame(out IntPtr dataPointer, out int width, out int height, out int stride)
+		public bool AcquireNextFrame(out IntPtr dataPointer, out int width, out int height, out int stride, out MediaEncoder.PixelFormat pixelFormat)
 		{
 			SharpDX.DXGI.Resource screenResource;
 			OutputDuplicateFrameInformation duplicateFrameInformation;
@@ -336,7 +337,7 @@ namespace ScreenRecorder.DirectX
 							//
 							if (drawCursor)
 							{
-								if(destBounds.Width != this.width || destBounds.Height != this.height)
+								if(destBounds.Width != screenWidth || destBounds.Height != screenHeight)
 									context.ClearRenderTargetView(renderTargetView, new Color4(0, 0, 0, 0));
 
 								using (ShaderResourceView shaderResourceView = new ShaderResourceView(device, displayTexture2D))
@@ -392,7 +393,7 @@ namespace ScreenRecorder.DirectX
 									if(cursorTexture == null || cursorTexture.TextureWidth != pointerInfo.ShapeInfo.Width || cursorTexture.TextureHeight != pointerInfo.ShapeInfo.Height)
 									{
 										cursorTexture?.Dispose();
-										cursorTexture = new BitmapTexture(device, this.width, this.height, pointerInfo.ShapeInfo.Width, pointerInfo.ShapeInfo.Height);
+										cursorTexture = new BitmapTexture(device, screenWidth, screenHeight, pointerInfo.ShapeInfo.Width, pointerInfo.ShapeInfo.Height);
 									}
 
 									unsafe
@@ -420,6 +421,7 @@ namespace ScreenRecorder.DirectX
 								height = readableNv12Texture.Description.Height;
 								stride = mapSource.RowPitch;
 								dataPointer = this.dataPointer;
+								pixelFormat = MediaEncoder.PixelFormat.NV12;
 								stream.Read(this.dataPointer, 0, mapSource.SlicePitch);
 								context.UnmapSubresource(readableNv12Texture, 0);
 							}
@@ -432,6 +434,7 @@ namespace ScreenRecorder.DirectX
 								height = readableNv12Texture.Description.Height;
 								stride = mapSource.RowPitch;
 								dataPointer = this.dataPointer;
+								pixelFormat = MediaEncoder.PixelFormat.NV12;
 								stream.Read(this.dataPointer, 0, mapSource.SlicePitch);
 								context.UnmapSubresource(readableNv12Texture, 0);
 							}
@@ -450,6 +453,7 @@ namespace ScreenRecorder.DirectX
 					width = 0;
 					height = 0;
 					stride = 0;
+					pixelFormat = MediaEncoder.PixelFormat.None;
 					return false;
 				}
 			}
