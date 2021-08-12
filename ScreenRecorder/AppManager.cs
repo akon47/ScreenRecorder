@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using ScreenRecorder.Encoder;
 
 namespace ScreenRecorder
 {
@@ -41,11 +42,11 @@ namespace ScreenRecorder
 			private set => SetProperty(ref isInitialized, value);
 		}
 
-		private Encoder.Encoder encoder;
-		public Encoder.Encoder Encoder
+		private ScreenEncoder screenEncoder;
+		public ScreenEncoder ScreenEncoder
 		{
-			get => encoder;
-			private set => SetProperty(ref encoder, value);
+			get => screenEncoder;
+			private set => SetProperty(ref screenEncoder, value);
 		}
 
 		private string recordTime;
@@ -55,21 +56,47 @@ namespace ScreenRecorder
 			private set => SetProperty(ref recordTime, value);
 		}
 
+		private EncoderFormat[] encoderFormats;
+		public EncoderFormat[] EncoderFormats
+		{
+			get => encoderFormats;
+			private set => SetProperty(ref encoderFormats, value);
+		}
+
+
 		public void Initialize()
 		{
 			if (IsInitialized)
 				return;
 
-			Encoder = new Encoder.Encoder();
+			ScreenEncoder = new ScreenEncoder();
+			EncoderFormats = new EncoderFormat[]
+			{
+				EncoderFormat.CreateEncoderFormatByFormatString("mp4"),
+				EncoderFormat.CreateEncoderFormatByFormatString("avi"),
+				EncoderFormat.CreateEncoderFormatByFormatString("matroska"),
+				EncoderFormat.CreateEncoderFormatByFormatString("mpegts"),
+				EncoderFormat.CreateEncoderFormatByFormatString("mov"),
+			};
+
+			CheckHardwareCodec();
 
 			CompositionTarget.Rendering += CompositionTarget_Rendering;
 
 			IsInitialized = true;
 		}
 
+		private async void CheckHardwareCodec()
+		{
+			await Task.Run(() =>
+			{
+				MediaEncoder.MediaWriter.CheckHardwareCodec();
+			});
+		}
+
 		private void CompositionTarget_Rendering(object sender, EventArgs e)
 		{
-			RecordTime = Utils.VideoFramesCountToStringTime(encoder.VideoFramesCount);
+			RecordTime = Utils.VideoFramesCountToStringTime(screenEncoder.VideoFramesCount);
 		}
 
 		public void Dispose()
@@ -77,7 +104,7 @@ namespace ScreenRecorder
 			if (!IsInitialized)
 				return;
 
-			encoder?.Dispose();
+			screenEncoder?.Dispose();
 
 			CompositionTarget.Rendering -= CompositionTarget_Rendering;
 

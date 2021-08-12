@@ -25,6 +25,12 @@ namespace ScreenRecorder
         private void OnPropertyChanged(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName ?? string.Empty));
 
-		public void NotifyPropertyChanged(params string[] propertyNames) => NotifyPropertyChanged(propertyNames);
+        public void NotifyPropertyChanged(params string[] propertyNames)
+        {
+            foreach (string propertyName in propertyNames)
+            {
+                OnPropertyChanged(propertyName);
+            }
+        }
 	}
 }

@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Input;
 using ScreenRecorder.Command;
 using ScreenRecorder.Config;
+using ScreenRecorder.Encoder;
 
 namespace ScreenRecorder
 {
@@ -177,38 +178,58 @@ namespace ScreenRecorder
 		}
 		#endregion
 
-		private DelegateCommand toggleStartStopRecordCommand;
-		private DelegateCommand startRecordCommand;
-		private DelegateCommand pauseRecordCommand;
-		private DelegateCommand stopRecordCommand;
+		private DelegateCommand startScreenRecordCommand;
+		private DelegateCommand pauseScreenRecordCommand;
+		private DelegateCommand stopScreenRecordCommand;
 
 		private DelegateCommand openRecordDirecotryCommand;
 
-		public DelegateCommand ToggleStartStopMainRecordCommand => toggleStartStopRecordCommand ??
-			(toggleStartStopRecordCommand = new DelegateCommand(o =>
-			{
-			}));
+		private DelegateCommand selectRecordDirectory;
 
-		public DelegateCommand StartRecordCommand => startRecordCommand ??
-			(startRecordCommand = new DelegateCommand(o =>
+		public DelegateCommand StartScreenRecordCommand => startScreenRecordCommand ??
+			(startScreenRecordCommand = new DelegateCommand(o =>
 			{
-			}));
-
-		public DelegateCommand PauseRecordCommand => pauseRecordCommand ??
-			(pauseRecordCommand = new DelegateCommand(o =>
-			{
-				if(AppManager.Instance.Encoder.Status == Encoder.EncoderStatus.Start)
+				if (AppManager.Instance.ScreenEncoder.Status == Encoder.EncoderStatus.Stop)
 				{
-					AppManager.Instance.Encoder.Pause();
+					if (!System.IO.Directory.Exists(AppConfig.Instance.RecordDirectory))
+					{
+
+					}
+					//EncoderFormat encodeFormat = EncoderFormat.GetFormats().First((x => x.Name.Equals(AppConfig.Instance.SelectedMainRecordFormat, StringComparison.OrdinalIgnoreCase)));
+				}
+				else
+				{
+					AppManager.Instance.ScreenEncoder.Resume();
 				}
 			}));
 
-		public DelegateCommand StopRecordCommand => stopRecordCommand ??
-			(stopRecordCommand = new DelegateCommand(o =>
+		public DelegateCommand PauseScreenRecordCommand => pauseScreenRecordCommand ??
+			(pauseScreenRecordCommand = new DelegateCommand(o =>
 			{
-				if(AppManager.Instance.Encoder.Status != Encoder.EncoderStatus.Stop)
+				if (AppManager.Instance.ScreenEncoder.Status == Encoder.EncoderStatus.Start)
 				{
-					AppManager.Instance.Encoder.Stop();
+					AppManager.Instance.ScreenEncoder.Pause();
+				}
+			}));
+
+		public DelegateCommand StopScreenRecordCommand => stopScreenRecordCommand ??
+			(stopScreenRecordCommand = new DelegateCommand(o =>
+			{
+				if (AppManager.Instance.ScreenEncoder.Status != Encoder.EncoderStatus.Stop)
+				{
+					AppManager.Instance.ScreenEncoder.Stop();
+				}
+			}));
+
+		public DelegateCommand SelectRecordDirectory => selectRecordDirectory ??
+			(selectRecordDirectory = new DelegateCommand(o =>
+			{
+				System.Windows.Forms.FolderBrowserDialog folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+				folderBrowserDialog.Description = "녹화 경로를 지정합니다";
+				folderBrowserDialog.SelectedPath = AppConfig.Instance.RecordDirectory;
+				if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+				{
+					AppConfig.Instance.RecordDirectory = folderBrowserDialog.SelectedPath;
 				}
 			}));
 	}

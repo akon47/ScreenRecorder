@@ -8,7 +8,7 @@ namespace ScreenRecorder.Encoder
 {
 	public class EncoderFormat : NotifyPropertyBase
 	{
-		static private EncoderFormat CreateEncoderFormatByFormatString(string format, string override_name = null)
+		static public EncoderFormat CreateEncoderFormatByFormatString(string format, string override_name = null)
 		{
 			MediaEncoder.MediaFormat.GetFormatInfo(format, out string longName, out string extensions);
 			if (!string.IsNullOrWhiteSpace(longName) && !string.IsNullOrWhiteSpace(extensions))

@@ -49,10 +49,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(MSBuildProjectDirectory)\ffmpeg_shared_lib\include;$(IncludePath)</IncludePath>
     <ReferencePath>$(MSBuildProjectDirectory)\ffmpeg_shared_lib\lib;$(ReferencePath)</ReferencePath>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(MSBuildProjectDirectory)\ffmpeg_shared_lib\include;$(IncludePath)</IncludePath>
     <ReferencePath>$(MSBuildProjectDirectory)\ffmpeg_shared_lib\lib;$(ReferencePath)</ReferencePath>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -62,6 +64,9 @@
     <Link>
       <AdditionalDependencies />
     </Link>
+    <PostBuildEvent>
+      <Command>call xcopy /S /Y "$(MSBuildProjectDirectory)\ffmpeg_shared_lib\bin\*.dll" "$(TargetDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -73,6 +78,9 @@
     <Link>
       <AdditionalDependencies />
     </Link>
+    <PostBuildEvent>
+      <Command>call xcopy /S /Y "$(MSBuildProjectDirectory)\ffmpeg_shared_lib\bin\*.dll" "$(TargetDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AudioFrame.cpp" />

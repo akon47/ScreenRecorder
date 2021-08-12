@@ -63,6 +63,7 @@ namespace ScreenRecorder
 
 				config.Add(nameof(SelectedRecordFormat), SelectedRecordFormat);
 				config.Add(nameof(SelectedRecordVideoBitrate), SelectedRecordVideoBitrate.ToString());
+				config.Add(nameof(SelectedRecordAudioBitrate), SelectedRecordAudioBitrate.ToString());
 				config.Add(nameof(RecordDirectory), RecordDirectory);
 
 				config.Add(nameof(WindowWidth), WindowWidth.ToString());
@@ -87,6 +88,7 @@ namespace ScreenRecorder
 
 					SelectedRecordFormat = Config.Config.GetString(config, nameof(SelectedRecordFormat), "mp4");
 					SelectedRecordVideoBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordVideoBitrate), 5000000);
+					SelectedRecordAudioBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordAudioBitrate), 160000);
 					RecordDirectory = Config.Config.GetString(config, nameof(RecordDirectory), Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
 
 					WindowWidth = Config.Config.GetDouble(config, nameof(WindowWidth), -1.0d);
@@ -113,6 +115,7 @@ namespace ScreenRecorder
 
 			SelectedRecordFormat = "mp4";
 			SelectedRecordVideoBitrate = 5000000;
+			SelectedRecordAudioBitrate = 160000;
 			RecordDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
 		}
 		#endregion
@@ -121,22 +124,7 @@ namespace ScreenRecorder
 		{
 			lock (this)
 			{
-				//if (string.IsNullOrWhiteSpace(SelectedRecordFormat))
-				//	SelectedRecordFormat = EncoderFormat.GetRecordFormats()[0].Name;
-				//if (SelectedRecordVideoBitrate <= 0)
-				//	SelectedRecordVideoBitrate = 5000000;
-				//if (SelectedRecordAudioBitrate <= 0)
-				//	SelectedRecordAudioBitrate = 160000;
-				//if (SelectedRecordVideoSize == null)
-				//	SelectedRecordVideoSize = new VideoSize(1920, 1080);
-				//if(!string.IsNullOrWhiteSpace(RecordDirectory) && !System.IO.Directory.Exists(RecordDirectory))
-				//{
-				//	try
-				//	{
-				//		System.IO.Directory.CreateDirectory(RecordDirectory);
-				//	}
-				//	catch { }
-				//}
+				
 			}
 		}
 
@@ -187,10 +175,17 @@ namespace ScreenRecorder
             set => SetProperty(ref selectedRecordVideoBitrate, value);
 		}
 
+		private int selectedRecordAudioBitrate;
+		public int SelectedRecordAudioBitrate
+		{
+			get => selectedRecordAudioBitrate;
+            set => SetProperty(ref selectedRecordAudioBitrate, value);
+		}
+
 		private string recordDirectory;
 		public string RecordDirectory
 		{
-			get => RecordDirectory;
+			get => recordDirectory;
 			set => SetProperty(ref recordDirectory, value);
 		}
 		#endregion

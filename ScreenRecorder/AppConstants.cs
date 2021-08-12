@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 static class AppConstants
 {
-	public const int Width = 1920;
-	public const int Height = 1080;
 	public const double Framerate = 60.0d;
+	public const string AppName = "ScreenRecorder";
 
-	public static readonly string AppDataFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\ScreenRecorder";
+	public static readonly string AppDataFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\" + AppName;
 }

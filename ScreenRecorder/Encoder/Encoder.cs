@@ -393,10 +393,12 @@ namespace ScreenRecorder.Encoder
 			get => status;
 			private set
 			{
-				SetProperty(ref status, value);
-				IsStarted = (value == EncoderStatus.Start);
-				IsPaused = (value == EncoderStatus.Pause);
-				IsStopped = (value == EncoderStatus.Stop);
+				if (SetProperty(ref status, value))
+				{
+					IsStarted = (value == EncoderStatus.Start);
+					IsPaused = (value == EncoderStatus.Pause);
+					IsStopped = (value == EncoderStatus.Stop);
+				}
 			}
 		}
 
@@ -565,6 +567,7 @@ namespace ScreenRecorder.Encoder
 			}
 			finally
 			{
+				OnEncoderStopped(new EncoderStoppedEventArgs(videoFramesCount, audioSamplesCount, url));
 				EncoderStopped?.Invoke(this, new EncoderStoppedEventArgs(videoFramesCount, audioSamplesCount, url));
 				VideoFramesCount = 0;
 				AudioSamplesCount = 0;
@@ -572,6 +575,8 @@ namespace ScreenRecorder.Encoder
 				Status = EncoderStatus.Stop;
 			}
 		}
+
+		protected virtual void OnEncoderStopped(EncoderStoppedEventArgs args) { }
 
 		public void Dispose()
 		{
