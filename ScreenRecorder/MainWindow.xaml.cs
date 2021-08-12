@@ -44,6 +44,9 @@ namespace ScreenRecorder
 			HwndSource source = (HwndSource)HwndSource.FromVisual((Window)this);
 			source.AddHook(new HwndSourceHook(WndProc));
 			windowHandle = source.Handle;
+
+			// 자기 자신은 캡쳐가 안 되도록 하기 위해 사용
+			// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowdisplayaffinity
 			Utils.SetWindowDisplayAffinity(source.Handle, true);
 		}
 

@@ -13,12 +13,12 @@ namespace ScreenRecorder.Encoder
 	{
 		private ScreenVideoSource screenVideoSource;
 
-		public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName = null, bool drawCursor = true)
+		public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, bool drawCursor = true)
 		{
 			if (base.IsRunning)
 				return;
 
-			MonitorInfo monitorInfo = DuplicatorCapture.GetActiveMonitorInfos()?.First(x => x.DeviceName.Equals(deviceName));
+			MonitorInfo monitorInfo = DuplicatorCapture.GetActiveMonitorInfos()?.FirstOrDefault(x => x.DeviceName.Equals(deviceName));
 			if (monitorInfo == null)
 			{
 				throw new ArgumentException($"{deviceName} is not exist");
@@ -27,7 +27,7 @@ namespace ScreenRecorder.Encoder
 			screenVideoSource = new ScreenVideoSource(deviceName, drawCursor);
 			try
 			{
-				base.Start(format, url, screenVideoSource, videoCodec, videoBitrate, new VideoSize(monitorInfo.Width, monitorInfo.Height), null, AudioCodec.None, 0);
+				base.Start(format, url, screenVideoSource, videoCodec, videoBitrate, new VideoSize(monitorInfo.Width, monitorInfo.Height), null, audioCodec, audioBitrate);
 			}
 			catch(Exception ex)
 			{

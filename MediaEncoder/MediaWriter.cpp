@@ -268,21 +268,14 @@ namespace MediaEncoder {
 			{
 				videoCodecContext->gop_size = (m_videoNumerator / m_videoDenominator) * 3;
 				videoCodecContext->max_b_frames = 2;
-				av_log(nullptr, AV_LOG_INFO, "gop_size: %d\n", videoCodecContext->gop_size);
 				if (h264_nvenc && !forceSoftwareEncoder)
 				{
 					av_opt_set(videoCodecContext->priv_data, "preset", "fast", 0);
-					//av_opt_set(videoCodecContext->priv_data, "preset", "llhp", 0);
-					//av_opt_set(videoCodecContext->priv_data, "profile", "high", 0);
 					av_opt_set_int(videoCodecContext->priv_data, "cbr", true, 0);
-					//av_opt_set(videoCodecContext->priv_data, "coder", "auto", 0);
-					//av_opt_set_int(videoCodecContext->priv_data, "zerolatency", true, 0);
 				}
 				else if (h264_qsv && !forceSoftwareEncoder)
 				{
 					av_opt_set(videoCodecContext->priv_data, "preset", "veryfast", 0);
-					//av_opt_set(videoCodecContext->priv_data, "profile", "main", 0);
-					//av_opt_set(videoCodecContext->priv_data, "profile", "high", 0);
 				}
 				else
 				{

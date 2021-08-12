@@ -182,20 +182,51 @@ namespace ScreenRecorder
 		private DelegateCommand pauseScreenRecordCommand;
 		private DelegateCommand stopScreenRecordCommand;
 
+		private DelegateCommand openFolderInWindowExplorerCommand;
+
 		private DelegateCommand openRecordDirecotryCommand;
 
 		private DelegateCommand selectRecordDirectory;
 
+		#region Record Commands
 		public DelegateCommand StartScreenRecordCommand => startScreenRecordCommand ??
 			(startScreenRecordCommand = new DelegateCommand(o =>
 			{
 				if (AppManager.Instance.ScreenEncoder.Status == Encoder.EncoderStatus.Stop)
 				{
-					if (!System.IO.Directory.Exists(AppConfig.Instance.RecordDirectory))
+					EncoderFormat encodeFormat = AppManager.Instance.EncoderFormats.First((x => x.Format.Equals(AppConfig.Instance.SelectedRecordFormat, StringComparison.OrdinalIgnoreCase)));
+					if (encodeFormat != null)
 					{
+						if (!System.IO.Directory.Exists(AppConfig.Instance.RecordDirectory))
+						{
+							if (string.IsNullOrWhiteSpace(AppConfig.Instance.RecordDirectory))
+								MessageBox.Show("녹화 경로가 설정되어 있지 않습니다. 녹화 경로를 설정해주세요", "녹화", MessageBoxButton.OK, MessageBoxImage.Error);
+							else
+								MessageBox.Show("녹화 경로가 존재하지 않습니다. 녹화 경로를 확인해주세요", "녹화", MessageBoxButton.OK, MessageBoxImage.Error);
+						}
+						else
+						{
+							string ext = ".";
+							string[] exts = encodeFormat.Extensions?.Split(',');
+							if (exts != null && exts.Length > 0)
+								ext += exts[0];
 
+							DateTime now = DateTime.Now;
+
+							string filePath = string.Format("{0}\\{1}-{2}{3}",
+								AppConfig.Instance.RecordDirectory,
+								AppConstants.AppName,
+								DateTime.Now.ToString("yyyyMMdd-hhmmss.fff"), ext);
+
+							if(!System.IO.File.Exists(filePath))
+							{
+								AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
+										MediaEncoder.VideoCodec.H264, AppConfig.Instance.SelectedRecordVideoBitrate,
+										MediaEncoder.AudioCodec.None, AppConfig.Instance.SelectedRecordAudioBitrate,
+										System.Windows.Forms.Screen.PrimaryScreen.DeviceName);
+							}
+						}
 					}
-					//EncoderFormat encodeFormat = EncoderFormat.GetFormats().First((x => x.Name.Equals(AppConfig.Instance.SelectedMainRecordFormat, StringComparison.OrdinalIgnoreCase)));
 				}
 				else
 				{
@@ -232,5 +263,48 @@ namespace ScreenRecorder
 					AppConfig.Instance.RecordDirectory = folderBrowserDialog.SelectedPath;
 				}
 			}));
+
+		public DelegateCommand OpenRecordDirecotryCommand => openRecordDirecotryCommand ??
+			(openRecordDirecotryCommand = new DelegateCommand(o =>
+			{
+				try
+				{
+					if (System.IO.Directory.Exists(AppConfig.Instance.RecordDirectory))
+					{
+						System.Diagnostics.Process.Start("explorer.exe", string.Format("\"{0}\"", AppConfig.Instance.RecordDirectory));
+					}
+					else
+					{
+						if (string.IsNullOrWhiteSpace(AppConfig.Instance.RecordDirectory))
+							MessageBox.Show("녹화 경로가 설정되어 있지 않습니다. 녹화 경로를 설정해주세요", "녹화 폴더 열기", MessageBoxButton.OK, MessageBoxImage.Error);
+						else
+							MessageBox.Show("녹화 경로가 존재하지 않습니다. 녹화 경로를 확인해주세요", "녹화 폴더 열기", MessageBoxButton.OK, MessageBoxImage.Error);
+					}
+				}
+				catch { }
+			}));
+		#endregion
+
+		public DelegateCommand OpenFolderInWindowExplorerCommand => openFolderInWindowExplorerCommand ??
+			(openFolderInWindowExplorerCommand = new DelegateCommand(o =>
+			{
+				if (o is string folder)
+				{
+					try
+					{
+						System.Diagnostics.Process.Start("explorer.exe", string.Format("\"{0}\"", folder));
+					}
+					catch { }
+				}
+			}, o =>
+			{
+				if (o is string folder)
+				{
+					return System.IO.Directory.Exists(folder);
+				}
+				return false;
+			}));
+
+		
 	}
 }

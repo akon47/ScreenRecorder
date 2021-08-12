@@ -43,6 +43,18 @@ namespace ScreenRecorder.DirectX
 
 	public sealed class DuplicatorCapture : IDisposable
 	{
+		static public MonitorInfo GetPrimaryMonitorInfo()
+		{
+			foreach(MonitorInfo monitorInfo in GetActiveMonitorInfos())
+			{
+				if(monitorInfo.IsPrimary)
+				{
+					return monitorInfo;
+				}
+			}
+			return null;
+		}
+
 		static public MonitorInfo[] GetActiveMonitorInfos()
 		{
 			List<MonitorInfo> monitorInfos = new List<MonitorInfo>();

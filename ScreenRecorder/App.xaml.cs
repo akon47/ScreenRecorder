@@ -18,8 +18,6 @@ namespace ScreenRecorder
 
 		protected override void OnStartup(StartupEventArgs e)
 		{
-			AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
-			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 			try
 			{
 				Mutex = new Mutex(true, AppConstants.AppName, out bool isNew);
@@ -31,6 +29,7 @@ namespace ScreenRecorder
 						Environment.Exit(-2);
 					}
 
+					SystemClockEvent.Start();
 					AppManager.Instance.Initialize();
 
 					base.OnStartup(e);
@@ -48,12 +47,14 @@ namespace ScreenRecorder
 			}
 		}
 
-		private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+		protected override void OnExit(ExitEventArgs e)
 		{
-		}
+			AppCommands.Instance.Dispose();
+			AppConfig.Instance.Dispose();
+			AppManager.Instance.Dispose();
+			SystemClockEvent.Stop();
 
-		private void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
-		{
+			base.OnExit(e);
 		}
 
 		private bool IsMicrosoftVisualCPlusPlus2019Available()

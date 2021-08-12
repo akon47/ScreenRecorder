@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -62,6 +63,7 @@ namespace ScreenRecorder.Encoder
 					this.videoFrameQueue = new ConcurrentQueue<VideoFrame>();
 					this.srcVideoFrameQueue = new ConcurrentQueue<VideoFrame>();
 					this.videoSource.NewVideoFrame += VideoSource_NewVideoFrame;
+					videoWorkerThread = new Thread(new ThreadStart(VideoWorkerThreadHandler)) { IsBackground = true };
 				}
 				if (this.audioSource != null)
 				{
@@ -70,14 +72,13 @@ namespace ScreenRecorder.Encoder
 					this.srcAudioCircularBuffer = new CircularBuffer(framePerBytes * 15);
 					this.audioFrameQueue = new ConcurrentQueue<AudioFrame>();
 					this.audioSource.NewAudioPacket += AudioSource_NewAudioPacket;
+					audioWorkerThread = new Thread(new ThreadStart(AudioWorkerThreadHandler)) { IsBackground = true };
 				}
 
 				needToStop = new ManualResetEvent(false);
-				videoWorkerThread = new Thread(new ThreadStart(VideoWorkerThreadHandler)) { IsBackground = true };
-				videoWorkerThread.Start();
-
-				audioWorkerThread = new Thread(new ThreadStart(AudioWorkerThreadHandler)) { IsBackground = true };
-				audioWorkerThread.Start();
+				
+				videoWorkerThread?.Start();
+				audioWorkerThread?.Start();
 			}
 
 			private void AudioWorkerThreadHandler()
@@ -133,7 +134,7 @@ namespace ScreenRecorder.Encoder
 							if (!(enableEvent?.WaitOne(0, false) ?? true))
 								continue;
 
-							if(videoFrameQueue.Count > 100)
+							if(videoFrameQueue.Count > 300) // max buffer
 							{
 								continue;
 							}
@@ -507,6 +508,8 @@ namespace ScreenRecorder.Encoder
 		{
 			try
 			{
+
+				Stopwatch sw = new Stopwatch();
 				if (argument is EncoderArguments encoderArguments)
 				{
 					using (MediaBuffer mediaBuffer = new MediaBuffer(encoderArguments.VideoSource, encoderArguments.AudioSource))
@@ -529,8 +532,11 @@ namespace ScreenRecorder.Encoder
 									{
 										if (status != EncoderStatus.Pause)
 										{
+											sw.Restart();
 											mediaWriter.EncodeVideoFrame(videoFrame);
 											VideoFramesCount = mediaWriter.VideoFramesCount;
+											sw.Stop();
+											System.Diagnostics.Debug.WriteLine(sw.ElapsedMilliseconds);
 										}
 
 										if (maximumVideoFramesCount > 0 && maximumVideoFramesCount <= videoFramesCount)
