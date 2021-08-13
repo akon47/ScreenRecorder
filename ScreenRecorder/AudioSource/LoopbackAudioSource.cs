@@ -48,7 +48,7 @@ namespace ScreenRecorder.AudioSource
 		public LoopbackAudioSource()
 		{
 			needToStop = new ManualResetEvent(false);
-			workerThread = new Thread(new ThreadStart(WorkerThreadHandler)) { Name = "DesktopAudioCaptureSource", IsBackground = true };
+			workerThread = new Thread(new ThreadStart(WorkerThreadHandler)) { Name = "LoopbackAudioSource", IsBackground = true };
 			workerThread.Start();
 		}
 
@@ -117,6 +117,7 @@ namespace ScreenRecorder.AudioSource
 				{
 					fixed (void* pBuffer = e.Buffer)
 					{
+						// FLTP to S16 변환 (추후에 오디오 관련 처리를 간편하게 하기 위해..)
 						float* src = (float*)pBuffer;
 						short* dest = (short*)convertedSamples.ToPointer();
 						for(int i = 0; i < e.BytesRecorded; i += 4)

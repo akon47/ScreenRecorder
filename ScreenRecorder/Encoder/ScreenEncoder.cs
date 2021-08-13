@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MediaEncoder;
+using ScreenRecorder.AudioSource;
 using ScreenRecorder.DirectX;
 using ScreenRecorder.VideoSource;
 
@@ -12,6 +13,7 @@ namespace ScreenRecorder.Encoder
 	public class ScreenEncoder : Encoder
 	{
 		private ScreenVideoSource screenVideoSource;
+		private LoopbackAudioSource loopbackAudioSource;
 
 		public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, bool drawCursor = true)
 		{
@@ -25,9 +27,12 @@ namespace ScreenRecorder.Encoder
 			}
 
 			screenVideoSource = new ScreenVideoSource(deviceName, drawCursor);
+			loopbackAudioSource = new LoopbackAudioSource();
 			try
 			{
-				base.Start(format, url, screenVideoSource, videoCodec, videoBitrate, new VideoSize(monitorInfo.Width, monitorInfo.Height), null, audioCodec, audioBitrate);
+				base.Start(format, url,
+					screenVideoSource, videoCodec, videoBitrate, new VideoSize(monitorInfo.Width, monitorInfo.Height),
+					loopbackAudioSource, audioCodec, audioBitrate);
 			}
 			catch(Exception ex)
 			{
@@ -41,6 +46,9 @@ namespace ScreenRecorder.Encoder
 		{
 			screenVideoSource?.Dispose();
 			screenVideoSource = null;
+
+			loopbackAudioSource?.Dispose();
+			loopbackAudioSource = null;
 		}
 	}
 }

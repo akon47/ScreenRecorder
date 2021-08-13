@@ -222,7 +222,7 @@ namespace ScreenRecorder
 							{
 								AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
 										MediaEncoder.VideoCodec.H264, AppConfig.Instance.SelectedRecordVideoBitrate,
-										MediaEncoder.AudioCodec.None, AppConfig.Instance.SelectedRecordAudioBitrate,
+										MediaEncoder.AudioCodec.Aac, AppConfig.Instance.SelectedRecordAudioBitrate,
 										System.Windows.Forms.Screen.PrimaryScreen.DeviceName);
 							}
 						}
