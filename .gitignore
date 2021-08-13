@@ -338,3 +338,6 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+
+# FFMPEG 라이브러리 폴더
+ffmpeg_shared_lib/*
