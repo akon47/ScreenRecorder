@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ScreenRecorder"
         mc:Ignorable="d"
+        Icon="pack://application:,,,/icon.ico"
         WindowStyle="None" ResizeMode="NoResize" Background="Transparent" AllowsTransparency="False" Topmost="True" WindowStartupLocation="Manual"
         Title="" Height="72" SizeToContent="Width">
     <Window.Resources>
@@ -258,7 +259,7 @@
                                 </Border>
                                 <Grid Grid.Column="0" Grid.Row="1">
                                     <Border Margin="5" CornerRadius="2" Background="#212121" BorderBrush="Black" BorderThickness="1">
-                                        <Grid>
+                                        <Grid IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Path=ScreenEncoder.IsStopped, Mode=OneWay}">
                                             <Grid.Resources>
                                                 <Style TargetType="{x:Type TextBlock}">
                                                     <Setter Property="VerticalAlignment" Value="Center" />
