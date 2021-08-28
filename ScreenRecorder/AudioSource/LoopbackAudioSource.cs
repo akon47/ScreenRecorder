@@ -40,6 +40,7 @@ namespace ScreenRecorder.AudioSource
 
         private Thread workerThread;
         private ManualResetEvent needToStop;
+        private int sampleRate, channels, bitsPerSample;
 
         public LoopbackAudioSource()
         {
@@ -67,6 +68,9 @@ namespace ScreenRecorder.AudioSource
                             if (waveIn == null)
                             {
                                 waveIn = new WasapiLoopbackCapture();
+                                sampleRate = waveIn.WaveFormat.SampleRate;
+                                channels = waveIn.WaveFormat.Channels;
+                                bitsPerSample = waveIn.WaveFormat.BitsPerSample;
                                 waveIn.DataAvailable += WaveIn_DataAvailable;
                                 waveIn.StartRecording();
                             }
@@ -108,6 +112,8 @@ namespace ScreenRecorder.AudioSource
         {
             if ((e?.BytesRecorded ?? 0) > 0)
             {
+                int samples = e.BytesRecorded / ((bitsPerSample + 7) / 8) / channels;
+
                 IntPtr convertedSamples = Marshal.AllocHGlobal(e.BytesRecorded / 2);
                 unsafe
                 {
@@ -121,7 +127,7 @@ namespace ScreenRecorder.AudioSource
                             *(dest++) = (short)(*(src++) * 32767.0f);
                         }
 
-                        NewAudioPacketEventArgs eventArgs = new NewAudioPacketEventArgs(48000, 2, MediaEncoder.SampleFormat.S16, e.BytesRecorded / 8, convertedSamples);
+                        NewAudioPacketEventArgs eventArgs = new NewAudioPacketEventArgs(sampleRate, channels, MediaEncoder.SampleFormat.S16, samples, convertedSamples);
                         NewAudioPacket?.Invoke(this, eventArgs);
                     }
                 }

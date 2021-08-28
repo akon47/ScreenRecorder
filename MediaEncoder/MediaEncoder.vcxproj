@@ -92,6 +92,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Resampler.cpp" />
     <ClCompile Include="Scaler.cpp" />
     <ClCompile Include="VideoFrame.cpp" />
     <ClCompile Include="MediaWriter.cpp" />
@@ -102,6 +103,7 @@
     <ClInclude Include="MediaEncoder.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PixelFormat.h" />
+    <ClInclude Include="Resampler.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SampleFormat.h" />
     <ClInclude Include="Scaler.h" />
