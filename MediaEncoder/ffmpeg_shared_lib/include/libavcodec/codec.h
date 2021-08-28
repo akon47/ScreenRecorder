@@ -214,12 +214,12 @@ typedef struct AVCodec {
      * see AV_CODEC_CAP_*
      */
     int capabilities;
+    uint8_t max_lowres;                     ///< maximum value for lowres supported by the decoder
     const AVRational *supported_framerates; ///< array of supported framerates, or NULL if any, array is terminated by {0,0}
     const enum AVPixelFormat *pix_fmts;     ///< array of supported pixel formats, or NULL if unknown, array is terminated by -1
     const int *supported_samplerates;       ///< array of supported audio samplerates, or NULL if unknown, array is terminated by 0
     const enum AVSampleFormat *sample_fmts; ///< array of supported sample formats, or NULL if unknown, array is terminated by -1
     const uint64_t *channel_layouts;         ///< array of support channel layouts, or NULL if unknown. array is terminated by 0
-    uint8_t max_lowres;                     ///< maximum value for lowres supported by the decoder
     const AVClass *priv_class;              ///< AVClass for the private context
     const AVProfile *profiles;              ///< array of recognized profiles, or NULL if unknown, array is terminated by {FF_PROFILE_UNKNOWN}
 
@@ -242,6 +242,12 @@ typedef struct AVCodec {
      * New public fields should be added right above.
      *****************************************************************
      */
+    /**
+     * Internal codec capabilities.
+     * See FF_CODEC_CAP_* in internal.h
+     */
+    int caps_internal;
+
     int priv_data_size;
     /**
      * @name Frame-level threading support functions
@@ -323,11 +329,6 @@ typedef struct AVCodec {
      * Will be called when seeking
      */
     void (*flush)(struct AVCodecContext *);
-    /**
-     * Internal codec capabilities.
-     * See FF_CODEC_CAP_* in internal.h
-     */
-    int caps_internal;
 
     /**
      * Decoding only, a comma-separated list of bitstream filters to apply to
@@ -401,6 +402,15 @@ int av_codec_is_encoder(const AVCodec *codec);
  * @return a non-zero number if codec is a decoder, zero otherwise
  */
 int av_codec_is_decoder(const AVCodec *codec);
+
+/**
+ * Return a name for the specified profile, if available.
+ *
+ * @param codec the codec that is searched for the given profile
+ * @param profile the profile value for which a name is requested
+ * @return A name for the profile if found, NULL otherwise.
+ */
+const char *av_get_profile_name(const AVCodec *codec, int profile);
 
 enum {
     /**

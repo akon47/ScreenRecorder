@@ -93,6 +93,7 @@ EXPORTS
     av_content_light_metadata_alloc
     av_content_light_metadata_create_side_data
     av_cpu_count
+    av_cpu_force_count
     av_cpu_max_align
     av_crc
     av_crc_get_table
@@ -268,6 +269,7 @@ EXPORTS
     av_image_check_size2
     av_image_copy
     av_image_copy_plane
+    av_image_copy_plane_uc_from
     av_image_copy_to_buffer
     av_image_copy_uc_from
     av_image_fill_arrays
@@ -425,6 +427,7 @@ EXPORTS
     av_sha_size
     av_sha_update
     av_shr_i
+    av_size_mult
     av_small_strptime
     av_spherical_alloc
     av_spherical_from_name

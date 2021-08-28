@@ -11,7 +11,7 @@ using ScreenRecorder.Shortcut;
 
 namespace ScreenRecorder.Command
 {
-	public class DelegateCommand : NotifyPropertyBase, ICommand, IShortcut, IConfig
+    public class DelegateCommand : NotifyPropertyBase, ICommand, IShortcut, IConfig
     {
         #region Property backing fields
 
@@ -28,21 +28,21 @@ namespace ScreenRecorder.Command
 
             ExecuteAction = parameter =>
             {
-				try
-				{
-					var canExecuteAction = m_CanExecute?.Invoke(parameter) ?? true;
+                try
+                {
+                    var canExecuteAction = m_CanExecute?.Invoke(parameter) ?? true;
 
-					if (canExecuteAction)
-						callback(parameter);
-				}
-				catch { }
+                    if (canExecuteAction)
+                        callback(parameter);
+                }
+                catch { }
             };
 
             this.keyGesture = keyGesture;
         }
 
-		public DelegateCommand(Action<object> execute)
-			: this(execute, null) { }
+        public DelegateCommand(Action<object> execute)
+            : this(execute, null) { }
 
         #endregion
 
@@ -71,8 +71,8 @@ namespace ScreenRecorder.Command
             get => keyGesture;
             set
             {
-                if(SetProperty(ref keyGesture, value))
-					base.NotifyPropertyChanged(nameof(KeyGestureString), nameof(Key), nameof(Modifiers));
+                if (SetProperty(ref keyGesture, value))
+                    base.NotifyPropertyChanged(nameof(KeyGestureString), nameof(Key), nameof(Modifiers));
             }
         }
 
@@ -81,17 +81,17 @@ namespace ScreenRecorder.Command
             get
             {
                 if (keyGesture != null)
-				{
-					return string.Format("{0}{1}{2}{3}",
-								keyGesture.Modifiers.HasFlag(ModifierKeys.Control) ? "Ctrl+" : string.Empty,
-								keyGesture.Modifiers.HasFlag(ModifierKeys.Shift) ? "Shift+" : string.Empty,
-								keyGesture.Modifiers.HasFlag(ModifierKeys.Alt) ? "Alt+" : string.Empty,
-								KeyToString(keyGesture.Key));
-				}
-				else
-				{
-					return null;
-				}
+                {
+                    return string.Format("{0}{1}{2}{3}",
+                                keyGesture.Modifiers.HasFlag(ModifierKeys.Control) ? "Ctrl+" : string.Empty,
+                                keyGesture.Modifiers.HasFlag(ModifierKeys.Shift) ? "Shift+" : string.Empty,
+                                keyGesture.Modifiers.HasFlag(ModifierKeys.Alt) ? "Alt+" : string.Empty,
+                                KeyToString(keyGesture.Key));
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -100,13 +100,13 @@ namespace ScreenRecorder.Command
             get
             {
                 if (keyGesture != null)
-				{
-					return keyGesture.Key;
-				}
-				else
-				{
-					return Key.None;
-				}
+                {
+                    return keyGesture.Key;
+                }
+                else
+                {
+                    return Key.None;
+                }
             }
         }
 
@@ -115,13 +115,13 @@ namespace ScreenRecorder.Command
             get
             {
                 if (keyGesture != null)
-				{
-					return keyGesture.Modifiers;
-				}
-				else
-				{
-					return ModifierKeys.None;
-				}
+                {
+                    return keyGesture.Modifiers;
+                }
+                else
+                {
+                    return ModifierKeys.None;
+                }
             }
         }
 
@@ -129,132 +129,132 @@ namespace ScreenRecorder.Command
         public KeyGesture DefaultKeyGesture => defaultKeyGesture;
 
         private string KeyToString(Key key)
-		{
-			string ret = key.ToString();
+        {
+            string ret = key.ToString();
 
-			switch (key)
-			{
-				case Key.NumPad0:
-				case Key.D0:
-					ret = "0";
-					break;
-				case Key.NumPad1:
-				case Key.D1:
-					ret = "1";
-					break;
-				case Key.NumPad2:
-				case Key.D2:
-					ret = "2";
-					break;
-				case Key.NumPad3:
-				case Key.D3:
-					ret = "3";
-					break;
-				case Key.NumPad4:
-				case Key.D4:
-					ret = "4";
-					break;
-				case Key.NumPad5:
-				case Key.D5:
-					ret = "5";
-					break;
-				case Key.NumPad6:
-				case Key.D6:
-					ret = "6";
-					break;
-				case Key.NumPad7:
-				case Key.D7:
-					ret = "7";
-					break;
-				case Key.NumPad8:
-				case Key.D8:
-					ret = "8";
-					break;
-				case Key.NumPad9:
-				case Key.D9:
-					ret = "9";
-					break;
-				case Key.Return:
-					ret = "Enter";
-					break;
-				case Key.Escape:
-					ret = "Esc";
-					break;
-				case Key.PageUp:
-					ret = "PageUp";
-					break;
-				case Key.PageDown:
-					ret = "PageDown";
-					break;
-				case Key.OemOpenBrackets:
-					ret = "[";
-					break;
-				case Key.OemCloseBrackets:
-					ret = "]";
-					break;
-				case Key.Oem1:
-					ret = ";";
-					break;
-				case Key.OemQuestion:
-					ret = "/";
-					break;
-				case Key.OemQuotes:
-					ret = "'";
-					break;
-				case Key.Down:
-					ret = "↓";
-					break;
-				case Key.Up:
-					ret = "↑";
-					break;
-				case Key.Right:
-					ret = "→";
-					break;
-				case Key.Left:
-					ret = "←";
-					break;
-				case Key.Subtract:
-					ret = "Minus";
-					break;
-				case Key.Add:
-					ret = "Plus";
-					break;
-				case Key.Multiply:
-					ret = "*";
-					break;
-				case Key.Divide:
-					ret = "/";
-					break;
-				case Key.Decimal:
-					ret = ",";
-					break;
-				case Key.OemComma:
-					ret = ",";
-					break;
-				case Key.OemPeriod:
-					ret = ".";
-					break;
-				case Key.OemPipe:
-					ret = "|";
-					break;
-			}
+            switch (key)
+            {
+                case Key.NumPad0:
+                case Key.D0:
+                    ret = "0";
+                    break;
+                case Key.NumPad1:
+                case Key.D1:
+                    ret = "1";
+                    break;
+                case Key.NumPad2:
+                case Key.D2:
+                    ret = "2";
+                    break;
+                case Key.NumPad3:
+                case Key.D3:
+                    ret = "3";
+                    break;
+                case Key.NumPad4:
+                case Key.D4:
+                    ret = "4";
+                    break;
+                case Key.NumPad5:
+                case Key.D5:
+                    ret = "5";
+                    break;
+                case Key.NumPad6:
+                case Key.D6:
+                    ret = "6";
+                    break;
+                case Key.NumPad7:
+                case Key.D7:
+                    ret = "7";
+                    break;
+                case Key.NumPad8:
+                case Key.D8:
+                    ret = "8";
+                    break;
+                case Key.NumPad9:
+                case Key.D9:
+                    ret = "9";
+                    break;
+                case Key.Return:
+                    ret = "Enter";
+                    break;
+                case Key.Escape:
+                    ret = "Esc";
+                    break;
+                case Key.PageUp:
+                    ret = "PageUp";
+                    break;
+                case Key.PageDown:
+                    ret = "PageDown";
+                    break;
+                case Key.OemOpenBrackets:
+                    ret = "[";
+                    break;
+                case Key.OemCloseBrackets:
+                    ret = "]";
+                    break;
+                case Key.Oem1:
+                    ret = ";";
+                    break;
+                case Key.OemQuestion:
+                    ret = "/";
+                    break;
+                case Key.OemQuotes:
+                    ret = "'";
+                    break;
+                case Key.Down:
+                    ret = "↓";
+                    break;
+                case Key.Up:
+                    ret = "↑";
+                    break;
+                case Key.Right:
+                    ret = "→";
+                    break;
+                case Key.Left:
+                    ret = "←";
+                    break;
+                case Key.Subtract:
+                    ret = "Minus";
+                    break;
+                case Key.Add:
+                    ret = "Plus";
+                    break;
+                case Key.Multiply:
+                    ret = "*";
+                    break;
+                case Key.Divide:
+                    ret = "/";
+                    break;
+                case Key.Decimal:
+                    ret = ",";
+                    break;
+                case Key.OemComma:
+                    ret = ",";
+                    break;
+                case Key.OemPeriod:
+                    ret = ".";
+                    break;
+                case Key.OemPipe:
+                    ret = "|";
+                    break;
+            }
 
-			return ret;
-		}
+            return ret;
+        }
 
         [DebuggerStepThrough]
         public bool CanExecute(object parameter)
         {
             if (IsExecuting) return false;
 
-			try
-			{
-				return m_CanExecute == null || m_CanExecute(parameter);
-			}
-			catch
-			{
-				return false;
-			}
+            try
+            {
+                return m_CanExecute == null || m_CanExecute(parameter);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public bool CanExecute() => CanExecute(null);
@@ -263,17 +263,17 @@ namespace ScreenRecorder.Command
 
         public void Execute() => ExecuteAsync(null);
 
-		public bool TryExecute(object parameter = null)
-		{
-			if(CanExecute(parameter))
-			{
-				if (IsExecuting)
+        public bool TryExecute(object parameter = null)
+        {
+            if (CanExecute(parameter))
+            {
+                if (IsExecuting)
                     return false;
-				ExecuteAsync(parameter);
-				return true;
-			}
-			return false;
-		}
+                ExecuteAsync(parameter);
+                return true;
+            }
+            return false;
+        }
 
         public ConfiguredTaskAwaitable ExecuteAsync(object parameter)
         {
@@ -289,7 +289,7 @@ namespace ScreenRecorder.Command
                 }
                 catch (Exception ex)
                 {
-					System.Diagnostics.Debug.WriteLine($"Could not execute command. {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Could not execute command. {ex.Message}");
                     throw;
                 }
                 finally
@@ -303,56 +303,56 @@ namespace ScreenRecorder.Command
         public ConfiguredTaskAwaitable ExecuteAsync() => ExecuteAsync(null);
 
         public virtual Dictionary<string, string> SaveConfig()
-		{
-			Dictionary<string, string> dicConfig = new Dictionary<string, string>();
-			if (KeyGesture != null)
-			{
-				dicConfig.Add("Key", Enum.GetName(typeof(Key), Key));
-				dicConfig.Add("Control", Modifiers.HasFlag(ModifierKeys.Control).ToString());
-				dicConfig.Add("Alt", Modifiers.HasFlag(ModifierKeys.Alt).ToString());
-				dicConfig.Add("Shift", Modifiers.HasFlag(ModifierKeys.Shift).ToString());
-				dicConfig.Add("Windows", Modifiers.HasFlag(ModifierKeys.Windows).ToString());
+        {
+            Dictionary<string, string> dicConfig = new Dictionary<string, string>();
+            if (KeyGesture != null)
+            {
+                dicConfig.Add("Key", Enum.GetName(typeof(Key), Key));
+                dicConfig.Add("Control", Modifiers.HasFlag(ModifierKeys.Control).ToString());
+                dicConfig.Add("Alt", Modifiers.HasFlag(ModifierKeys.Alt).ToString());
+                dicConfig.Add("Shift", Modifiers.HasFlag(ModifierKeys.Shift).ToString());
+                dicConfig.Add("Windows", Modifiers.HasFlag(ModifierKeys.Windows).ToString());
 
-			}
-			return dicConfig;
-		}
+            }
+            return dicConfig;
+        }
 
-		public virtual void LoadConfig(Dictionary<string, string> config)
-		{
-			if (config != null)
-			{
-				if (config.ContainsKey("Key"))
-				{
-					Key key = (Key)Enum.Parse(typeof(Key), Config.Config.LoadConfigItem(config, "Key", Enum.GetName(typeof(Key), Key.None)));
-					if (key != Key.None)
-					{
-						bool control = bool.Parse(Config.Config.LoadConfigItem(config, "Control", "false"));
-						bool alt = bool.Parse(Config.Config.LoadConfigItem(config, "Alt", "false"));
-						bool shift = bool.Parse(Config.Config.LoadConfigItem(config, "Shift", "false"));
-						bool windows = bool.Parse(Config.Config.LoadConfigItem(config, "Windows", "false"));
+        public virtual void LoadConfig(Dictionary<string, string> config)
+        {
+            if (config != null)
+            {
+                if (config.ContainsKey("Key"))
+                {
+                    Key key = (Key)Enum.Parse(typeof(Key), Config.Config.LoadConfigItem(config, "Key", Enum.GetName(typeof(Key), Key.None)));
+                    if (key != Key.None)
+                    {
+                        bool control = bool.Parse(Config.Config.LoadConfigItem(config, "Control", "false"));
+                        bool alt = bool.Parse(Config.Config.LoadConfigItem(config, "Alt", "false"));
+                        bool shift = bool.Parse(Config.Config.LoadConfigItem(config, "Shift", "false"));
+                        bool windows = bool.Parse(Config.Config.LoadConfigItem(config, "Windows", "false"));
 
-						ModifierKeys modifiers =
-							(control ? ModifierKeys.Control : ModifierKeys.None) |
-							(alt ? ModifierKeys.Alt : ModifierKeys.None) |
-							(shift ? ModifierKeys.Shift : ModifierKeys.None) |
-							(windows ? ModifierKeys.Windows : ModifierKeys.None);
-						KeyGesture = new KeyGesture(key, modifiers);
-					}
-					else
-					{
-						KeyGesture = null;
-					}
-				}
-				else
-				{
-					KeyGesture = DefaultKeyGesture;
-				}
-			}
-			else
-			{
-				KeyGesture = DefaultKeyGesture;
-			}
-		}
+                        ModifierKeys modifiers =
+                            (control ? ModifierKeys.Control : ModifierKeys.None) |
+                            (alt ? ModifierKeys.Alt : ModifierKeys.None) |
+                            (shift ? ModifierKeys.Shift : ModifierKeys.None) |
+                            (windows ? ModifierKeys.Windows : ModifierKeys.None);
+                        KeyGesture = new KeyGesture(key, modifiers);
+                    }
+                    else
+                    {
+                        KeyGesture = null;
+                    }
+                }
+                else
+                {
+                    KeyGesture = DefaultKeyGesture;
+                }
+            }
+            else
+            {
+                KeyGesture = DefaultKeyGesture;
+            }
+        }
 
         #endregion
     }

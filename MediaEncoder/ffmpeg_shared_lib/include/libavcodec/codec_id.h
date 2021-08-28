@@ -22,6 +22,7 @@
 #define AVCODEC_CODEC_ID_H
 
 #include "libavutil/avutil.h"
+#include "libavutil/samplefmt.h"
 
 /**
  * @addtogroup lavc_core
@@ -579,6 +580,45 @@ enum AVMediaType avcodec_get_type(enum AVCodecID codec_id);
  * @return  a static string identifying the codec; never NULL
  */
 const char *avcodec_get_name(enum AVCodecID id);
+
+/**
+ * Return codec bits per sample.
+ *
+ * @param[in] codec_id the codec
+ * @return Number of bits per sample or zero if unknown for the given codec.
+ */
+int av_get_bits_per_sample(enum AVCodecID codec_id);
+
+/**
+ * Return codec bits per sample.
+ * Only return non-zero if the bits per sample is exactly correct, not an
+ * approximation.
+ *
+ * @param[in] codec_id the codec
+ * @return Number of bits per sample or zero if unknown for the given codec.
+ */
+int av_get_exact_bits_per_sample(enum AVCodecID codec_id);
+
+/**
+ * Return a name for the specified profile, if available.
+ *
+ * @param codec_id the ID of the codec to which the requested profile belongs
+ * @param profile the profile value for which a name is requested
+ * @return A name for the profile if found, NULL otherwise.
+ *
+ * @note unlike av_get_profile_name(), which searches a list of profiles
+ *       supported by a specific decoder or encoder implementation, this
+ *       function searches the list of profiles from the AVCodecDescriptor
+ */
+const char *avcodec_profile_name(enum AVCodecID codec_id, int profile);
+
+/**
+ * Return the PCM codec associated with a sample format.
+ * @param be  endianness, 0 for little, 1 for big,
+ *            -1 (or anything else) for native
+ * @return  AV_CODEC_ID_PCM_* or AV_CODEC_ID_NONE
+ */
+enum AVCodecID av_get_pcm_codec(enum AVSampleFormat fmt, int be);
 
 /**
  * @}

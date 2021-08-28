@@ -27,6 +27,7 @@ EXPORTS
     av_filter_iterate
     avfilter_config_links
     avfilter_configuration
+    avfilter_filter_pad_count
     avfilter_free
     avfilter_get_by_name
     avfilter_get_class

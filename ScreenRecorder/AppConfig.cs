@@ -1,229 +1,225 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ScreenRecorder.Config;
-using ScreenRecorder.Encoder;
 
 namespace ScreenRecorder
 {
-	public sealed class AppConfig : NotifyPropertyBase, IConfigFile, IDisposable
-	{
-		#region 생성자
-		private static volatile AppConfig instance;
-		private static object syncRoot = new object();
-		public static AppConfig Instance
-		{
-			get
-			{
-				if (instance == null)
-				{
-					lock (syncRoot)
-					{
-						if (instance == null)
-						{
-							instance = new AppConfig();
-						}
-					}
-				}
+    public sealed class AppConfig : NotifyPropertyBase, IConfigFile, IDisposable
+    {
+        #region 생성자
+        private static volatile AppConfig instance;
+        private static object syncRoot = new object();
+        public static AppConfig Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    lock (syncRoot)
+                    {
+                        if (instance == null)
+                        {
+                            instance = new AppConfig();
+                        }
+                    }
+                }
 
-				return instance;
-			}
-		}
+                return instance;
+            }
+        }
 
-		private readonly string ConfigFilePath = System.IO.Path.Combine(AppConstants.AppDataFolderPath, "config");
+        private readonly string ConfigFilePath = System.IO.Path.Combine(AppConstants.AppDataFolderPath, "config");
 
-		private Object SyncObject = new object();
-		private ConfigFileSaveWorker configFileSaveWorker;
-		private volatile bool isDisposed = false;
+        private Object SyncObject = new object();
+        private ConfigFileSaveWorker configFileSaveWorker;
+        private volatile bool isDisposed = false;
 
-		private AppConfig()
-		{
-			try
-			{
-				Load(ConfigFilePath);
-			}
-			catch { }
+        private AppConfig()
+        {
+            try
+            {
+                Load(ConfigFilePath);
+            }
+            catch { }
 
-			Validation();
+            Validation();
 
-			configFileSaveWorker = new ConfigFileSaveWorker(this, ConfigFilePath);
-		}
-		#endregion
+            configFileSaveWorker = new ConfigFileSaveWorker(this, ConfigFilePath);
+        }
+        #endregion
 
-		#region IConfigFile
-		public void Save(string filePath)
-		{
-			lock (this)
-			{
-				Dictionary<string, string> config = new Dictionary<string, string>();
-				config.Add(nameof(ScreenCaptureMonitor), ScreenCaptureMonitor);
-				config.Add(nameof(ScreenCaptureCursorVisible), ScreenCaptureCursorVisible.ToString());
+        #region IConfigFile
+        public void Save(string filePath)
+        {
+            lock (this)
+            {
+                Dictionary<string, string> config = new Dictionary<string, string>();
+                config.Add(nameof(ScreenCaptureMonitor), ScreenCaptureMonitor);
+                config.Add(nameof(ScreenCaptureCursorVisible), ScreenCaptureCursorVisible.ToString());
 
-				config.Add(nameof(SelectedRecordFormat), SelectedRecordFormat);
-				config.Add(nameof(SelectedRecordVideoBitrate), SelectedRecordVideoBitrate.ToString());
-				config.Add(nameof(SelectedRecordAudioBitrate), SelectedRecordAudioBitrate.ToString());
-				config.Add(nameof(RecordDirectory), RecordDirectory);
+                config.Add(nameof(SelectedRecordFormat), SelectedRecordFormat);
+                config.Add(nameof(SelectedRecordVideoBitrate), SelectedRecordVideoBitrate.ToString());
+                config.Add(nameof(SelectedRecordAudioBitrate), SelectedRecordAudioBitrate.ToString());
+                config.Add(nameof(RecordDirectory), RecordDirectory);
 
-				config.Add(nameof(WindowWidth), WindowWidth.ToString());
-				config.Add(nameof(WindowHeight), WindowHeight.ToString());
-				config.Add(nameof(WindowLeft), WindowLeft.ToString());
-				config.Add(nameof(WindowTop), WindowTop.ToString());
+                config.Add(nameof(WindowWidth), WindowWidth.ToString());
+                config.Add(nameof(WindowHeight), WindowHeight.ToString());
+                config.Add(nameof(WindowLeft), WindowLeft.ToString());
+                config.Add(nameof(WindowTop), WindowTop.ToString());
 
-				Config.Config.SaveToFile(filePath, config);
-			}
-		}
+                Config.Config.SaveToFile(filePath, config);
+            }
+        }
 
-		public void Load(string filePath)
-		{
-			lock (this)
-			{
-				Dictionary<string, string> config = Config.Config.LoadFromFile(filePath, true);
+        public void Load(string filePath)
+        {
+            lock (this)
+            {
+                Dictionary<string, string> config = Config.Config.LoadFromFile(filePath, true);
 
-				if (config != null)
-				{
-					ScreenCaptureMonitor = Config.Config.GetString(config, nameof(ScreenCaptureMonitor), "");
-					ScreenCaptureCursorVisible = Config.Config.GetBool(config, nameof(ScreenCaptureCursorVisible), false);
+                if (config != null)
+                {
+                    ScreenCaptureMonitor = Config.Config.GetString(config, nameof(ScreenCaptureMonitor), "");
+                    ScreenCaptureCursorVisible = Config.Config.GetBool(config, nameof(ScreenCaptureCursorVisible), false);
 
-					SelectedRecordFormat = Config.Config.GetString(config, nameof(SelectedRecordFormat), "mp4");
-					SelectedRecordVideoBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordVideoBitrate), 5000000);
-					SelectedRecordAudioBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordAudioBitrate), 160000);
-					RecordDirectory = Config.Config.GetString(config, nameof(RecordDirectory), Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
+                    SelectedRecordFormat = Config.Config.GetString(config, nameof(SelectedRecordFormat), "mp4");
+                    SelectedRecordVideoBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordVideoBitrate), 5000000);
+                    SelectedRecordAudioBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordAudioBitrate), 160000);
+                    RecordDirectory = Config.Config.GetString(config, nameof(RecordDirectory), Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
 
-					WindowWidth = Config.Config.GetDouble(config, nameof(WindowWidth), -1.0d);
-					WindowHeight = Config.Config.GetDouble(config, nameof(WindowHeight), -1.0d);
-					WindowLeft = Config.Config.GetDouble(config, nameof(WindowLeft), -1.0d);
-					WindowTop = Config.Config.GetDouble(config, nameof(WindowTop), -1.0d);
-				}
-				else
-				{
-					SetDefault();
-				}
-			}
-		}
+                    WindowWidth = Config.Config.GetDouble(config, nameof(WindowWidth), -1.0d);
+                    WindowHeight = Config.Config.GetDouble(config, nameof(WindowHeight), -1.0d);
+                    WindowLeft = Config.Config.GetDouble(config, nameof(WindowLeft), -1.0d);
+                    WindowTop = Config.Config.GetDouble(config, nameof(WindowTop), -1.0d);
+                }
+                else
+                {
+                    SetDefault();
+                }
+            }
+        }
 
-		public void SetDefault()
-		{
-			WindowWidth = -1.0d;
-			WindowHeight = -1.0d;
-			WindowLeft = -1.0d;
-			WindowTop = -1.0d;
+        public void SetDefault()
+        {
+            WindowWidth = -1.0d;
+            WindowHeight = -1.0d;
+            WindowLeft = -1.0d;
+            WindowTop = -1.0d;
 
-			ScreenCaptureMonitor = "";
-			ScreenCaptureCursorVisible = false;
+            ScreenCaptureMonitor = "";
+            ScreenCaptureCursorVisible = false;
 
-			SelectedRecordFormat = "mp4";
-			SelectedRecordVideoBitrate = 5000000;
-			SelectedRecordAudioBitrate = 160000;
-			RecordDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
-		}
-		#endregion
+            SelectedRecordFormat = "mp4";
+            SelectedRecordVideoBitrate = 5000000;
+            SelectedRecordAudioBitrate = 160000;
+            RecordDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
+        }
+        #endregion
 
-		public void Validation()
-		{
-			lock (this)
-			{
-				
-			}
-		}
+        public void Validation()
+        {
+            lock (this)
+            {
 
-		#region Property
+            }
+        }
 
-		#region Window
-		private double windowWidth;
-		public double WindowWidth
-		{
-			get => windowWidth;
+        #region Property
+
+        #region Window
+        private double windowWidth;
+        public double WindowWidth
+        {
+            get => windowWidth;
             set => SetProperty(ref windowWidth, value);
-		}
+        }
 
-		private double windowHeight;
-		public double WindowHeight
-		{
-			get => WindowHeight;
+        private double windowHeight;
+        public double WindowHeight
+        {
+            get => WindowHeight;
             set => SetProperty(ref windowHeight, value);
-		}
+        }
 
-		private double windowLeft;
-		public double WindowLeft
-		{
-			get => windowLeft;
+        private double windowLeft;
+        public double WindowLeft
+        {
+            get => windowLeft;
             set => SetProperty(ref windowLeft, value);
-		}
+        }
 
-		private double windowTop;
-		public double WindowTop
-		{
-			get => windowTop;
+        private double windowTop;
+        public double WindowTop
+        {
+            get => windowTop;
             set => SetProperty(ref windowTop, value);
-		}
-		#endregion
+        }
+        #endregion
 
-		#region Record
-		private string selectedRecordFormat;
-		public string SelectedRecordFormat
-		{
-			get => selectedRecordFormat;
+        #region Record
+        private string selectedRecordFormat;
+        public string SelectedRecordFormat
+        {
+            get => selectedRecordFormat;
             set => SetProperty(ref selectedRecordFormat, value);
-		}
+        }
 
-		private int selectedRecordVideoBitrate;
-		public int SelectedRecordVideoBitrate
-		{
-			get => selectedRecordVideoBitrate;
+        private int selectedRecordVideoBitrate;
+        public int SelectedRecordVideoBitrate
+        {
+            get => selectedRecordVideoBitrate;
             set => SetProperty(ref selectedRecordVideoBitrate, value);
-		}
+        }
 
-		private int selectedRecordAudioBitrate;
-		public int SelectedRecordAudioBitrate
-		{
-			get => selectedRecordAudioBitrate;
+        private int selectedRecordAudioBitrate;
+        public int SelectedRecordAudioBitrate
+        {
+            get => selectedRecordAudioBitrate;
             set => SetProperty(ref selectedRecordAudioBitrate, value);
-		}
+        }
 
-		private string recordDirectory;
-		public string RecordDirectory
-		{
-			get => recordDirectory;
-			set => SetProperty(ref recordDirectory, value);
-		}
-		#endregion
+        private string recordDirectory;
+        public string RecordDirectory
+        {
+            get => recordDirectory;
+            set => SetProperty(ref recordDirectory, value);
+        }
+        #endregion
 
-		#region ScreenCapture
-		private string screenCaptureMonitor;
-		public string ScreenCaptureMonitor
-		{
-			get => screenCaptureMonitor;
+        #region ScreenCapture
+        private string screenCaptureMonitor;
+        public string ScreenCaptureMonitor
+        {
+            get => screenCaptureMonitor;
             set => SetProperty(ref screenCaptureMonitor, value);
-		}
+        }
 
-		private bool screenCaptureCursorVisible;
-		public bool ScreenCaptureCursorVisible
-		{
-			get => screenCaptureCursorVisible;
+        private bool screenCaptureCursorVisible;
+        public bool ScreenCaptureCursorVisible
+        {
+            get => screenCaptureCursorVisible;
             set => SetProperty(ref screenCaptureCursorVisible, value);
-		}
-		#endregion
+        }
+        #endregion
 
-		#endregion
+        #endregion
 
-		public void Dispose()
-		{
-			try
-			{
-				lock (SyncObject)
-				{
-					if (isDisposed)
-						return;
+        public void Dispose()
+        {
+            try
+            {
+                lock (SyncObject)
+                {
+                    if (isDisposed)
+                        return;
 
-					configFileSaveWorker?.Dispose();
-					configFileSaveWorker = null;
+                    configFileSaveWorker?.Dispose();
+                    configFileSaveWorker = null;
 
-					isDisposed = true;
-				}
-			}
-			catch { }
-		}
-	}
+                    isDisposed = true;
+                }
+            }
+            catch { }
+        }
+    }
 }

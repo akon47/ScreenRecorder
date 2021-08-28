@@ -309,7 +309,12 @@
 
 #include <time.h>
 #include <stdio.h>  /* FILE */
-#include "libavcodec/avcodec.h"
+
+#include "libavcodec/codec.h"
+#include "libavcodec/codec_par.h"
+#include "libavcodec/defs.h"
+#include "libavcodec/packet.h"
+
 #include "libavutil/dict.h"
 #include "libavutil/log.h"
 
@@ -530,6 +535,11 @@ typedef struct AVOutputFormat {
      */
     int priv_data_size;
 
+    /**
+     * Internal flags. See FF_FMT_FLAG_* in internal.h.
+     */
+    int flags_internal;
+
     int (*write_header)(struct AVFormatContext *);
     /**
      * Write a packet. If AVFMT_ALLOW_FLUSH is set in flags,
@@ -668,6 +678,11 @@ typedef struct AVInputFormat {
      * Size of private data so that it can be allocated in the wrapper.
      */
     int priv_data_size;
+
+    /**
+     * Internal flags. See FF_FMT_FLAG_* in internal.h.
+     */
+    int flags_internal;
 
     /**
      * Tell if a given file has a chance of being parsed as this format.
@@ -980,28 +995,14 @@ typedef struct AVStream {
      */
     AVCodecParameters *codecpar;
 
-    /*****************************************************************
-     * All fields below this line are not part of the public API. They
-     * may not be used outside of libavformat and can be changed and
-     * removed at will.
-     * Internal note: be aware that physically removing these fields
-     * will break ABI. Replace removed fields with dummy fields, and
-     * add new fields to AVStreamInternal.
-     *****************************************************************
-     */
-
-    int pts_wrap_bits; /**< number of bits in pts (used for wrapping control) */
-
-    // Timestamp generation support:
     /**
-     * Timestamp corresponding to the last dts sync point.
+     * Number of bits in timestamps. Used for wrapping control.
      *
-     * Initialized when AVCodecParserContext.dts_sync_point >= 0 and
-     * a DTS is received from the underlying container. Otherwise set to
-     * AV_NOPTS_VALUE by default.
+     * - demuxing: set by libavformat
+     * - muxing: set by libavformat
+     *
      */
-    int64_t first_dts;
-    int64_t cur_dts;
+    int pts_wrap_bits;
 
     /**
      * An opaque field for libavformat internal usage.
@@ -1250,9 +1251,15 @@ typedef struct AVFormatContext {
 #define AVFMT_FLAG_AUTO_BSF   0x200000 ///< Add bitstream filters as requested by the muxer
 
     /**
-     * Maximum size of the data read from input for determining
-     * the input container format.
+     * Maximum number of bytes read from input in order to determine stream
+     * properties. Used when reading the global header and in
+     * avformat_find_stream_info().
+     *
      * Demuxing only, set by the caller before avformat_open_input().
+     *
+     * @note this is \e not  used for determining the \ref AVInputFormat
+     *       "input format"
+     * @sa format_probesize
      */
     int64_t probesize;
 
@@ -1527,9 +1534,13 @@ typedef struct AVFormatContext {
     int probe_score;
 
     /**
-     * number of bytes to read maximally to identify format.
-     * - encoding: unused
-     * - decoding: set by user
+     * Maximum number of bytes read from input in order to identify the
+     * \ref AVInputFormat "input format". Only used when the format is not set
+     * explicitly by the caller.
+     *
+     * Demuxing only, set by the caller before avformat_open_input().
+     *
+     * @sa probesize
      */
     int format_probesize;
 

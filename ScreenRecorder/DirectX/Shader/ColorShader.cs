@@ -4,9 +4,9 @@ using SharpDX.Direct3D11;
 
 namespace ScreenRecorder.DirectX.Shader
 {
-	public class ColorShader : IDisposable
-	{
-		private readonly string shaderCode =
+    public class ColorShader : IDisposable
+    {
+        private readonly string shaderCode =
 @"
 Texture2D Texture : register(t0);
 SamplerState TextureSampler;
@@ -37,84 +37,84 @@ float4 PShader(PSInput input) : SV_Target
 	return color;
 }
 ";
-		private InputLayout inputLayout;
-		private ShaderSignature inputSignature;
-		private VertexShader vertexShader;
-		private PixelShader pixelShader;
-		private SamplerState samplerState;
+        private InputLayout inputLayout;
+        private ShaderSignature inputSignature;
+        private VertexShader vertexShader;
+        private PixelShader pixelShader;
+        private SamplerState samplerState;
 
-		public void Initialize(SharpDX.Direct3D11.Device device)
-		{
-			InitializeShader(device);
-		}
+        public void Initialize(SharpDX.Direct3D11.Device device)
+        {
+            InitializeShader(device);
+        }
 
-		private void InitializeShader(SharpDX.Direct3D11.Device device)
-		{
-			using (var bytecode = ShaderBytecode.Compile(shaderCode, "VShader", "vs_4_0", ShaderFlags.None, EffectFlags.None))
-			{
-				inputSignature = ShaderSignature.GetInputSignature(bytecode);
-				vertexShader = new VertexShader(device, bytecode);
-			}
+        private void InitializeShader(SharpDX.Direct3D11.Device device)
+        {
+            using (var bytecode = ShaderBytecode.Compile(shaderCode, "VShader", "vs_4_0", ShaderFlags.None, EffectFlags.None))
+            {
+                inputSignature = ShaderSignature.GetInputSignature(bytecode);
+                vertexShader = new VertexShader(device, bytecode);
+            }
 
-			using (var bytecode = ShaderBytecode.Compile(shaderCode, "PShader", "ps_4_0", ShaderFlags.None, EffectFlags.None))
-			{
-				pixelShader = new PixelShader(device, bytecode);
-			}
+            using (var bytecode = ShaderBytecode.Compile(shaderCode, "PShader", "ps_4_0", ShaderFlags.None, EffectFlags.None))
+            {
+                pixelShader = new PixelShader(device, bytecode);
+            }
 
-			var elements = new[]
-			{
-				new InputElement("POSITION", 0, SharpDX.DXGI.Format.R32G32B32_Float, 0, 0, InputClassification.PerVertexData, 0),
-				new InputElement("TEXCOORD", 0, SharpDX.DXGI.Format.R32G32_Float, InputElement.AppendAligned, 0, InputClassification.PerVertexData, 0)
-			};
+            var elements = new[]
+            {
+                new InputElement("POSITION", 0, SharpDX.DXGI.Format.R32G32B32_Float, 0, 0, InputClassification.PerVertexData, 0),
+                new InputElement("TEXCOORD", 0, SharpDX.DXGI.Format.R32G32_Float, InputElement.AppendAligned, 0, InputClassification.PerVertexData, 0)
+            };
 
-			inputLayout = new InputLayout(device, inputSignature, elements);
+            inputLayout = new InputLayout(device, inputSignature, elements);
 
-			samplerState = new SamplerState(device, new SamplerStateDescription()
-			{
-				Filter = SharpDX.Direct3D11.Filter.MinMagMipLinear,
-				AddressU = TextureAddressMode.Wrap,
-				AddressV = TextureAddressMode.Wrap,
-				AddressW = TextureAddressMode.Wrap,
-				MipLodBias = 0.0f,
-				MaximumAnisotropy = 1,
-				ComparisonFunction = Comparison.Always,
-				BorderColor = new SharpDX.Mathematics.Interop.RawColor4(0, 0, 0, 0),
-				MinimumLod = 0,
-				MaximumLod = float.MaxValue
-			});
-		}
+            samplerState = new SamplerState(device, new SamplerStateDescription()
+            {
+                Filter = SharpDX.Direct3D11.Filter.MinMagMipLinear,
+                AddressU = TextureAddressMode.Wrap,
+                AddressV = TextureAddressMode.Wrap,
+                AddressW = TextureAddressMode.Wrap,
+                MipLodBias = 0.0f,
+                MaximumAnisotropy = 1,
+                ComparisonFunction = Comparison.Always,
+                BorderColor = new SharpDX.Mathematics.Interop.RawColor4(0, 0, 0, 0),
+                MinimumLod = 0,
+                MaximumLod = float.MaxValue
+            });
+        }
 
-		public void Render(DeviceContext deviceContext, ShaderResourceView shaderResourceView)
-		{
-			SetShaderParameters(deviceContext, shaderResourceView);
-			RenderShader(deviceContext);
+        public void Render(DeviceContext deviceContext, ShaderResourceView shaderResourceView)
+        {
+            SetShaderParameters(deviceContext, shaderResourceView);
+            RenderShader(deviceContext);
 
-			if(shaderResourceView != null)
-				deviceContext.PixelShader.SetShaderResource(0, null);
-		}
+            if (shaderResourceView != null)
+                deviceContext.PixelShader.SetShaderResource(0, null);
+        }
 
-		private void SetShaderParameters(DeviceContext deviceContext, ShaderResourceView shaderResourceView)
-		{
-			deviceContext.PixelShader.SetConstantBuffer(0, null);
-			deviceContext.PixelShader.SetShaderResource(0, shaderResourceView);
-		}
+        private void SetShaderParameters(DeviceContext deviceContext, ShaderResourceView shaderResourceView)
+        {
+            deviceContext.PixelShader.SetConstantBuffer(0, null);
+            deviceContext.PixelShader.SetShaderResource(0, shaderResourceView);
+        }
 
-		private void RenderShader(DeviceContext deviceContext)
-		{
-			deviceContext.InputAssembler.InputLayout = inputLayout;
-			deviceContext.VertexShader.Set(vertexShader);
-			deviceContext.PixelShader.Set(pixelShader);
-			deviceContext.PixelShader.SetSampler(0, samplerState);
-			deviceContext.Draw(6, 0);
-		}
+        private void RenderShader(DeviceContext deviceContext)
+        {
+            deviceContext.InputAssembler.InputLayout = inputLayout;
+            deviceContext.VertexShader.Set(vertexShader);
+            deviceContext.PixelShader.Set(pixelShader);
+            deviceContext.PixelShader.SetSampler(0, samplerState);
+            deviceContext.Draw(6, 0);
+        }
 
-		public void Dispose()
-		{
-			inputLayout?.Dispose();
-			inputSignature?.Dispose();
-			vertexShader?.Dispose();
-			pixelShader?.Dispose();
-			samplerState?.Dispose();
-		}
-	}
+        public void Dispose()
+        {
+            inputLayout?.Dispose();
+            inputSignature?.Dispose();
+            vertexShader?.Dispose();
+            pixelShader?.Dispose();
+            samplerState?.Dispose();
+        }
+    }
 }

@@ -1,6 +1,4 @@
 ﻿using System.Reflection;
-using System.Resources;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
 
@@ -10,7 +8,7 @@ using System.Windows;
 [assembly: AssemblyTitle("ScreenRecorder")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Kim hwan")]
 [assembly: AssemblyProduct("ScreenRecorder")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
@@ -32,12 +30,12 @@ using System.Windows;
 
 
 [assembly: ThemeInfo(
-	ResourceDictionaryLocation.None, //테마별 리소스 사전의 위치
-									 //(페이지 또는 응용 프로그램 리소스 사진에
-									 // 리소스가 없는 경우에 사용됨)
-	ResourceDictionaryLocation.SourceAssembly //제네릭 리소스 사전의 위치
-											  //(페이지 또는 응용 프로그램 리소스 사진에
-											  // 리소스가 없는 경우에 사용됨)
+    ResourceDictionaryLocation.None, //테마별 리소스 사전의 위치
+                                     //(페이지 또는 응용 프로그램 리소스 사진에
+                                     // 리소스가 없는 경우에 사용됨)
+    ResourceDictionaryLocation.SourceAssembly //제네릭 리소스 사전의 위치
+                                              //(페이지 또는 응용 프로그램 리소스 사진에
+                                              // 리소스가 없는 경우에 사용됨)
 )]
 
 
@@ -51,5 +49,5 @@ using System.Windows;
 // 모든 값을 지정하거나 아래와 같이 '*'를 사용하여 빌드 번호 및 수정 번호를
 // 기본값으로 할 수 있습니다.
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.1.0")]
+[assembly: AssemblyFileVersion("1.0.1.0")]

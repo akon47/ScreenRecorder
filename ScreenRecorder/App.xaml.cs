@@ -1,79 +1,74 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace ScreenRecorder
 {
-	/// <summary>
-	/// App.xaml에 대한 상호 작용 논리
-	/// </summary>
-	public partial class App : Application
-	{
-		public volatile static Mutex Mutex = null;
+    /// <summary>
+    /// App.xaml에 대한 상호 작용 논리
+    /// </summary>
+    public partial class App : Application
+    {
+        public volatile static Mutex Mutex = null;
 
-		protected override void OnStartup(StartupEventArgs e)
-		{
-			try
-			{
-				Mutex = new Mutex(true, AppConstants.AppName, out bool isNew);
-				if (isNew)
-				{
-					if (!IsMicrosoftVisualCPlusPlus2019Available())
-					{
-						MessageBox.Show("Please Install \"Microsoft Visual C++ 2017-2019 Redistributable (x64)\"");
-						Environment.Exit(-2);
-					}
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            try
+            {
+                Mutex = new Mutex(true, AppConstants.AppName, out bool isNew);
+                if (isNew)
+                {
+                    if (!IsMicrosoftVisualCPlusPlus2019Available())
+                    {
+                        MessageBox.Show("Please Install \"Microsoft Visual C++ 2017-2019 Redistributable (x64)\"");
+                        Environment.Exit(-2);
+                    }
 
-					SystemClockEvent.Start();
-					AppManager.Instance.Initialize();
+                    SystemClockEvent.Start();
+                    AppManager.Instance.Initialize();
 
-					base.OnStartup(e);
-				}
-				else
-				{
-					MessageBox.Show("프로그램이 이미 실행 중입니다.", "", MessageBoxButton.OK, MessageBoxImage.Error);
-					Environment.Exit(-1);
-				}
-			}
-			catch(Exception ex)
-			{
-				MessageBox.Show(ex.Message, "", MessageBoxButton.OK, MessageBoxImage.Error);
-				Environment.Exit(-10);
-			}
-		}
+                    base.OnStartup(e);
+                }
+                else
+                {
+                    MessageBox.Show("프로그램이 이미 실행 중입니다.", "", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Environment.Exit(-1);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.Exit(-10);
+            }
+        }
 
-		protected override void OnExit(ExitEventArgs e)
-		{
-			AppCommands.Instance.Dispose();
-			AppConfig.Instance.Dispose();
-			AppManager.Instance.Dispose();
-			SystemClockEvent.Stop();
+        protected override void OnExit(ExitEventArgs e)
+        {
+            AppCommands.Instance.Dispose();
+            AppConfig.Instance.Dispose();
+            AppManager.Instance.Dispose();
+            SystemClockEvent.Stop();
 
-			base.OnExit(e);
-		}
+            base.OnExit(e);
+        }
 
-		private bool IsMicrosoftVisualCPlusPlus2019Available()
-		{
-			using (var depRegistryKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(@"Installer\Dependencies", false))
-			{
-				foreach (string subKeyName in depRegistryKey.GetSubKeyNames())
-				{
-					using (var registryKey = depRegistryKey.OpenSubKey(subKeyName))
-					{
-						if (registryKey.GetValue("DisplayName") is string displayName && displayName.StartsWith("Microsoft Visual C++ 2015-2019 Redistributable (x64)", StringComparison.OrdinalIgnoreCase))
-						{
-							return true;
-						}
-					}
-				}
-			}
+        private bool IsMicrosoftVisualCPlusPlus2019Available()
+        {
+            using (var depRegistryKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(@"Installer\Dependencies", false))
+            {
+                foreach (string subKeyName in depRegistryKey.GetSubKeyNames())
+                {
+                    using (var registryKey = depRegistryKey.OpenSubKey(subKeyName))
+                    {
+                        if (registryKey.GetValue("DisplayName") is string displayName && displayName.StartsWith("Microsoft Visual C++ 2015-2019 Redistributable (x64)", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
 
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 }

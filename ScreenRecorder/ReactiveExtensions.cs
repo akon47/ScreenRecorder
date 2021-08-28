@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ScreenRecorder
 {
-	internal static class ReactiveExtensions
+    internal static class ReactiveExtensions
     {
         private static readonly Dictionary<INotifyPropertyChanged, SubscriptionSet> Subscriptions
             = new Dictionary<INotifyPropertyChanged, SubscriptionSet>();
