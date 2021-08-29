@@ -46,6 +46,7 @@ namespace ScreenRecorder.Encoder
             private ManualResetEvent needToStop;
 
             private CircularBuffer srcAudioCircularBuffer;
+            private Resampler resampler;
 
             public MediaBuffer(IVideoSource videoSource, IAudioSource audioSource)
             {
@@ -62,6 +63,7 @@ namespace ScreenRecorder.Encoder
                 }
                 if (this.audioSource != null)
                 {
+                    resampler = new Resampler();
                     int framePerBytes = (int)((48000.0d / AppConstants.Framerate) * 4);
 
                     this.srcAudioCircularBuffer = new CircularBuffer(framePerBytes * 15);
@@ -244,7 +246,11 @@ namespace ScreenRecorder.Encoder
                     if (enableEvent != null && !enableEvent.WaitOne(0, false))
                         return;
 
-                    srcAudioCircularBuffer.Write(eventArgs.DataPointer, 0, eventArgs.Samples * 4);
+                    resampler.Resampling(eventArgs.Channels, eventArgs.SampleFormat, eventArgs.SampleRate,
+                        2, SampleFormat.S16, 48000, eventArgs.DataPointer, eventArgs.Samples, out IntPtr destData, out int destSamples);
+
+                    srcAudioCircularBuffer.Write(destData, 0, destSamples * 4);
+                    //srcAudioCircularBuffer.Write(eventArgs.DataPointer, 0, eventArgs.Samples * 4);
                 }
             }
 
@@ -293,6 +299,9 @@ namespace ScreenRecorder.Encoder
                             if (videoFrameQueue.TryDequeue(out VideoFrame videoFrame))
                                 videoFrame.Dispose();
                         }
+
+                        resampler?.Dispose();
+                        resampler = null;
 
                         isDisposed = true;
                     }
