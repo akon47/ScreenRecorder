@@ -22,7 +22,7 @@ namespace ScreenRecorder.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace ScreenRecorder.Properties {
         ///   이 클래스에서 사용하는 캐시된 ResourceManager 인스턴스를 반환합니다.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ScreenRecorder.Properties.Resources", typeof(Resources).Assembly);
@@ -51,12 +51,120 @@ namespace ScreenRecorder.Properties {
         ///   재정의합니다.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Browse과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string Browse {
+            get {
+                return ResourceManager.GetString("Browse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Audio Bitrate과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderAudioBitrate {
+            get {
+                return ResourceManager.GetString("EncoderAudioBitrate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recording Path과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderBaseDirectory {
+            get {
+                return ResourceManager.GetString("EncoderBaseDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   File Format과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderFileFormat {
+            get {
+                return ResourceManager.GetString("EncoderFileFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recording Settings과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderSettings {
+            get {
+                return ResourceManager.GetString("EncoderSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recording (Pause)과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderStatusPauseMessage {
+            get {
+                return ResourceManager.GetString("EncoderStatusPauseMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recording과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderStatusStartMessage {
+            get {
+                return ResourceManager.GetString("EncoderStatusStartMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Waiting for recording과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderStatusStopMessage {
+            get {
+                return ResourceManager.GetString("EncoderStatusStopMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Video Bitrate과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderVideoBitrate {
+            get {
+                return ResourceManager.GetString("EncoderVideoBitrate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Exit과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string Exit {
+            get {
+                return ResourceManager.GetString("Exit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Open a recording folder in File Explorer과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string OpenEncodingFolderInFileExplorer {
+            get {
+                return ResourceManager.GetString("OpenEncodingFolderInFileExplorer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Open a folder in File Explorer과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string OpenFolderInFileExplorer {
+            get {
+                return ResourceManager.GetString("OpenFolderInFileExplorer", resourceCulture);
             }
         }
     }

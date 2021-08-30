@@ -118,39 +118,39 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Browse" xml:space="preserve">
-    <value>Browse</value>
+    <value>찾아보기</value>
   </data>
   <data name="EncoderAudioBitrate" xml:space="preserve">
-    <value>Audio Bitrate</value>
+    <value>오디오 비트레이트</value>
   </data>
   <data name="EncoderBaseDirectory" xml:space="preserve">
-    <value>Recording Path</value>
+    <value>녹화 경로</value>
   </data>
   <data name="EncoderFileFormat" xml:space="preserve">
-    <value>File Format</value>
+    <value>파일 포맷</value>
   </data>
   <data name="EncoderSettings" xml:space="preserve">
-    <value>Recording Settings</value>
+    <value>녹화 설정</value>
   </data>
   <data name="EncoderStatusPauseMessage" xml:space="preserve">
-    <value>Recording (Pause)</value>
+    <value>녹화중 (일시정지)</value>
   </data>
   <data name="EncoderStatusStartMessage" xml:space="preserve">
-    <value>Recording</value>
+    <value>녹화중</value>
   </data>
   <data name="EncoderStatusStopMessage" xml:space="preserve">
-    <value>Waiting for recording</value>
+    <value>녹화 대기중</value>
   </data>
   <data name="EncoderVideoBitrate" xml:space="preserve">
-    <value>Video Bitrate</value>
+    <value>비디오 비트레이트</value>
   </data>
   <data name="Exit" xml:space="preserve">
-    <value>Exit</value>
+    <value>종료</value>
   </data>
   <data name="OpenEncodingFolderInFileExplorer" xml:space="preserve">
-    <value>Open a recording folder in File Explorer</value>
+    <value>파일 탐색기에서 녹화 폴더 열기</value>
   </data>
   <data name="OpenFolderInFileExplorer" xml:space="preserve">
-    <value>Open a folder in File Explorer</value>
+    <value>파일 탐색기에서 폴더 열기</value>
   </data>
 </root>
