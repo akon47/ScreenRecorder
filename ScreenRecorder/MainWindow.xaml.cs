@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
@@ -28,6 +29,17 @@ namespace ScreenRecorder
         public MainWindow()
         {
             InitializeComponent();
+            #region Load Window Location
+            try
+            {
+                if (AppConfig.Instance.WindowLeft >= 0 && AppConfig.Instance.WindowTop >= 0)
+                {
+                    Left = AppConfig.Instance.WindowLeft;
+                    Top = AppConfig.Instance.WindowTop;
+                }
+            }
+            catch { }
+            #endregion
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -109,5 +121,13 @@ namespace ScreenRecorder
             e.CanExecute = true;
         }
         #endregion
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+
+            AppConfig.Instance.WindowLeft = this.Left;
+            AppConfig.Instance.WindowTop = this.Top;
+        }
     }
 }

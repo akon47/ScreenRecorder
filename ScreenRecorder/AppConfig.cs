@@ -45,6 +45,11 @@ namespace ScreenRecorder
             Validation();
 
             configFileSaveWorker = new ConfigFileSaveWorker(this, ConfigFilePath);
+
+            this.PropertyChanged += (s, e) =>
+			{
+				configFileSaveWorker?.SetModifiedConfigData();
+			};
         }
         #endregion
 
@@ -120,7 +125,10 @@ namespace ScreenRecorder
         {
             lock (this)
             {
-
+                if(string.IsNullOrWhiteSpace(SelectedRecordFormat))
+                {
+                    SelectedRecordFormat = "mp4";
+                }
             }
         }
 
@@ -137,7 +145,7 @@ namespace ScreenRecorder
         private double windowHeight;
         public double WindowHeight
         {
-            get => WindowHeight;
+            get => windowHeight;
             set => SetProperty(ref windowHeight, value);
         }
 

@@ -67,6 +67,15 @@ namespace ScreenRecorder.Config
                     needToStop.Close();
                 needToStop = null;
             }
+
+            lock (SyncObject)
+            {
+                if (requireSaveConfig)
+                {
+                    configObject?.Save(configFilePath);
+                    requireSaveConfig = false;
+                }
+            }
         }
     }
 }
