@@ -7,6 +7,8 @@ using namespace System::Collections::Generic;
 
 namespace MediaEncoder {
 
+    // from https://github.com/accord-net/framework/blob/development/Sources/Extras/Accord.Video.FFMPEG.GPL/AudioCodec.h
+    // GPLv2 - later
     public enum class AudioCodec
     {
         /// <summary>
