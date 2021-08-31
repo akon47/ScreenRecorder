@@ -21,9 +21,19 @@ It is a simple recording program with the ability to record the screen.
 - The program itself is recorded without being included in the recording screen.
 
 ## 👨‍💻 Build
+
+- Visual Studio 2019 or newer
+- Windows 10 or newer
+- Microsoft .Net Framework 4.7.2
+
 The MediaEncoder project uses a shared ffmpeg library that [BtbN](https://github.com/BtbN/FFmpeg-Builds) builds and deploys.
 
 1. Create the **ffmpeg_shared_lib** folder inside the project folder.
 2. Paste the shared ffmpeg library "**bin, include, lib**" folder into the **fmpeg_shared_lib** folder and build it.
 
+## 📦 Third party libraries
+- SharpDX: http://sharpdx.org/
+- NAudio: https://github.com/naudio/NAudio
 
+## 🐞 Bug Report
+If you find a bug, please report to us posting [issues](https://github.com/akon47/ScreenRecorder/issues) on GitHub.
