@@ -4,6 +4,11 @@
 
 # Screen Recorder
 
+<p>
+  <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fakon47%2FScreenRecorder&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false" />
+  <img alt="GitHub starts" src="https://img.shields.io/github/stars/akon47/ScreenRecorder">
+</p>
+
 컴퓨터 화면과 기본 오디오 재생 장치의 오디오를 녹화하는 기능을 가진 녹화 프로그램 입니다.   
 
 ![1ko](https://user-images.githubusercontent.com/49547202/129135093-31221542-a415-46c7-93d5-3570e9395c13.png)
