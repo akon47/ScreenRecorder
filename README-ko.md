@@ -21,7 +21,19 @@
 - 프로그램 자기 자신은 녹화 화면에 포함되지 않고 녹화됩니다.
 
 ## 👨‍💻 빌드
+
+- Visual Studio 2019 or newer
+- Windows 10 or newer
+- Microsoft .Net Framework 4.7.2
+
 MediaEncoder 프로젝트에서는 [BtbN](https://github.com/BtbN/FFmpeg-Builds) 에서 빌드하고 배포하는 shared ffmpeg 라이브러리를 사용합니다.   
 
 1. 프로젝트 폴더 안에 **ffmpeg_shared_lib** 폴더를 생성합니다.
 2. **fmpeg_shared_lib** 폴더 안에 shared ffmpeg 라이브러리의 "**bin, include, lib**" 폴더를 붙여 넣고 빌드 하시면 됩니다.
+
+## 📦 서드 파티 라이브러리
+- SharpDX: http://sharpdx.org/
+- NAudio: https://github.com/naudio/NAudio
+
+## 🐞 버그 리포트
+만약 버그를 발견하신다면 [issues](https://github.com/akon47/ScreenRecorder/issues) 로 보고해 주세요.
