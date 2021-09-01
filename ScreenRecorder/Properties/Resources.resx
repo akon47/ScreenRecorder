@@ -123,6 +123,9 @@
   <data name="EncoderAudioBitrate" xml:space="preserve">
     <value>Audio Bitrate</value>
   </data>
+  <data name="EncoderAudioCodec" xml:space="preserve">
+    <value>Audio Codec</value>
+  </data>
   <data name="EncoderBaseDirectory" xml:space="preserve">
     <value>Recording Path</value>
   </data>
@@ -143,6 +146,9 @@
   </data>
   <data name="EncoderVideoBitrate" xml:space="preserve">
     <value>Video Bitrate</value>
+  </data>
+  <data name="EncoderVideoCodec" xml:space="preserve">
+    <value>Video Codec</value>
   </data>
   <data name="Exit" xml:space="preserve">
     <value>Exit</value>

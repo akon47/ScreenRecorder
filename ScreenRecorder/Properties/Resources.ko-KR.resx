@@ -123,6 +123,9 @@
   <data name="EncoderAudioBitrate" xml:space="preserve">
     <value>오디오 비트레이트</value>
   </data>
+  <data name="EncoderAudioCodec" xml:space="preserve">
+    <value>오디오 코덱</value>
+  </data>
   <data name="EncoderBaseDirectory" xml:space="preserve">
     <value>녹화 경로</value>
   </data>
@@ -143,6 +146,9 @@
   </data>
   <data name="EncoderVideoBitrate" xml:space="preserve">
     <value>비디오 비트레이트</value>
+  </data>
+  <data name="EncoderVideoCodec" xml:space="preserve">
+    <value>비디오 코덱</value>
   </data>
   <data name="Exit" xml:space="preserve">
     <value>종료</value>

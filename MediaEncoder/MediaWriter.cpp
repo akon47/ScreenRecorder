@@ -210,13 +210,13 @@ namespace MediaEncoder {
 				videoCodecContext->pix_fmt = videoCodec->pix_fmts[0];
 
 				AVPixelFormat targetPixelFormat = AV_PIX_FMT_YUV420P;
-				if (videoCodecId == AVCodecID::AV_CODEC_ID_H264 && !forceSoftwareEncoder)
+				if ((videoCodecId == AVCodecID::AV_CODEC_ID_H264 || videoCodecId == AVCodecID::AV_CODEC_ID_H265) && !forceSoftwareEncoder)
 				{
-					if (h264_nvenc)
+					if (h264_nvenc || hevc_nvenc)
 					{
 						targetPixelFormat = AV_PIX_FMT_D3D11;
 					}
-					else if (h264_qsv)
+					else if (h264_qsv || hevc_qsv)
 					{
 						//targetPixelFormat = AV_PIX_FMT_QSV;
 						targetPixelFormat = AV_PIX_FMT_NV12;
@@ -268,19 +268,25 @@ namespace MediaEncoder {
 			{
 				videoCodecContext->gop_size = (m_videoNumerator / m_videoDenominator) * 3;
 				videoCodecContext->max_b_frames = 2;
-				if (h264_nvenc && !forceSoftwareEncoder)
+				if ((h264_nvenc || hevc_nvenc) && !forceSoftwareEncoder)
 				{
 					av_opt_set(videoCodecContext->priv_data, "preset", "fast", 0);
 					av_opt_set_int(videoCodecContext->priv_data, "cbr", true, 0);
 				}
-				else if (h264_qsv && !forceSoftwareEncoder)
+				else if ((h264_qsv || hevc_qsv) && !forceSoftwareEncoder)
 				{
-					av_opt_set(videoCodecContext->priv_data, "preset", "veryfast", 0);
+					// hmmm.. not have preset options..?? 
+					// https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/qsvenc_h264.c
+					//av_opt_set(videoCodecContext->priv_data, "preset", "veryfast", 0); 
 				}
 				else
 				{
 					av_opt_set(videoCodecContext->priv_data, "preset", "ultrafast", 0);
 				}
+			}
+			else if (videoCodec->id == AVCodecID::AV_CODEC_ID_H265)
+			{
+				// hevc
 			}
 
 			if (avcodec_open2(videoCodecContext, videoCodec, nullptr) < 0)
@@ -316,7 +322,7 @@ namespace MediaEncoder {
 		int targetSamplerate = 48000;
 		if (url->Contains(gcnew String("rtmp://")))
 		{
-			targetSamplerate = 44100;
+			targetSamplerate = 44100; // for youtube recommended
 		}
 
 		// Create Audio Codec
@@ -362,14 +368,6 @@ namespace MediaEncoder {
 			m_audioCodecName = gcnew String(m_data->AudioCodecContext->codec->name);
 		}
 		//
-
-		if (strcmp(nativeFormat, "hls") == 0)
-		{
-			av_opt_set_int(m_data->FormatContext->priv_data, "hls_list_size", 5, 0);
-			av_opt_set_int(m_data->FormatContext->priv_data, "hls_allow_cache", 0, 0);
-			av_opt_set(m_data->FormatContext->priv_data, "hls_flags", "delete_segments", 0);
-			//av_opt_set_int(m_data->FormatContext->priv_data, "hls_time", 1, 0);
-		}
 
 		if (!(m_data->FormatContext->oformat->flags & AVFMT_NOFILE)) {
 			if (avio_open(&m_data->FormatContext->pb, nativeUrl, AVIO_FLAG_WRITE) < 0)

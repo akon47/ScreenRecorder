@@ -79,6 +79,15 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
+        ///   Audio Codec과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderAudioCodec {
+            get {
+                return ResourceManager.GetString("EncoderAudioCodec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recording Path과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string EncoderBaseDirectory {
@@ -138,6 +147,15 @@ namespace ScreenRecorder.Properties {
         public static string EncoderVideoBitrate {
             get {
                 return ResourceManager.GetString("EncoderVideoBitrate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Video Codec과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderVideoCodec {
+            get {
+                return ResourceManager.GetString("EncoderVideoCodec", resourceCulture);
             }
         }
         

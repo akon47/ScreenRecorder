@@ -219,8 +219,8 @@ namespace ScreenRecorder
                             if (!System.IO.File.Exists(filePath))
                             {
                                 AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
-                                        MediaEncoder.VideoCodec.H264, AppConfig.Instance.SelectedRecordVideoBitrate,
-                                        MediaEncoder.AudioCodec.Aac, AppConfig.Instance.SelectedRecordAudioBitrate,
+                                        AppConfig.Instance.SelectedRecordVideoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
+                                        AppConfig.Instance.SelectedRecordAudioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
                                         System.Windows.Forms.Screen.PrimaryScreen.DeviceName);
                             }
                         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MediaEncoder;
 using ScreenRecorder.Config;
 
 namespace ScreenRecorder
@@ -63,6 +64,9 @@ namespace ScreenRecorder
                 config.Add(nameof(ScreenCaptureCursorVisible), ScreenCaptureCursorVisible.ToString());
 
                 config.Add(nameof(SelectedRecordFormat), SelectedRecordFormat);
+                config.Add(nameof(SelectedRecordVideoCodec), Enum.GetName(typeof(VideoCodec), SelectedRecordVideoCodec));
+                config.Add(nameof(SelectedRecordAudioCodec), Enum.GetName(typeof(AudioCodec), SelectedRecordAudioCodec));
+
                 config.Add(nameof(SelectedRecordVideoBitrate), SelectedRecordVideoBitrate.ToString());
                 config.Add(nameof(SelectedRecordAudioBitrate), SelectedRecordAudioBitrate.ToString());
                 config.Add(nameof(RecordDirectory), RecordDirectory);
@@ -88,6 +92,8 @@ namespace ScreenRecorder
                     ScreenCaptureCursorVisible = Config.Config.GetBool(config, nameof(ScreenCaptureCursorVisible), false);
 
                     SelectedRecordFormat = Config.Config.GetString(config, nameof(SelectedRecordFormat), "mp4");
+                    SelectedRecordVideoCodec = Config.Config.GetEnum<VideoCodec>(config, nameof(SelectedRecordVideoCodec), VideoCodec.H264);
+                    SelectedRecordAudioCodec = Config.Config.GetEnum<AudioCodec>(config, nameof(SelectedRecordAudioCodec), AudioCodec.Aac);
                     SelectedRecordVideoBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordVideoBitrate), 5000000);
                     SelectedRecordAudioBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordAudioBitrate), 160000);
                     RecordDirectory = Config.Config.GetString(config, nameof(RecordDirectory), Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
@@ -115,6 +121,8 @@ namespace ScreenRecorder
             ScreenCaptureCursorVisible = false;
 
             SelectedRecordFormat = "mp4";
+            SelectedRecordVideoCodec = VideoCodec.H264;
+            SelectedRecordAudioCodec = AudioCodec.Aac;
             SelectedRecordVideoBitrate = 5000000;
             SelectedRecordAudioBitrate = 160000;
             RecordDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
@@ -170,6 +178,20 @@ namespace ScreenRecorder
         {
             get => selectedRecordFormat;
             set => SetProperty(ref selectedRecordFormat, value);
+        }
+
+        private VideoCodec selectedRecordVideoCodec;
+        public VideoCodec SelectedRecordVideoCodec
+        {
+            get => selectedRecordVideoCodec;
+            set => SetProperty(ref selectedRecordVideoCodec, value);
+        }
+
+        private AudioCodec selectedRecordAudioCodec;
+        public AudioCodec SelectedRecordAudioCodec
+        {
+            get => selectedRecordAudioCodec;
+            set => SetProperty(ref selectedRecordAudioCodec, value);
         }
 
         private int selectedRecordVideoBitrate;

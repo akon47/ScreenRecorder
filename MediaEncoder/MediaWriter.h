@@ -16,6 +16,8 @@ namespace MediaEncoder {
 	private:
 		static bool h264_nvenc = false;
 		static bool h264_qsv = false;
+		static bool hevc_nvenc = false;
+		static bool hevc_qsv = false;
 
 		static bool IsValidEncoder(const char* name)
 		{
@@ -48,15 +50,6 @@ namespace MediaEncoder {
 					videoCodecContext->framerate = av_make_q(60, 1);
 					videoCodecContext->bit_rate = 10000000;
 
-					if (strcmp(name, "h264_nvenc") == 0)
-					{
-						av_opt_set(videoCodecContext->priv_data, "preset", "fast", 0);
-					}
-					else if (strcmp(name, "h264_qsv") == 0)
-					{
-						av_opt_set(videoCodecContext->priv_data, "preset", "veryfast", 0);
-					}
-
 					if (avcodec_open2(videoCodecContext, videoCodec, nullptr) < 0)
 					{
 						return false;
@@ -79,11 +72,13 @@ namespace MediaEncoder {
 
 			h264_nvenc = IsValidEncoder("h264_nvenc");
 			h264_qsv = IsValidEncoder("h264_qsv");
+			hevc_nvenc = IsValidEncoder("hevc_nvenc");
+			hevc_qsv = IsValidEncoder("hevc_qsv");
 
 			av_log(nullptr, AV_LOG_INFO, h264_nvenc ? "h264_nvenc is supported\n" : "h264_nvenc is not supported\n");
 			av_log(nullptr, AV_LOG_INFO, h264_qsv ? "h264_qsv is supported\n" : "h264_qsv is not supported\n");
-			/*hevc_nvenc = IsValidEncoder("hevc_nvenc");
-			hevc_qsv = IsValidEncoder("hevc_qsv");*/
+			av_log(nullptr, AV_LOG_INFO, hevc_nvenc ? "hevc_nvenc is supported\n" : "hevc_nvenc is not supported\n");
+			av_log(nullptr, AV_LOG_INFO, hevc_qsv ? "hevc_qsv is supported\n" : "hevc_qsv is not supported\n");
 		}
 
 		static bool IsExistNVENC() { return h264_nvenc; }
