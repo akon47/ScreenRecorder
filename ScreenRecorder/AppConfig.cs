@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using MediaEncoder;
 using ScreenRecorder.Config;
 
@@ -136,6 +137,16 @@ namespace ScreenRecorder
                 if(string.IsNullOrWhiteSpace(SelectedRecordFormat))
                 {
                     SelectedRecordFormat = "mp4";
+                }
+
+                if(!AppManager.Instance.EncoderVideoCodecs?.Select(x => x.VideoCodec).Contains(SelectedRecordVideoCodec) ?? false)
+                {
+                    SelectedRecordVideoCodec = VideoCodec.H264;
+                }
+
+                if (!AppManager.Instance.EncoderAudioCodecs?.Select(x => x.AudioCodec).Contains(SelectedRecordAudioCodec) ?? false)
+                {
+                    SelectedRecordAudioCodec = AudioCodec.Aac;
                 }
             }
         }
