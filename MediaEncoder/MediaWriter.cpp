@@ -187,17 +187,32 @@ namespace MediaEncoder {
 			AVCodecContext* videoCodecContext;
 			AVCodecID videoCodecId = m_videoCodec == AVCodecID::AV_CODEC_ID_PROBE && formatContext->oformat != nullptr ? formatContext->oformat->video_codec : m_videoCodec;
 			const AVCodec* videoCodec = nullptr;
-			if (videoCodecId == AVCodecID::AV_CODEC_ID_H264 && !forceSoftwareEncoder)
+			if (!forceSoftwareEncoder)
 			{
-				if (h264_nvenc)
+				if (videoCodecId == AVCodecID::AV_CODEC_ID_H264)
 				{
-					videoCodec = avcodec_find_encoder_by_name("h264_nvenc");
+					if (h264_nvenc)
+					{
+						videoCodec = avcodec_find_encoder_by_name("h264_nvenc");
+					}
+					else if (h264_qsv)
+					{
+						videoCodec = avcodec_find_encoder_by_name("h264_qsv");
+					}
 				}
-				else if (h264_qsv)
+				else if (videoCodecId == AVCodecID::AV_CODEC_ID_H265)
 				{
-					videoCodec = avcodec_find_encoder_by_name("h264_qsv");
+					if (hevc_nvenc)
+					{
+						videoCodec = avcodec_find_encoder_by_name("hevc_nvenc");
+					}
+					else if (hevc_qsv)
+					{
+						videoCodec = avcodec_find_encoder_by_name("hevc_qsv");
+					}
 				}
 			}
+
 			if (!videoCodec)
 				videoCodec = avcodec_find_encoder(videoCodecId);
 
@@ -264,22 +279,15 @@ namespace MediaEncoder {
 			videoCodecContext->framerate = av_make_q(m_videoNumerator, m_videoDenominator);
 
 			videoCodecContext->bit_rate = m_videoBitrate > 0 ? m_videoBitrate : 10000000;
-			if (videoCodec->id == AVCodecID::AV_CODEC_ID_H264)
+			if (videoCodec->id == AVCodecID::AV_CODEC_ID_H264 || videoCodec->id == AVCodecID::AV_CODEC_ID_H265)
 			{
 				videoCodecContext->gop_size = (m_videoNumerator / m_videoDenominator) * 3;
 				videoCodecContext->max_b_frames = 2;
-				if ((h264_nvenc || hevc_nvenc) && !forceSoftwareEncoder)
-				{
-					av_opt_set(videoCodecContext->priv_data, "preset", "fast", 0);
-				}
-				else
+
+				if (strncmp(videoCodec->name, "libx", 4) == 0)
 				{
 					av_opt_set(videoCodecContext->priv_data, "preset", "ultrafast", 0);
 				}
-			}
-			else if (videoCodec->id == AVCodecID::AV_CODEC_ID_H265)
-			{
-				// hevc
 			}
 
 			if (avcodec_open2(videoCodecContext, videoCodec, nullptr) < 0)
