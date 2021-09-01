@@ -27,8 +27,6 @@ namespace ScreenRecorder
                     SystemClockEvent.Start();
                     AppManager.Instance.Initialize();
 
-                    ScreenRecorder.Properties.Resources.Culture = System.Globalization.CultureInfo.CurrentCulture;
-
                     base.OnStartup(e);
                 }
                 else
