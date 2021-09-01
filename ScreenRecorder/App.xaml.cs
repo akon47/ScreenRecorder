@@ -27,11 +27,13 @@ namespace ScreenRecorder
                     SystemClockEvent.Start();
                     AppManager.Instance.Initialize();
 
+                    ScreenRecorder.Properties.Resources.Culture = System.Globalization.CultureInfo.CurrentCulture;
+
                     base.OnStartup(e);
                 }
                 else
                 {
-                    MessageBox.Show("프로그램이 이미 실행 중입니다.", "", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("The program is already running", "", MessageBoxButton.OK, MessageBoxImage.Error);
                     Environment.Exit(-1);
                 }
             }
