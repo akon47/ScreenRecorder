@@ -221,7 +221,8 @@ namespace ScreenRecorder
                                 AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
                                         AppConfig.Instance.SelectedRecordVideoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
                                         AppConfig.Instance.SelectedRecordAudioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
-                                        System.Windows.Forms.Screen.PrimaryScreen.DeviceName);
+                                        System.Windows.Forms.Screen.PrimaryScreen.DeviceName,
+                                        AppConfig.Instance.ScreenCaptureCursorVisible);
                             }
                         }
                     }

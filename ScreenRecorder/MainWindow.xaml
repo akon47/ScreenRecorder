@@ -256,7 +256,7 @@
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <Border Grid.Column="0" Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="Black" Background="#212121" Margin="0,0,0,0">
-                                    <TextBlock Text="{x:Static properties:Resources.EncoderSettings}" Foreground="White" Margin="6,6,6,6"/>
+                                    <TextBlock Text="{x:Static properties:Resources.EncoderSettings}" Foreground="White" Margin="6,6,6,6" VerticalAlignment="Center"/>
                                 </Border>
                                 <Grid Grid.Column="0" Grid.Row="1">
                                     <Border Margin="5" CornerRadius="2" Background="#212121" BorderBrush="Black" BorderThickness="1">
@@ -267,21 +267,34 @@
                                                     <Setter Property="TextAlignment" Value="Right" />
                                                     <Setter Property="Foreground" Value="White" />
                                                 </Style>
+                                                <Style TargetType="{x:Type RowDefinition}">
+                                                    <Setter Property="Height" Value="Auto" />
+                                                    <Style.Triggers>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" Value="AdvancedSettings" />
+                                                                <Condition Binding="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}" Value="False" />
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="Height" Value="0" />
+                                                        </MultiDataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
                                             </Grid.Resources>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
                                             <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition />
+                                                <RowDefinition Tag="AdvancedSettings" /> <!-- Video Codec -->
+                                                <RowDefinition />
+                                                <RowDefinition Tag="AdvancedSettings" /> <!-- Audio Codec -->
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                                <RowDefinition />
                                             </Grid.RowDefinitions>
                                             <TextBlock Grid.Column="0" Grid.Row="0" Text="{x:Static properties:Resources.EncoderFileFormat}" Margin="3" />
                                             <TextBlock Grid.Column="0" Grid.Row="1" Text="{x:Static properties:Resources.EncoderVideoCodec}" Margin="3" />
@@ -291,8 +304,7 @@
                                             <TextBlock Grid.Column="0" Grid.Row="5" Text="{x:Static properties:Resources.EncoderBaseDirectory}" Margin="3" />
 
                                             <ComboBox Grid.Column="1" Grid.Row="0" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderFormats, Mode=OneWay}" SelectedValuePath="Format" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordFormat, Mode=TwoWay}"/>
-
-                                            <ComboBox Grid.Column="1" Grid.Row="1" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderVideoCodecs, Mode=OneWay}" SelectedValuePath="VideoCodec" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoCodec, Mode=TwoWay}"/>
+                                            <ComboBox Grid.Column="1" Grid.Row="1" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderVideoCodecs, Mode=OneWay}" SelectedValuePath="VideoCodec" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoCodec, Mode=TwoWay}" IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}"/>
                                             <ComboBox Grid.Column="1" Grid.Row="2" Margin="3" Name="comboBox_videoBitrate" DisplayMemberPath="Description" SelectedValuePath="Bitrate" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoBitrate, Mode=TwoWay}">
                                                 <ComboBox.Items>
                                                     <local:BitrateItem Bitrate="1000000" />
@@ -310,7 +322,7 @@
                                                     <local:BitrateItem Bitrate="30000000" />
                                                 </ComboBox.Items>
                                             </ComboBox>
-                                            <ComboBox Grid.Column="1" Grid.Row="3" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderAudioCodecs, Mode=OneWay}" SelectedValuePath="AudioCodec" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordAudioCodec, Mode=TwoWay}"/>
+                                            <ComboBox Grid.Column="1" Grid.Row="3" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderAudioCodecs, Mode=OneWay}" SelectedValuePath="AudioCodec" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordAudioCodec, Mode=TwoWay}" IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}"/>
                                             <ComboBox Grid.Column="1" Grid.Row="4" Margin="3" DisplayMemberPath="Description" SelectedValuePath="Bitrate" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordAudioBitrate, Mode=TwoWay}">
                                                 <ComboBox.Items>
                                                     <local:BitrateItem Bitrate="64000" />
@@ -334,6 +346,10 @@
                                                 </TextBox>
                                                 <Button Grid.Column="1" Grid.Row="0" Margin="0,3,3,3" Content="{x:Static properties:Resources.Browse}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=SelectRecordDirectory, Mode=OneWay}"/>
                                             </Grid>
+                                            <StackPanel Grid.Column="0" Grid.Row="6" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <CheckBox Content="{x:Static properties:Resources.CaptureCursor}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureCursorVisible, Mode=TwoWay}" Foreground="White" Margin="5,2,0,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                <CheckBox Content="{x:Static properties:Resources.AdvancedSettings}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=TwoWay}" Foreground="White" Margin="5,2,5,5" HorizontalAlignment="Right" />
+                                            </StackPanel>
                                         </Grid>
                                     </Border>
                                 </Grid>

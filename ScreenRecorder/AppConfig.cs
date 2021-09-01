@@ -64,6 +64,8 @@ namespace ScreenRecorder
                 config.Add(nameof(ScreenCaptureMonitor), ScreenCaptureMonitor);
                 config.Add(nameof(ScreenCaptureCursorVisible), ScreenCaptureCursorVisible.ToString());
 
+                config.Add(nameof(AdvancedSettings), AdvancedSettings.ToString());
+
                 config.Add(nameof(SelectedRecordFormat), SelectedRecordFormat);
                 config.Add(nameof(SelectedRecordVideoCodec), Enum.GetName(typeof(VideoCodec), SelectedRecordVideoCodec));
                 config.Add(nameof(SelectedRecordAudioCodec), Enum.GetName(typeof(AudioCodec), SelectedRecordAudioCodec));
@@ -90,7 +92,9 @@ namespace ScreenRecorder
                 if (config != null)
                 {
                     ScreenCaptureMonitor = Config.Config.GetString(config, nameof(ScreenCaptureMonitor), "");
-                    ScreenCaptureCursorVisible = Config.Config.GetBool(config, nameof(ScreenCaptureCursorVisible), false);
+                    ScreenCaptureCursorVisible = Config.Config.GetBool(config, nameof(ScreenCaptureCursorVisible), true);
+
+                    AdvancedSettings = Config.Config.GetBool(config, nameof(AdvancedSettings), false);
 
                     SelectedRecordFormat = Config.Config.GetString(config, nameof(SelectedRecordFormat), "mp4");
                     SelectedRecordVideoCodec = Config.Config.GetEnum<VideoCodec>(config, nameof(SelectedRecordVideoCodec), VideoCodec.H264);
@@ -119,7 +123,9 @@ namespace ScreenRecorder
             WindowTop = -1.0d;
 
             ScreenCaptureMonitor = "";
-            ScreenCaptureCursorVisible = false;
+            ScreenCaptureCursorVisible = true;
+
+            AdvancedSettings = false;
 
             SelectedRecordFormat = "mp4";
             SelectedRecordVideoCodec = VideoCodec.H264;
@@ -242,6 +248,13 @@ namespace ScreenRecorder
             set => SetProperty(ref screenCaptureCursorVisible, value);
         }
         #endregion
+
+        private bool advancedSettings;
+        public bool AdvancedSettings
+        {
+            get => advancedSettings;
+            set => SetProperty(ref advancedSettings, value);
+        }
 
         #endregion
 
