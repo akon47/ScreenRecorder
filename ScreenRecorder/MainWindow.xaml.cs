@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using ScreenRecorder.Extensions;
 
 namespace ScreenRecorder
 {
@@ -128,6 +129,18 @@ namespace ScreenRecorder
 
             AppConfig.Instance.WindowLeft = this.Left;
             AppConfig.Instance.WindowTop = this.Top;
+        }
+
+        private void Popup_Opened(object sender, EventArgs e)
+        {
+            if(sender is System.Windows.Controls.Primitives.Popup popup)
+            {
+                IntPtr popupWindowHandle = popup.GetPopupWindowHandle();
+                if(popupWindowHandle != IntPtr.Zero)
+                {
+                    Utils.SetWindowDisplayAffinity(popupWindowHandle, true);
+                }
+            }
         }
     }
 }

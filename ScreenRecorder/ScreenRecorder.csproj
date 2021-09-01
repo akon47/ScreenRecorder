@@ -130,6 +130,7 @@
     <Compile Include="Encoder\Encoder.cs" />
     <Compile Include="Encoder\EncoderStatus.cs" />
     <Compile Include="Encoder\ScreenEncoder.cs" />
+    <Compile Include="Extensions\Extensions.cs" />
     <Compile Include="Properties\Resources.ko-KR.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
