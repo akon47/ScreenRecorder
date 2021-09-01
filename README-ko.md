@@ -25,6 +25,9 @@
 - 오디오 코덱은 AAC 를 사용합니다.
 - 프로그램 자기 자신은 녹화 화면에 포함되지 않고 녹화됩니다.
 
+## 📚 레퍼런스
+- [v1.0.4 버전에 대한 소프트피디아 에디터의 리뷰](https://www.softpedia.com/get/Multimedia/Video/Video-Recording/ScreenRecorder-K.shtml)
+
 ## 👨‍💻 빌드
 
 - Visual Studio 2019 or newer
