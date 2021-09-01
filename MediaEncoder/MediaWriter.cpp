@@ -272,12 +272,6 @@ namespace MediaEncoder {
 				{
 					av_opt_set(videoCodecContext->priv_data, "preset", "fast", 0);
 				}
-				else if ((h264_qsv || hevc_qsv) && !forceSoftwareEncoder)
-				{
-					// hmmm.. not have preset options..?? 
-					// https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/qsvenc_h264.c
-					//av_opt_set(videoCodecContext->priv_data, "preset", "veryfast", 0); 
-				}
 				else
 				{
 					av_opt_set(videoCodecContext->priv_data, "preset", "ultrafast", 0);
