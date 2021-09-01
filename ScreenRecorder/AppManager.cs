@@ -92,7 +92,7 @@ namespace ScreenRecorder
             {
                 new EncoderVideoCodec(MediaEncoder.VideoCodec.H264, "H.264"),
                 new EncoderVideoCodec(MediaEncoder.VideoCodec.H265, "H.265 (HEVC)"),
-                new EncoderVideoCodec(MediaEncoder.VideoCodec.Mpeg4, "MPEG-4 part 2 Video"),
+                //new EncoderVideoCodec(MediaEncoder.VideoCodec.Mpeg4, "MPEG-4 part 2 Video"),
             };
             EncoderAudioCodecs = new EncoderAudioCodec[]
             {
@@ -126,6 +126,7 @@ namespace ScreenRecorder
                 return;
 
             screenEncoder?.Dispose();
+            screenEncoder = null;
 
             CompositionTarget.Rendering -= CompositionTarget_Rendering;
 

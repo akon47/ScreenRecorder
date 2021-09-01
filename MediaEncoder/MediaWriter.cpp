@@ -271,7 +271,6 @@ namespace MediaEncoder {
 				if ((h264_nvenc || hevc_nvenc) && !forceSoftwareEncoder)
 				{
 					av_opt_set(videoCodecContext->priv_data, "preset", "fast", 0);
-					av_opt_set_int(videoCodecContext->priv_data, "cbr", true, 0);
 				}
 				else if ((h264_qsv || hevc_qsv) && !forceSoftwareEncoder)
 				{
