@@ -25,6 +25,9 @@ It is a simple recording program with the ability to record the screen.
 - Audio codecs use AAC.
 - The program itself is recorded without being included in the recording screen.
 
+## 📚 References
+- [Softpedia review of v1.0.4](https://www.softpedia.com/get/Multimedia/Video/Video-Recording/ScreenRecorder-K.shtml)
+
 ## 👨‍💻 Build
 
 - Visual Studio 2019 or newer
