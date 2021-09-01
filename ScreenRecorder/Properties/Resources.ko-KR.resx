@@ -117,8 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AdvancedSettings" xml:space="preserve">
+    <value>고급 설정</value>
+  </data>
   <data name="Browse" xml:space="preserve">
     <value>찾아보기</value>
+  </data>
+  <data name="CaptureCursor" xml:space="preserve">
+    <value>커서 캡쳐</value>
   </data>
   <data name="EncoderAudioBitrate" xml:space="preserve">
     <value>오디오 비트레이트</value>
@@ -158,5 +164,14 @@
   </data>
   <data name="OpenFolderInFileExplorer" xml:space="preserve">
     <value>파일 탐색기에서 폴더 열기</value>
+  </data>
+  <data name="RecordingPathDoesNotExist" xml:space="preserve">
+    <value>녹화 경로가 존재하지 않습니다</value>
+  </data>
+  <data name="SetsTheRecordingPath" xml:space="preserve">
+    <value>녹화 경로를 설정합니다</value>
+  </data>
+  <data name="TheRecordingPathIsNotSet" xml:space="preserve">
+    <value>녹화 경로가 설정되어 있지 않습니다. 녹화 경로를 설정해주세요</value>
   </data>
 </root>
