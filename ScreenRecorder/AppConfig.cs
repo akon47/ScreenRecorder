@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using MediaEncoder;
 using ScreenRecorder.Config;
 
 namespace ScreenRecorder
@@ -62,7 +64,12 @@ namespace ScreenRecorder
                 config.Add(nameof(ScreenCaptureMonitor), ScreenCaptureMonitor);
                 config.Add(nameof(ScreenCaptureCursorVisible), ScreenCaptureCursorVisible.ToString());
 
+                config.Add(nameof(AdvancedSettings), AdvancedSettings.ToString());
+
                 config.Add(nameof(SelectedRecordFormat), SelectedRecordFormat);
+                config.Add(nameof(SelectedRecordVideoCodec), Enum.GetName(typeof(VideoCodec), SelectedRecordVideoCodec));
+                config.Add(nameof(SelectedRecordAudioCodec), Enum.GetName(typeof(AudioCodec), SelectedRecordAudioCodec));
+
                 config.Add(nameof(SelectedRecordVideoBitrate), SelectedRecordVideoBitrate.ToString());
                 config.Add(nameof(SelectedRecordAudioBitrate), SelectedRecordAudioBitrate.ToString());
                 config.Add(nameof(RecordDirectory), RecordDirectory);
@@ -85,9 +92,13 @@ namespace ScreenRecorder
                 if (config != null)
                 {
                     ScreenCaptureMonitor = Config.Config.GetString(config, nameof(ScreenCaptureMonitor), "");
-                    ScreenCaptureCursorVisible = Config.Config.GetBool(config, nameof(ScreenCaptureCursorVisible), false);
+                    ScreenCaptureCursorVisible = Config.Config.GetBool(config, nameof(ScreenCaptureCursorVisible), true);
+
+                    AdvancedSettings = Config.Config.GetBool(config, nameof(AdvancedSettings), false);
 
                     SelectedRecordFormat = Config.Config.GetString(config, nameof(SelectedRecordFormat), "mp4");
+                    SelectedRecordVideoCodec = Config.Config.GetEnum<VideoCodec>(config, nameof(SelectedRecordVideoCodec), VideoCodec.H264);
+                    SelectedRecordAudioCodec = Config.Config.GetEnum<AudioCodec>(config, nameof(SelectedRecordAudioCodec), AudioCodec.Aac);
                     SelectedRecordVideoBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordVideoBitrate), 5000000);
                     SelectedRecordAudioBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordAudioBitrate), 160000);
                     RecordDirectory = Config.Config.GetString(config, nameof(RecordDirectory), Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
@@ -112,9 +123,13 @@ namespace ScreenRecorder
             WindowTop = -1.0d;
 
             ScreenCaptureMonitor = "";
-            ScreenCaptureCursorVisible = false;
+            ScreenCaptureCursorVisible = true;
+
+            AdvancedSettings = false;
 
             SelectedRecordFormat = "mp4";
+            SelectedRecordVideoCodec = VideoCodec.H264;
+            SelectedRecordAudioCodec = AudioCodec.Aac;
             SelectedRecordVideoBitrate = 5000000;
             SelectedRecordAudioBitrate = 160000;
             RecordDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
@@ -128,6 +143,16 @@ namespace ScreenRecorder
                 if(string.IsNullOrWhiteSpace(SelectedRecordFormat))
                 {
                     SelectedRecordFormat = "mp4";
+                }
+
+                if(!AppManager.Instance.EncoderVideoCodecs?.Select(x => x.VideoCodec).Contains(SelectedRecordVideoCodec) ?? false)
+                {
+                    SelectedRecordVideoCodec = VideoCodec.H264;
+                }
+
+                if (!AppManager.Instance.EncoderAudioCodecs?.Select(x => x.AudioCodec).Contains(SelectedRecordAudioCodec) ?? false)
+                {
+                    SelectedRecordAudioCodec = AudioCodec.Aac;
                 }
             }
         }
@@ -172,6 +197,20 @@ namespace ScreenRecorder
             set => SetProperty(ref selectedRecordFormat, value);
         }
 
+        private VideoCodec selectedRecordVideoCodec;
+        public VideoCodec SelectedRecordVideoCodec
+        {
+            get => selectedRecordVideoCodec;
+            set => SetProperty(ref selectedRecordVideoCodec, value);
+        }
+
+        private AudioCodec selectedRecordAudioCodec;
+        public AudioCodec SelectedRecordAudioCodec
+        {
+            get => selectedRecordAudioCodec;
+            set => SetProperty(ref selectedRecordAudioCodec, value);
+        }
+
         private int selectedRecordVideoBitrate;
         public int SelectedRecordVideoBitrate
         {
@@ -209,6 +248,13 @@ namespace ScreenRecorder
             set => SetProperty(ref screenCaptureCursorVisible, value);
         }
         #endregion
+
+        private bool advancedSettings;
+        public bool AdvancedSettings
+        {
+            get => advancedSettings;
+            set => SetProperty(ref advancedSettings, value);
+        }
 
         #endregion
 

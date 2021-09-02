@@ -11,7 +11,7 @@ namespace ScreenRecorder
 {
     public sealed class AppCommands : IConfig, IConfigFile, IDisposable
     {
-        #region 생성자
+        #region Constructor
         private static volatile AppCommands instance;
         private static object syncRoot = new object();
         public static AppCommands Instance
@@ -198,9 +198,9 @@ namespace ScreenRecorder
                         if (!System.IO.Directory.Exists(AppConfig.Instance.RecordDirectory))
                         {
                             if (string.IsNullOrWhiteSpace(AppConfig.Instance.RecordDirectory))
-                                MessageBox.Show("녹화 경로가 설정되어 있지 않습니다. 녹화 경로를 설정해주세요", "녹화", MessageBoxButton.OK, MessageBoxImage.Error);
+                                MessageBox.Show(ScreenRecorder.Properties.Resources.TheRecordingPathIsNotSet, ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer, MessageBoxButton.OK, MessageBoxImage.Error);
                             else
-                                MessageBox.Show("녹화 경로가 존재하지 않습니다. 녹화 경로를 확인해주세요", "녹화", MessageBoxButton.OK, MessageBoxImage.Error);
+                                MessageBox.Show(ScreenRecorder.Properties.Resources.RecordingPathDoesNotExist, ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer, MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                         else
                         {
@@ -219,9 +219,10 @@ namespace ScreenRecorder
                             if (!System.IO.File.Exists(filePath))
                             {
                                 AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
-                                        MediaEncoder.VideoCodec.H264, AppConfig.Instance.SelectedRecordVideoBitrate,
-                                        MediaEncoder.AudioCodec.Aac, AppConfig.Instance.SelectedRecordAudioBitrate,
-                                        System.Windows.Forms.Screen.PrimaryScreen.DeviceName);
+                                        AppConfig.Instance.SelectedRecordVideoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
+                                        AppConfig.Instance.SelectedRecordAudioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
+                                        System.Windows.Forms.Screen.PrimaryScreen.DeviceName,
+                                        AppConfig.Instance.ScreenCaptureCursorVisible);
                             }
                         }
                     }
@@ -254,7 +255,7 @@ namespace ScreenRecorder
             (selectRecordDirectory = new DelegateCommand(o =>
             {
                 System.Windows.Forms.FolderBrowserDialog folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-                folderBrowserDialog.Description = "녹화 경로를 지정합니다";
+                folderBrowserDialog.Description = ScreenRecorder.Properties.Resources.SetsTheRecordingPath;
                 folderBrowserDialog.SelectedPath = AppConfig.Instance.RecordDirectory;
                 if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
@@ -273,10 +274,11 @@ namespace ScreenRecorder
                     }
                     else
                     {
+                        
                         if (string.IsNullOrWhiteSpace(AppConfig.Instance.RecordDirectory))
-                            MessageBox.Show("녹화 경로가 설정되어 있지 않습니다. 녹화 경로를 설정해주세요", "녹화 폴더 열기", MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBox.Show(ScreenRecorder.Properties.Resources.TheRecordingPathIsNotSet, ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer, MessageBoxButton.OK, MessageBoxImage.Error);
                         else
-                            MessageBox.Show("녹화 경로가 존재하지 않습니다. 녹화 경로를 확인해주세요", "녹화 폴더 열기", MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBox.Show(ScreenRecorder.Properties.Resources.RecordingPathDoesNotExist, ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer, MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch { }

@@ -117,11 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AdvancedSettings" xml:space="preserve">
+    <value>Advanced Settings</value>
+  </data>
   <data name="Browse" xml:space="preserve">
     <value>Browse</value>
   </data>
+  <data name="CaptureCursor" xml:space="preserve">
+    <value>Capture Cursor</value>
+  </data>
   <data name="EncoderAudioBitrate" xml:space="preserve">
     <value>Audio Bitrate</value>
+  </data>
+  <data name="EncoderAudioCodec" xml:space="preserve">
+    <value>Audio Codec</value>
   </data>
   <data name="EncoderBaseDirectory" xml:space="preserve">
     <value>Recording Path</value>
@@ -144,6 +153,9 @@
   <data name="EncoderVideoBitrate" xml:space="preserve">
     <value>Video Bitrate</value>
   </data>
+  <data name="EncoderVideoCodec" xml:space="preserve">
+    <value>Video Codec</value>
+  </data>
   <data name="Exit" xml:space="preserve">
     <value>Exit</value>
   </data>
@@ -152,5 +164,14 @@
   </data>
   <data name="OpenFolderInFileExplorer" xml:space="preserve">
     <value>Open a folder in File Explorer</value>
+  </data>
+  <data name="RecordingPathDoesNotExist" xml:space="preserve">
+    <value>Recording path does not exist</value>
+  </data>
+  <data name="SetsTheRecordingPath" xml:space="preserve">
+    <value>Sets the recording path</value>
+  </data>
+  <data name="TheRecordingPathIsNotSet" xml:space="preserve">
+    <value>The recording path is not set. Please set the recording path</value>
   </data>
 </root>

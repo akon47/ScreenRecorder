@@ -60,6 +60,19 @@ namespace ScreenRecorder
             private set => SetProperty(ref encoderFormats, value);
         }
 
+        private EncoderVideoCodec[] encoderVideoCodecs;
+        public EncoderVideoCodec[] EncoderVideoCodecs
+        {
+            get => encoderVideoCodecs;
+            private set => SetProperty(ref encoderVideoCodecs, value);
+        }
+
+        private EncoderAudioCodec[] encoderAudioCodecs;
+        public EncoderAudioCodec[] EncoderAudioCodecs
+        {
+            get => encoderAudioCodecs;
+            private set => SetProperty(ref encoderAudioCodecs, value);
+        }
 
         public void Initialize()
         {
@@ -74,6 +87,17 @@ namespace ScreenRecorder
                 EncoderFormat.CreateEncoderFormatByFormatString("matroska"),
                 EncoderFormat.CreateEncoderFormatByFormatString("mpegts"),
                 EncoderFormat.CreateEncoderFormatByFormatString("mov"),
+            };
+            EncoderVideoCodecs = new EncoderVideoCodec[]
+            {
+                new EncoderVideoCodec(MediaEncoder.VideoCodec.H264, "H.264"),
+                new EncoderVideoCodec(MediaEncoder.VideoCodec.H265, "H.265 (HEVC)"),
+                //new EncoderVideoCodec(MediaEncoder.VideoCodec.Mpeg4, "MPEG-4 part 2 Video"),
+            };
+            EncoderAudioCodecs = new EncoderAudioCodec[]
+            {
+                new EncoderAudioCodec(MediaEncoder.AudioCodec.Aac, "AAC (Advanced Audio Coding)"),
+                new EncoderAudioCodec(MediaEncoder.AudioCodec.Mp3, "MP3 (MPEG audio layer 3)"),
             };
 
             CheckHardwareCodec();
@@ -102,6 +126,7 @@ namespace ScreenRecorder
                 return;
 
             screenEncoder?.Dispose();
+            screenEncoder = null;
 
             CompositionTarget.Rendering -= CompositionTarget_Rendering;
 

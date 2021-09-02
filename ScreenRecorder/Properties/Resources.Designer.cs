@@ -61,6 +61,15 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
+        ///   Advanced Settings과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string AdvancedSettings {
+            get {
+                return ResourceManager.GetString("AdvancedSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Browse과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string Browse {
@@ -70,11 +79,29 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
+        ///   Capture Cursor과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string CaptureCursor {
+            get {
+                return ResourceManager.GetString("CaptureCursor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Audio Bitrate과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string EncoderAudioBitrate {
             get {
                 return ResourceManager.GetString("EncoderAudioBitrate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Audio Codec과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderAudioCodec {
+            get {
+                return ResourceManager.GetString("EncoderAudioCodec", resourceCulture);
             }
         }
         
@@ -142,6 +169,15 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
+        ///   Video Codec과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderVideoCodec {
+            get {
+                return ResourceManager.GetString("EncoderVideoCodec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Exit과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string Exit {
@@ -165,6 +201,33 @@ namespace ScreenRecorder.Properties {
         public static string OpenFolderInFileExplorer {
             get {
                 return ResourceManager.GetString("OpenFolderInFileExplorer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recording path does not exist과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string RecordingPathDoesNotExist {
+            get {
+                return ResourceManager.GetString("RecordingPathDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sets the recording path과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string SetsTheRecordingPath {
+            get {
+                return ResourceManager.GetString("SetsTheRecordingPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   The recording path is not set. Please set the recording path과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string TheRecordingPathIsNotSet {
+            get {
+                return ResourceManager.GetString("TheRecordingPathIsNotSet", resourceCulture);
             }
         }
     }

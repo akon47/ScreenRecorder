@@ -187,17 +187,32 @@ namespace MediaEncoder {
 			AVCodecContext* videoCodecContext;
 			AVCodecID videoCodecId = m_videoCodec == AVCodecID::AV_CODEC_ID_PROBE && formatContext->oformat != nullptr ? formatContext->oformat->video_codec : m_videoCodec;
 			const AVCodec* videoCodec = nullptr;
-			if (videoCodecId == AVCodecID::AV_CODEC_ID_H264 && !forceSoftwareEncoder)
+			if (!forceSoftwareEncoder)
 			{
-				if (h264_nvenc)
+				if (videoCodecId == AVCodecID::AV_CODEC_ID_H264)
 				{
-					videoCodec = avcodec_find_encoder_by_name("h264_nvenc");
+					if (h264_nvenc)
+					{
+						videoCodec = avcodec_find_encoder_by_name("h264_nvenc");
+					}
+					else if (h264_qsv)
+					{
+						videoCodec = avcodec_find_encoder_by_name("h264_qsv");
+					}
 				}
-				else if (h264_qsv)
+				else if (videoCodecId == AVCodecID::AV_CODEC_ID_H265)
 				{
-					videoCodec = avcodec_find_encoder_by_name("h264_qsv");
+					if (hevc_nvenc)
+					{
+						videoCodec = avcodec_find_encoder_by_name("hevc_nvenc");
+					}
+					else if (hevc_qsv)
+					{
+						videoCodec = avcodec_find_encoder_by_name("hevc_qsv");
+					}
 				}
 			}
+
 			if (!videoCodec)
 				videoCodec = avcodec_find_encoder(videoCodecId);
 
@@ -210,13 +225,13 @@ namespace MediaEncoder {
 				videoCodecContext->pix_fmt = videoCodec->pix_fmts[0];
 
 				AVPixelFormat targetPixelFormat = AV_PIX_FMT_YUV420P;
-				if (videoCodecId == AVCodecID::AV_CODEC_ID_H264 && !forceSoftwareEncoder)
+				if ((videoCodecId == AVCodecID::AV_CODEC_ID_H264 || videoCodecId == AVCodecID::AV_CODEC_ID_H265) && !forceSoftwareEncoder)
 				{
-					if (h264_nvenc)
+					if (h264_nvenc || hevc_nvenc)
 					{
 						targetPixelFormat = AV_PIX_FMT_D3D11;
 					}
-					else if (h264_qsv)
+					else if (h264_qsv || hevc_qsv)
 					{
 						//targetPixelFormat = AV_PIX_FMT_QSV;
 						targetPixelFormat = AV_PIX_FMT_NV12;
@@ -264,20 +279,9 @@ namespace MediaEncoder {
 			videoCodecContext->framerate = av_make_q(m_videoNumerator, m_videoDenominator);
 
 			videoCodecContext->bit_rate = m_videoBitrate > 0 ? m_videoBitrate : 10000000;
-			if (videoCodec->id == AVCodecID::AV_CODEC_ID_H264)
+			if (videoCodec->id == AVCodecID::AV_CODEC_ID_H264 || videoCodec->id == AVCodecID::AV_CODEC_ID_H265)
 			{
-				videoCodecContext->gop_size = (m_videoNumerator / m_videoDenominator) * 3;
-				videoCodecContext->max_b_frames = 2;
-				if (h264_nvenc && !forceSoftwareEncoder)
-				{
-					av_opt_set(videoCodecContext->priv_data, "preset", "fast", 0);
-					av_opt_set_int(videoCodecContext->priv_data, "cbr", true, 0);
-				}
-				else if (h264_qsv && !forceSoftwareEncoder)
-				{
-					av_opt_set(videoCodecContext->priv_data, "preset", "veryfast", 0);
-				}
-				else
+				if (strncmp(videoCodec->name, "libx", 4) == 0)
 				{
 					av_opt_set(videoCodecContext->priv_data, "preset", "ultrafast", 0);
 				}
@@ -316,7 +320,7 @@ namespace MediaEncoder {
 		int targetSamplerate = 48000;
 		if (url->Contains(gcnew String("rtmp://")))
 		{
-			targetSamplerate = 44100;
+			targetSamplerate = 44100; // for youtube recommended
 		}
 
 		// Create Audio Codec
@@ -362,14 +366,6 @@ namespace MediaEncoder {
 			m_audioCodecName = gcnew String(m_data->AudioCodecContext->codec->name);
 		}
 		//
-
-		if (strcmp(nativeFormat, "hls") == 0)
-		{
-			av_opt_set_int(m_data->FormatContext->priv_data, "hls_list_size", 5, 0);
-			av_opt_set_int(m_data->FormatContext->priv_data, "hls_allow_cache", 0, 0);
-			av_opt_set(m_data->FormatContext->priv_data, "hls_flags", "delete_segments", 0);
-			//av_opt_set_int(m_data->FormatContext->priv_data, "hls_time", 1, 0);
-		}
 
 		if (!(m_data->FormatContext->oformat->flags & AVFMT_NOFILE)) {
 			if (avio_open(&m_data->FormatContext->pb, nativeUrl, AVIO_FLAG_WRITE) < 0)
