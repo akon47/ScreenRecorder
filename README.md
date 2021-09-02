@@ -11,19 +11,25 @@
 
 It is a simple recording program with the ability to record the screen.
 
-![1en](https://user-images.githubusercontent.com/49547202/131332758-eb6be1f4-bfcb-4908-8946-b35f72aacf80.png)
+### Default Settings
+![screenshot1_en](https://user-images.githubusercontent.com/49547202/131763726-8a209e6d-cbfe-40de-9043-efc6f75f07fb.png)
 
-![2en](https://user-images.githubusercontent.com/49547202/131332762-6ce4da52-529a-401e-a6f3-38dee1a5be79.png)
+
+### Advanced Settings
+![screenshot2_en](https://user-images.githubusercontent.com/49547202/131763728-518d0632-b00a-4ecd-8850-5f3b024e48a8.png)
 
 ## 📃 Usage
 - Pressing the round button starts recording and stops when pressing the square button.
 - Pressing the Cogwheel button in the lower right corner displays a pop-up menu for recording settings.
 
 ## 🎨 Features
-- The video codec uses H.264.
+- By default, the video codec uses H.264.
   - If your computer supports hardware codecs for NVENC or QuickSync, use them first.
-- Audio codecs use AAC.
+  - If necessary, the H.265 codec can also be selected from the Advanced Settings menu. (If hardware encoding is not supported, very high CPU load can occur)
+- By default, the audio codec uses AAC.
+  - MP3 codecs can also be selected from the Advanced Settings menu if necessary.
 - The program itself is recorded without being included in the recording screen.
+- Cursor capture settings allow you to set whether the mouse cursor is captured or not.
 
 ## 📚 References
 - [Softpedia review of v1.0.4](https://www.softpedia.com/get/Multimedia/Video/Video-Recording/ScreenRecorder-K.shtml)
