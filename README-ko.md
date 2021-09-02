@@ -11,19 +11,24 @@
 
 컴퓨터 화면과 기본 오디오 재생 장치의 오디오를 녹화하는 기능을 가진 녹화 프로그램 입니다.   
 
-![1ko](https://user-images.githubusercontent.com/49547202/129135093-31221542-a415-46c7-93d5-3570e9395c13.png)
+### 기본 설정
+![screenshot1_ko](https://user-images.githubusercontent.com/49547202/131764241-29e60789-027e-4bd6-b14b-84ef597804d9.png)
 
-![2ko](https://user-images.githubusercontent.com/49547202/129135197-1e0da708-8248-4ec4-a571-eee3987ad23f.png)
+### 고급 설정
+![screenshot2_ko](https://user-images.githubusercontent.com/49547202/131763723-a045d042-6c39-48b8-beae-483429b18d22.png)
 
 ## 📃 사용법
 - 동그란 버튼을 누르면 녹화가 시작되고 사각형 버튼을 누르면 정지됩니다.
 - 우측 하단의 톱니바퀴 버튼을 누르면 녹화 설정에 대한 팝업메뉴가 표시됩니다.
 
 ## 🎨 특징
-- 비디오 코덱은 H.264 를 사용합니다.
+- 기본적으로 비디오 코덱은 H.264 를 사용합니다.
   - 사용자의 컴퓨터에서 NVENC나 QuickSync 의 하드웨어 코덱을 지원한다면 해당 코덱을 우선적으로 사용합니다.
-- 오디오 코덱은 AAC 를 사용합니다.
+  - 필요한 경우 고급 설정 메뉴에서 H.265 코덱도 선택이 가능합니다. (하드웨어 인코딩이 지원 안 되는 경우 매우 높은 CPU 로드가 발생할 수 있습니다)
+- 기본적으로 오디오 코덱은 AAC 를 사용합니다.
+  - 필요한 경우 고급 설정 메뉴에서 MP3 코덱도 선택이 가능합니다.
 - 프로그램 자기 자신은 녹화 화면에 포함되지 않고 녹화됩니다.
+- 커서 캡쳐 설정을 이용하여 마우스 커서의 캡쳐 여부를 설정할 수 있습니다.
 
 ## 📚 레퍼런스
 - [v1.0.4 버전에 대한 소프트피디아 에디터의 리뷰](https://www.softpedia.com/get/Multimedia/Video/Video-Recording/ScreenRecorder-K.shtml)
