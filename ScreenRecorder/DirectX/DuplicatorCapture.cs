@@ -424,29 +424,22 @@ namespace ScreenRecorder.DirectX
                                 }
 
                                 nv12Converter.Convert(renderTargetTexture, nv12Texture);
-                                context.CopyResource(nv12Texture, readableNv12Texture);
-                                DataBox mapSource = context.MapSubresource(readableNv12Texture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None, out DataStream stream);
-                                width = readableNv12Texture.Description.Width;
-                                height = readableNv12Texture.Description.Height;
-                                stride = mapSource.RowPitch;
-                                dataPointer = this.dataPointer;
-                                pixelFormat = MediaEncoder.PixelFormat.NV12;
-                                stream.Read(this.dataPointer, 0, mapSource.SlicePitch);
-                                context.UnmapSubresource(readableNv12Texture, 0);
                             }
                             else
                             {
                                 nv12Converter.Convert(displayTexture2D, nv12Texture);
-                                context.CopyResource(nv12Texture, readableNv12Texture);
-                                DataBox mapSource = context.MapSubresource(readableNv12Texture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None, out DataStream stream);
-                                width = readableNv12Texture.Description.Width;
-                                height = readableNv12Texture.Description.Height;
-                                stride = mapSource.RowPitch;
-                                dataPointer = this.dataPointer;
-                                pixelFormat = MediaEncoder.PixelFormat.NV12;
-                                stream.Read(this.dataPointer, 0, mapSource.SlicePitch);
-                                context.UnmapSubresource(readableNv12Texture, 0);
                             }
+
+                            context.CopyResource(nv12Texture, readableNv12Texture);
+                            DataBox mapSource = context.MapSubresource(readableNv12Texture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None, out DataStream stream);
+                            width = readableNv12Texture.Description.Width;
+                            height = readableNv12Texture.Description.Height;
+                            stride = mapSource.RowPitch;
+                            dataPointer = this.dataPointer;
+                            pixelFormat = MediaEncoder.PixelFormat.NV12;
+                            stream.Read(this.dataPointer, 0, mapSource.SlicePitch);
+                            context.UnmapSubresource(readableNv12Texture, 0);
+
                             return true;
                         }
                     }
