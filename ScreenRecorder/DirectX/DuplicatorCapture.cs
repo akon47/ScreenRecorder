@@ -109,6 +109,7 @@ namespace ScreenRecorder.DirectX
         private SharpDX.Direct3D11.Buffer verticesBuffer;
         private VertexBufferBinding vertextBufferBinding;
         private ColorShader colorShader;
+        private CursorShader cursorShader;
         private IntPtr dataPointer;
 
         private bool drawCursor;
@@ -227,8 +228,15 @@ namespace ScreenRecorder.DirectX
 
                                 context.Rasterizer.SetViewport(new Viewport(0, 0, screenWidth, screenHeight, 0.0f, 1.0f));
 
+
                                 colorShader = new ColorShader();
                                 colorShader.Initialize(device);
+
+                                if (drawCursor)
+                                {
+                                    cursorShader = new CursorShader();
+                                    cursorShader.Initialize(device);
+                                }
 
                                 verticesBuffer = new SharpDX.Direct3D11.Buffer(device, (Vector3.SizeInBytes + Vector2.SizeInBytes) * 6,
                                     ResourceUsage.Dynamic, BindFlags.VertexBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
@@ -419,8 +427,9 @@ namespace ScreenRecorder.DirectX
                                             }
                                         }
                                     }
+
                                     cursorTexture.Render(context, pointerInfo.Position.X, pointerInfo.Position.Y, (int)(pointerInfo.ShapeInfo.Width * destScaleFactor.Width), (int)(pointerInfo.ShapeInfo.Height * destScaleFactor.Height));
-                                    colorShader.Render(context, cursorTexture.GetTexture());
+                                    cursorShader.Render(context, cursorTexture.GetTexture(), (OutputDuplicatePointerShapeType)pointerInfo.ShapeInfo.Type);
                                 }
 
                                 nv12Converter.Convert(renderTargetTexture, nv12Texture);
@@ -488,8 +497,14 @@ namespace ScreenRecorder.DirectX
                 readableRenderTargetTexture = null;
             }
 
+            colorShader?.Dispose();
+            colorShader = null;
+
             cursorTexture?.Dispose();
             cursorTexture = null;
+
+            cursorShader?.Dispose();
+            cursorShader = null;
 
             if (!renderTargetView?.IsDisposed ?? false)
             {
