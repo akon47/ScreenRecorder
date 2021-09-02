@@ -260,8 +260,6 @@ namespace ScreenRecorder.DirectX.Texture
 
         public void SetTexture(IntPtr srcScan0, int srcStride, int srcHeight)
         {
-            byte[] test = new byte[srcStride * srcHeight];
-            Marshal.Copy(srcScan0, test, 0, test.Length);
             if (srcScan0 != IntPtr.Zero)
             {
                 using (Surface surface = bitmapTexture.QueryInterface<Surface>())
