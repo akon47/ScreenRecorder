@@ -28,33 +28,14 @@ namespace MediaEncoder {
             }
         }
     public:
-        AudioFrame(int sampleRate, int channels, SampleFormat sampleFormat, int samples) : m_disposed(false)
-        {
-            m_avFrame = av_frame_alloc();
-            m_avFrame->format = (int)sampleFormat;
-            m_avFrame->channel_layout = av_get_default_channel_layout(channels);
-            m_avFrame->sample_rate = sampleRate;
-            m_avFrame->nb_samples = samples;
-            av_frame_get_buffer(m_avFrame, 0);
-
-        }
+        AudioFrame(int sampleRate, int channels, SampleFormat sampleFormat, int samples);
         ~AudioFrame()
         {
             this->!AudioFrame();
             m_disposed = true;
         }
-        void FillData(IntPtr src)
-        {
-            CheckIfDisposed();
-            int bufferSize = av_samples_get_buffer_size(m_avFrame->linesize, m_avFrame->channels, m_avFrame->nb_samples, (AVSampleFormat)m_avFrame->format, 0);
-            memcpy(m_avFrame->data[0], src.ToPointer(), bufferSize);
-        }
-        void ClearData()
-        {
-            CheckIfDisposed();
-            int bufferSize = av_samples_get_buffer_size(m_avFrame->linesize, m_avFrame->channels, m_avFrame->nb_samples, (AVSampleFormat)m_avFrame->format, 0);
-            memset(m_avFrame->data[0], 0, bufferSize);
-        }
+        void FillFrame(IntPtr src);
+        void ClearFrame();
     public:
         property IntPtr NativePointer
         {

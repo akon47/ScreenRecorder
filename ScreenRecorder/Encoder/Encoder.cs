@@ -117,14 +117,14 @@ namespace ScreenRecorder.Encoder
                                 srcAudioCircularBuffer.Read(audioBuffer, (samples * 4));
 
                                 AudioFrame audioFrame = new AudioFrame(48000, 2, SampleFormat.S16, samples);
-                                audioFrame.FillData(audioBuffer);
+                                audioFrame.FillFrame(audioBuffer);
 
                                 audioFrameQueue.Enqueue(audioFrame);
                             }
                             else
                             {
                                 AudioFrame audioFrame = new AudioFrame(48000, 2, SampleFormat.S16, samples);
-                                audioFrame.ClearData();
+                                audioFrame.ClearFrame();
                                 audioFrameQueue.Enqueue(audioFrame);
                             }
                         }
@@ -226,11 +226,11 @@ namespace ScreenRecorder.Encoder
                     VideoFrame videoFrame = new VideoFrame(eventArgs.Width, eventArgs.Height, eventArgs.PixelFormat);
                     if (eventArgs.PixelFormat == PixelFormat.NV12)
                     {
-                        videoFrame.FillData(new IntPtr[] { eventArgs.DataPointer, eventArgs.DataPointer + (eventArgs.Stride * eventArgs.Height) }, new int[] { eventArgs.Stride, eventArgs.Stride, eventArgs.Stride, eventArgs.Stride, eventArgs.Stride, eventArgs.Stride, eventArgs.Stride, eventArgs.Stride });
+                        videoFrame.FillFrame(new IntPtr[] { eventArgs.DataPointer, eventArgs.DataPointer + (eventArgs.Stride * eventArgs.Height) }, new int[] { eventArgs.Stride, eventArgs.Stride, eventArgs.Stride, eventArgs.Stride, eventArgs.Stride, eventArgs.Stride, eventArgs.Stride, eventArgs.Stride });
                     }
                     else
                     {
-                        videoFrame.FillData(eventArgs.DataPointer, eventArgs.Stride);
+                        videoFrame.FillFrame(eventArgs.DataPointer, eventArgs.Stride);
                     }
                     srcVideoFrameQueue.Enqueue(videoFrame);
                 }
