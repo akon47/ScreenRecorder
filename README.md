@@ -16,7 +16,7 @@ It is a simple recording program with the ability to record the screen.
 
 
 ### Advanced Settings
-![screenshot2_en](https://user-images.githubusercontent.com/49547202/131763728-518d0632-b00a-4ecd-8850-5f3b024e48a8.png)
+![screenshot2_en](https://user-images.githubusercontent.com/49547202/131944482-16ca371c-6542-4a70-b721-e2fc447ec096.png)
 
 ## 📃 Usage
 - Pressing the round button starts recording and stops when pressing the square button.
