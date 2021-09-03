@@ -7,6 +7,9 @@ using ScreenRecorder.VideoSource;
 
 namespace ScreenRecorder.Encoder
 {
+    /// <summary>
+    /// Encoder for PC screen recording
+    /// </summary>
     public class ScreenEncoder : Encoder
     {
         private ScreenVideoSource screenVideoSource;

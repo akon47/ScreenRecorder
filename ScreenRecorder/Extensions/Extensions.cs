@@ -8,6 +8,11 @@ namespace ScreenRecorder.Extensions
 {
     public static class PopupExtension
     {
+        /// <summary>
+        /// Obtain the handle of the window used by the pop-up control
+        /// It is recommended for use in the OnOpen Event Handler. The handle value changes each time the corresponding event is called.
+        /// </summary>
+        /// <returns>popup window handle</returns>
         public static IntPtr GetPopupWindowHandle(this System.Windows.Controls.Primitives.Popup popup)
         {
             /// There is no way to get the handle of the pop-up window in the usual way, so it is obtained by reflection.

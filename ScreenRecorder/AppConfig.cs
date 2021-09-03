@@ -74,8 +74,6 @@ namespace ScreenRecorder
                 config.Add(nameof(SelectedRecordAudioBitrate), SelectedRecordAudioBitrate.ToString());
                 config.Add(nameof(RecordDirectory), RecordDirectory);
 
-                config.Add(nameof(WindowWidth), WindowWidth.ToString());
-                config.Add(nameof(WindowHeight), WindowHeight.ToString());
                 config.Add(nameof(WindowLeft), WindowLeft.ToString());
                 config.Add(nameof(WindowTop), WindowTop.ToString());
 
@@ -103,8 +101,6 @@ namespace ScreenRecorder
                     SelectedRecordAudioBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordAudioBitrate), 160000);
                     RecordDirectory = Config.Config.GetString(config, nameof(RecordDirectory), Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
 
-                    WindowWidth = Config.Config.GetDouble(config, nameof(WindowWidth), -1.0d);
-                    WindowHeight = Config.Config.GetDouble(config, nameof(WindowHeight), -1.0d);
                     WindowLeft = Config.Config.GetDouble(config, nameof(WindowLeft), -1.0d);
                     WindowTop = Config.Config.GetDouble(config, nameof(WindowTop), -1.0d);
                 }
@@ -117,8 +113,6 @@ namespace ScreenRecorder
 
         public void SetDefault()
         {
-            WindowWidth = -1.0d;
-            WindowHeight = -1.0d;
             WindowLeft = -1.0d;
             WindowTop = -1.0d;
 
@@ -160,20 +154,6 @@ namespace ScreenRecorder
         #region Property
 
         #region Window
-        private double windowWidth;
-        public double WindowWidth
-        {
-            get => windowWidth;
-            set => SetProperty(ref windowWidth, value);
-        }
-
-        private double windowHeight;
-        public double WindowHeight
-        {
-            get => windowHeight;
-            set => SetProperty(ref windowHeight, value);
-        }
-
         private double windowLeft;
         public double WindowLeft
         {

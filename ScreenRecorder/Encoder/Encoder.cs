@@ -82,8 +82,8 @@ namespace ScreenRecorder.Encoder
             {
                 int samples = (int)(48000.0d / AppConstants.Framerate);
 
-                // 최소 sample수가 1600이 되도록 유지해줌. (Aac 코덱에서 최소 샘플수가 1024 이므로 이것보다 적게 인코더에 넣으면 문제 발생)
-                // 해당 인코더에서 처리하려 했으나, 그냥 샘플을 공급할때 많이 주는게 구현에 더 용이하여 이렇게 함
+                // Keep the minimum number of samples at 1600 (Aac codec has a minimum number of samples, so less than this will cause problems)
+                // I tried to process it on the encoder, but it's easier to implement if I just supply a lot of samples.
                 int skipFrames = (int)(Math.Ceiling(1600.0d / samples) - 1);
                 samples *= (skipFrames + 1);
 
@@ -98,6 +98,8 @@ namespace ScreenRecorder.Encoder
                             if (!(enableEvent?.WaitOne(0, false) ?? true))
                                 continue;
 
+                            /// Frames can stack if the PC momentarily slows down and the encoding speed drops below x1.
+                            /// This will cause the recorded image to be disconnected, so it is specified that it can be buffered up to 300 frames.
                             if (audioFrameQueue.Count > 300)
                             {
                                 continue;
@@ -146,6 +148,8 @@ namespace ScreenRecorder.Encoder
                             if (!(enableEvent?.WaitOne(0, false) ?? true))
                                 continue;
 
+                            /// Frames can stack if the PC momentarily slows down and the encoding speed drops below x1.
+                            /// This will cause the recorded image to be disconnected, so it is specified that it can be buffered up to 300 frames.
                             if (videoFrameQueue.Count > 300) // max buffer
                             {
                                 continue;
@@ -250,7 +254,6 @@ namespace ScreenRecorder.Encoder
                         2, SampleFormat.S16, 48000, eventArgs.DataPointer, eventArgs.Samples, out IntPtr destData, out int destSamples);
 
                     srcAudioCircularBuffer.Write(destData, 0, destSamples * 4);
-                    //srcAudioCircularBuffer.Write(eventArgs.DataPointer, 0, eventArgs.Samples * 4);
                 }
             }
 
