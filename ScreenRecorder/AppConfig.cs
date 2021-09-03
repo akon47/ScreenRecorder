@@ -149,7 +149,10 @@ namespace ScreenRecorder
                     SelectedRecordAudioCodec = AudioCodec.Aac;
                 }
 
-
+                if(string.IsNullOrWhiteSpace(ScreenCaptureMonitor))
+                {
+                    ScreenCaptureMonitor = System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
+                }
             }
         }
 
