@@ -38,12 +38,12 @@ namespace ScreenRecorder.DirectX
         }
 
         public string Description
-		{
-			get
-			{
-				return string.Format("{0}: {1}x{2} @ {3},{4}{5}", AdapterDescription, Width, Height, Left, Top, IsPrimary ? $" ({ScreenRecorder.Properties.Resources.PrimaryDisplay})" : "");
-			}
-		}
+        {
+            get
+            {
+                return string.Format("{0}: {1}x{2} @ {3},{4}{5}", AdapterDescription, Width, Height, Left, Top, IsPrimary ? $" ({ScreenRecorder.Properties.Resources.PrimaryDisplay})" : "");
+            }
+        }
     }
 
     public sealed class DuplicatorCapture : IDisposable
@@ -113,6 +113,8 @@ namespace ScreenRecorder.DirectX
         private NV12Converter nv12Converter;
 
         private BitmapTexture cursorTexture;
+        private Texture2D cursorBackgroundTexture;
+        private ShaderResourceView cursorBackgroundShaderResourceView;
 
         private SharpDX.Direct3D11.Buffer verticesBuffer;
         private VertexBufferBinding vertextBufferBinding;
@@ -343,6 +345,11 @@ namespace ScreenRecorder.DirectX
             public bool Visible;
             public int BufferSize;
             public long LastTimeStamp;
+
+            public int Left { get => Position.X; }
+            public int Top { get => Position.Y; }
+            public int Right { get => (Position.X + ShapeInfo.Width); }
+            public int Bottom { get => (Position.Y + ShapeInfo.Height); }
         }
 
         public bool AcquireNextFrame(out IntPtr dataPointer, out int width, out int height, out int stride, out MediaEncoder.PixelFormat pixelFormat)
@@ -370,77 +377,101 @@ namespace ScreenRecorder.DirectX
                                     UpdateBuffers(context, (int)destBounds.X, (int)destBounds.Y, (int)destBounds.Width, (int)destBounds.Height);
                                     context.InputAssembler.SetVertexBuffers(0, vertextBufferBinding);
                                     colorShader.Render(context, shaderResourceView);
-                                }
 
-                                if (duplicateFrameInformation.LastMouseUpdateTime != 0)
-                                {
-                                    if (duplicateFrameInformation.PointerPosition.Visible)
+                                    if (duplicateFrameInformation.LastMouseUpdateTime != 0)
                                     {
-                                        pointerInfo.Position = new SharpDX.Point((int)((duplicateFrameInformation.PointerPosition.Position.X * destScaleFactor.Width) + destBounds.X), (int)((duplicateFrameInformation.PointerPosition.Position.Y * destScaleFactor.Height) + destBounds.Y));
-                                        pointerInfo.LastTimeStamp = duplicateFrameInformation.LastMouseUpdateTime;
-                                        pointerInfo.Visible = duplicateFrameInformation.PointerPosition.Visible;
-                                    }
-                                    else
-                                    {
-                                        pointerInfo.Visible = false;
-                                    }
-
-                                    if (duplicateFrameInformation.PointerShapeBufferSize != 0)
-                                    {
-                                        if (duplicateFrameInformation.PointerShapeBufferSize > pointerInfo.BufferSize)
+                                        if (duplicateFrameInformation.PointerPosition.Visible)
                                         {
-                                            pointerInfo.PtrShapeBuffer = new byte[duplicateFrameInformation.PointerShapeBufferSize];
-                                            pointerInfo.BufferSize = duplicateFrameInformation.PointerShapeBufferSize;
+                                            pointerInfo.Position = new SharpDX.Point((int)((duplicateFrameInformation.PointerPosition.Position.X * destScaleFactor.Width) + destBounds.X), (int)((duplicateFrameInformation.PointerPosition.Position.Y * destScaleFactor.Height) + destBounds.Y));
+                                            pointerInfo.LastTimeStamp = duplicateFrameInformation.LastMouseUpdateTime;
+                                            pointerInfo.Visible = duplicateFrameInformation.PointerPosition.Visible;
+                                        }
+                                        else
+                                        {
+                                            pointerInfo.Visible = false;
                                         }
 
-                                        try
+                                        if (duplicateFrameInformation.PointerShapeBufferSize != 0)
                                         {
-                                            unsafe
+                                            if (duplicateFrameInformation.PointerShapeBufferSize > pointerInfo.BufferSize)
                                             {
-                                                fixed (byte* ptrShapeBufferPtr = pointerInfo.PtrShapeBuffer)
+                                                pointerInfo.PtrShapeBuffer = new byte[duplicateFrameInformation.PointerShapeBufferSize];
+                                                pointerInfo.BufferSize = duplicateFrameInformation.PointerShapeBufferSize;
+                                            }
+
+                                            try
+                                            {
+                                                unsafe
                                                 {
-                                                    duplicatedOutput.GetFramePointerShape(duplicateFrameInformation.PointerShapeBufferSize, (IntPtr)ptrShapeBufferPtr, out pointerInfo.BufferSize, out pointerInfo.ShapeInfo);
+                                                    fixed (byte* ptrShapeBufferPtr = pointerInfo.PtrShapeBuffer)
+                                                    {
+                                                        duplicatedOutput.GetFramePointerShape(duplicateFrameInformation.PointerShapeBufferSize, (IntPtr)ptrShapeBufferPtr, out pointerInfo.BufferSize, out pointerInfo.ShapeInfo);
+                                                    }
+                                                }
+                                            }
+                                            catch (SharpDXException ex)
+                                            {
+                                                if (ex.ResultCode.Failure)
+                                                {
+
                                                 }
                                             }
                                         }
-                                        catch (SharpDXException ex)
-                                        {
-                                            if (ex.ResultCode.Failure)
-                                            {
+                                    }
 
+                                    if (pointerInfo.Visible)
+                                    {
+                                        if (cursorTexture == null || cursorTexture.TextureWidth != pointerInfo.ShapeInfo.Width || cursorTexture.TextureHeight != pointerInfo.ShapeInfo.Height)
+                                        {
+                                            cursorTexture?.Dispose();
+                                            cursorTexture = new BitmapTexture(device, screenWidth, screenHeight, pointerInfo.ShapeInfo.Width, pointerInfo.ShapeInfo.Height);
+
+                                            cursorBackgroundTexture?.Dispose();
+                                            cursorBackgroundTexture = new Texture2D(device, new Texture2DDescription()
+                                            {
+                                                Format = displayTexture2D.Description.Format,
+                                                Width = pointerInfo.ShapeInfo.Width,
+                                                Height = pointerInfo.ShapeInfo.Height,
+                                                CpuAccessFlags = CpuAccessFlags.None,
+                                                Usage = ResourceUsage.Default,
+                                                BindFlags = BindFlags.ShaderResource,
+                                                ArraySize = 1,
+                                                MipLevels = 1,
+                                                OptionFlags = ResourceOptionFlags.None,
+                                                SampleDescription = new SampleDescription(1, 0)
+                                            });
+
+                                            cursorBackgroundShaderResourceView = new ShaderResourceView(device, cursorBackgroundTexture);
+                                        }
+
+                                        if (pointerInfo.ShapeInfo.Type != (int)OutputDuplicatePointerShapeType.Color)
+                                        {
+                                            context.CopySubresourceRegion(displayTexture2D, 0,
+                                                new ResourceRegion(pointerInfo.Left, pointerInfo.Top, 0, pointerInfo.Right, pointerInfo.Bottom, 1),
+                                                cursorBackgroundTexture, 0);
+                                        }
+
+                                        unsafe
+                                        {
+                                            fixed (byte* ptrShapeBufferPtr = pointerInfo.PtrShapeBuffer)
+                                            {
+                                                if (pointerInfo.ShapeInfo.Type == (int)OutputDuplicatePointerShapeType.Monochrome)
+                                                {
+                                                    cursorTexture.SetMonochromeTexture(new IntPtr(ptrShapeBufferPtr), pointerInfo.ShapeInfo.Width, pointerInfo.ShapeInfo.Height, pointerInfo.ShapeInfo.Pitch);
+                                                }
+                                                else
+                                                {
+                                                    cursorTexture.SetTexture(new IntPtr(ptrShapeBufferPtr), pointerInfo.ShapeInfo.Pitch, pointerInfo.ShapeInfo.Height);
+                                                }
                                             }
                                         }
+
+                                        cursorTexture.Render(context, pointerInfo.Position.X, pointerInfo.Position.Y, (int)(pointerInfo.ShapeInfo.Width * destScaleFactor.Width), (int)(pointerInfo.ShapeInfo.Height * destScaleFactor.Height));
+                                        cursorShader.Render(context, cursorTexture.GetTexture(), cursorBackgroundShaderResourceView, (OutputDuplicatePointerShapeType)pointerInfo.ShapeInfo.Type);
                                     }
+
+                                    nv12Converter.Convert(renderTargetTexture, nv12Texture);
                                 }
-
-                                if (pointerInfo.Visible)
-                                {
-                                    if (cursorTexture == null || cursorTexture.TextureWidth != pointerInfo.ShapeInfo.Width || cursorTexture.TextureHeight != pointerInfo.ShapeInfo.Height)
-                                    {
-                                        cursorTexture?.Dispose();
-                                        cursorTexture = new BitmapTexture(device, screenWidth, screenHeight, pointerInfo.ShapeInfo.Width, pointerInfo.ShapeInfo.Height);
-                                    }
-
-                                    unsafe
-                                    {
-                                        fixed (byte* ptrShapeBufferPtr = pointerInfo.PtrShapeBuffer)
-                                        {
-                                            if (pointerInfo.ShapeInfo.Type == (int)OutputDuplicatePointerShapeType.Monochrome)
-                                            {
-                                                cursorTexture.SetMonochromeTexture(new IntPtr(ptrShapeBufferPtr), pointerInfo.ShapeInfo.Width, pointerInfo.ShapeInfo.Height, pointerInfo.ShapeInfo.Pitch);
-                                            }
-                                            else
-                                            {
-                                                cursorTexture.SetTexture(new IntPtr(ptrShapeBufferPtr), pointerInfo.ShapeInfo.Pitch, pointerInfo.ShapeInfo.Height);
-                                            }
-                                        }
-                                    }
-
-                                    cursorTexture.Render(context, pointerInfo.Position.X, pointerInfo.Position.Y, (int)(pointerInfo.ShapeInfo.Width * destScaleFactor.Width), (int)(pointerInfo.ShapeInfo.Height * destScaleFactor.Height));
-                                    cursorShader.Render(context, cursorTexture.GetTexture(), (OutputDuplicatePointerShapeType)pointerInfo.ShapeInfo.Type);
-                                }
-
-                                nv12Converter.Convert(renderTargetTexture, nv12Texture);
                             }
                             else
                             {
@@ -510,6 +541,12 @@ namespace ScreenRecorder.DirectX
 
             cursorTexture?.Dispose();
             cursorTexture = null;
+
+            cursorBackgroundShaderResourceView?.Dispose();
+            cursorBackgroundShaderResourceView = null;
+
+            cursorBackgroundTexture?.Dispose();
+            cursorBackgroundTexture = null;
 
             cursorShader?.Dispose();
             cursorShader = null;
