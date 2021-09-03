@@ -198,9 +198,13 @@ namespace ScreenRecorder
                         if (!System.IO.Directory.Exists(AppConfig.Instance.RecordDirectory))
                         {
                             if (string.IsNullOrWhiteSpace(AppConfig.Instance.RecordDirectory))
-                                MessageBox.Show(ScreenRecorder.Properties.Resources.TheRecordingPathIsNotSet, ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer, MessageBoxButton.OK, MessageBoxImage.Error);
+                                MessageBox.Show(ScreenRecorder.Properties.Resources.TheRecordingPathIsNotSet,
+                                    ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer,
+                                    MessageBoxButton.OK, MessageBoxImage.Error);
                             else
-                                MessageBox.Show(ScreenRecorder.Properties.Resources.RecordingPathDoesNotExist, ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer, MessageBoxButton.OK, MessageBoxImage.Error);
+                                MessageBox.Show(ScreenRecorder.Properties.Resources.RecordingPathDoesNotExist,
+                                    ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer,
+                                    MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                         else
                         {
@@ -218,11 +222,29 @@ namespace ScreenRecorder
 
                             if (!System.IO.File.Exists(filePath))
                             {
-                                AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
-                                        AppConfig.Instance.SelectedRecordVideoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
-                                        AppConfig.Instance.SelectedRecordAudioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
-                                        System.Windows.Forms.Screen.PrimaryScreen.DeviceName,
-                                        AppConfig.Instance.ScreenCaptureCursorVisible);
+                                /// Only when the Advanced Settings menu is enabled, the settings in the Advanced Settings apply.
+                                var videoCodec = AppConfig.Instance.AdvancedSettings ?
+                                    AppConfig.Instance.SelectedRecordVideoCodec : MediaEncoder.VideoCodec.H264;
+                                var audioCodec = AppConfig.Instance.AdvancedSettings ?
+                                    AppConfig.Instance.SelectedRecordAudioCodec : MediaEncoder.AudioCodec.Aac;
+                                var displayDeviceName = AppConfig.Instance.AdvancedSettings ?
+                                    AppConfig.Instance.ScreenCaptureMonitor : System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
+
+                                // Start Record
+                                try
+                                {
+                                    AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
+                                            videoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
+                                            audioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
+                                            displayDeviceName,
+                                            AppConfig.Instance.ScreenCaptureCursorVisible);
+                                }
+                                catch
+                                {
+                                    MessageBox.Show(ScreenRecorder.Properties.Resources.FailedToStartRecording,
+                                        AppConstants.AppName,
+                                        MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
                             }
                         }
                     }

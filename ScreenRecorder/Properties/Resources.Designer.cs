@@ -88,6 +88,15 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
+        ///   The display you set could not be found과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string DisplayNotFound {
+            get {
+                return ResourceManager.GetString("DisplayNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Audio Bitrate과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string EncoderAudioBitrate {
@@ -111,6 +120,15 @@ namespace ScreenRecorder.Properties {
         public static string EncoderBaseDirectory {
             get {
                 return ResourceManager.GetString("EncoderBaseDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Display Device과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderCaptureDisplay {
+            get {
+                return ResourceManager.GetString("EncoderCaptureDisplay", resourceCulture);
             }
         }
         
@@ -187,6 +205,15 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
+        ///   Failed to start recording과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string FailedToStartRecording {
+            get {
+                return ResourceManager.GetString("FailedToStartRecording", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Open a recording folder in File Explorer과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string OpenEncodingFolderInFileExplorer {
@@ -201,6 +228,15 @@ namespace ScreenRecorder.Properties {
         public static string OpenFolderInFileExplorer {
             get {
                 return ResourceManager.GetString("OpenFolderInFileExplorer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Primary Display과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string PrimaryDisplay {
+            get {
+                return ResourceManager.GetString("PrimaryDisplay", resourceCulture);
             }
         }
         

@@ -81,8 +81,10 @@ namespace MediaEncoder {
 			av_log(nullptr, AV_LOG_INFO, hevc_qsv ? "hevc_qsv is supported\n" : "hevc_qsv is not supported\n");
 		}
 
-		static bool IsExistNVENC() { return h264_nvenc; }
-		static bool IsExistQSV() { return h264_qsv; }
+		static bool IsSupportedNvencH264() { return h264_nvenc; }
+		static bool IsSupportedNvencHEVC() { return hevc_nvenc; }
+		static bool IsSupportedQsvH264() { return h264_qsv; }
+		static bool IsSupportedQsvHEVC() { return hevc_qsv; }
 	private:
 		int m_width;
 		int m_height;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 
@@ -60,7 +61,7 @@ namespace ScreenRecorder
                 {
                     using (var registryKey = depRegistryKey.OpenSubKey(subKeyName))
                     {
-                        if (registryKey.GetValue("DisplayName") is string displayName && displayName.StartsWith("Microsoft Visual C++ 2015-2019 Redistributable (x64)", StringComparison.OrdinalIgnoreCase))
+                        if (registryKey.GetValue("DisplayName") is string displayName && Regex.IsMatch(displayName, "[cC]\\+\\+.*2019.*[xX]64"))
                         {
                             return true;
                         }
