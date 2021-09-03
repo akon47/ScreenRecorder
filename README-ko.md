@@ -15,7 +15,7 @@
 ![screenshot1_ko](https://user-images.githubusercontent.com/49547202/131764241-29e60789-027e-4bd6-b14b-84ef597804d9.png)
 
 ### 고급 설정
-![screenshot2_ko](https://user-images.githubusercontent.com/49547202/131763723-a045d042-6c39-48b8-beae-483429b18d22.png)
+![screenshot2_ko](https://user-images.githubusercontent.com/49547202/131944518-c9b17490-a8f9-4841-b012-121cc75d9611.png)
 
 ## 📃 사용법
 - 동그란 버튼을 누르면 녹화가 시작되고 사각형 버튼을 누르면 정지됩니다.
