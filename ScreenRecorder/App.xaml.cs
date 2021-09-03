@@ -60,7 +60,9 @@ namespace ScreenRecorder
                 {
                     using (var registryKey = depRegistryKey.OpenSubKey(subKeyName))
                     {
-                        if (registryKey.GetValue("DisplayName") is string displayName && displayName.StartsWith("Microsoft Visual C++ 2015-2019 Redistributable (x64)", StringComparison.OrdinalIgnoreCase))
+                        if (registryKey.GetValue("DisplayName") is string displayName &&
+                            (displayName.StartsWith("Microsoft Visual C++ 2015-2019 Redistributable (x64)", StringComparison.OrdinalIgnoreCase) ||
+                            displayName.StartsWith("Microsoft Visual C++ 2019 X64 Minimum Runtime", StringComparison.OrdinalIgnoreCase)))
                         {
                             return true;
                         }
