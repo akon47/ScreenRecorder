@@ -227,14 +227,24 @@ namespace ScreenRecorder
                                     AppConfig.Instance.SelectedRecordVideoCodec : MediaEncoder.VideoCodec.H264;
                                 var audioCodec = AppConfig.Instance.AdvancedSettings ?
                                     AppConfig.Instance.SelectedRecordAudioCodec : MediaEncoder.AudioCodec.Aac;
-
+                                var displayDeviceName = AppConfig.Instance.AdvancedSettings ?
+                                    AppConfig.Instance.ScreenCaptureMonitor : System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
 
                                 // Start Record
-                                AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
-                                        videoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
-                                        audioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
-                                        System.Windows.Forms.Screen.PrimaryScreen.DeviceName,
-                                        AppConfig.Instance.ScreenCaptureCursorVisible);
+                                try
+                                {
+                                    AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
+                                            videoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
+                                            audioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
+                                            displayDeviceName,
+                                            AppConfig.Instance.ScreenCaptureCursorVisible);
+                                }
+                                catch
+                                {
+                                    MessageBox.Show(ScreenRecorder.Properties.Resources.FailedToStartRecording,
+                                        AppConstants.AppName,
+                                        MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
                             }
                         }
                     }

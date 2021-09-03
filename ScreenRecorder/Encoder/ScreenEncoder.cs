@@ -36,6 +36,8 @@ namespace ScreenRecorder.Encoder
             }
             catch (Exception ex)
             {
+                base.Stop();
+
                 screenVideoSource?.Dispose();
                 screenVideoSource = null;
                 throw ex;

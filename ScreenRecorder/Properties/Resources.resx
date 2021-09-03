@@ -126,6 +126,9 @@
   <data name="CaptureCursor" xml:space="preserve">
     <value>Capture Cursor</value>
   </data>
+  <data name="DisplayNotFound" xml:space="preserve">
+    <value>The display you set could not be found</value>
+  </data>
   <data name="EncoderAudioBitrate" xml:space="preserve">
     <value>Audio Bitrate</value>
   </data>
@@ -134,6 +137,9 @@
   </data>
   <data name="EncoderBaseDirectory" xml:space="preserve">
     <value>Recording Path</value>
+  </data>
+  <data name="EncoderCaptureDisplay" xml:space="preserve">
+    <value>Display Device</value>
   </data>
   <data name="EncoderFileFormat" xml:space="preserve">
     <value>File Format</value>
@@ -159,11 +165,17 @@
   <data name="Exit" xml:space="preserve">
     <value>Exit</value>
   </data>
+  <data name="FailedToStartRecording" xml:space="preserve">
+    <value>Failed to start recording</value>
+  </data>
   <data name="OpenEncodingFolderInFileExplorer" xml:space="preserve">
     <value>Open a recording folder in File Explorer</value>
   </data>
   <data name="OpenFolderInFileExplorer" xml:space="preserve">
     <value>Open a folder in File Explorer</value>
+  </data>
+  <data name="PrimaryDisplay" xml:space="preserve">
+    <value>Primary Display</value>
   </data>
   <data name="RecordingPathDoesNotExist" xml:space="preserve">
     <value>Recording path does not exist</value>

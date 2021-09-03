@@ -148,6 +148,8 @@ namespace ScreenRecorder
                 {
                     SelectedRecordAudioCodec = AudioCodec.Aac;
                 }
+
+
             }
         }
 
