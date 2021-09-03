@@ -79,7 +79,7 @@ namespace ScreenRecorder.VideoSource
                             }
                         }
                     }
-                    catch
+                    catch(Exception ex)
                     {
                         if (needToStop.WaitOne(1000, false))
                             break;

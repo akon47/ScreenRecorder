@@ -10,11 +10,13 @@ namespace ScreenRecorder.DirectX.Shader
         private readonly string shaderCode =
 @"
 Texture2D Texture : register(t0);
+Texture2D BackgroundTexture : register(t1);
 SamplerState TextureSampler;
 
 cbuffer ShaderArgs
 {
     int outputDuplicatePointerShapeType;
+    float4 cursorPositionInBackground;
 };
 
 struct VSInput
@@ -42,7 +44,14 @@ float4 PShader(PSInput input) : SV_Target
 	float4 color = Texture.Sample(TextureSampler, input.uv);
     if(outputDuplicatePointerShapeType == 4)
     {
-        color.a = color.a == 0.0 ? 1.0 : 0.0;
+        color.a = 1.0 - color.a;
+    }
+    else if(outputDuplicatePointerShapeType == 1)
+    {
+        if(color.a > 0)
+        {
+            color = float4(1.0 - BackgroundTexture.Sample(TextureSampler, input.uv).rgb, 1.0);
+        }
     }
 	return color;
 }
@@ -80,7 +89,7 @@ float4 PShader(PSInput input) : SV_Target
 
             inputLayout = new InputLayout(device, inputSignature, elements);
 
-            argsBuffer = new SharpDX.Direct3D11.Buffer(device, 16, ResourceUsage.Dynamic, BindFlags.ConstantBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
+            argsBuffer = new SharpDX.Direct3D11.Buffer(device, 32, ResourceUsage.Dynamic, BindFlags.ConstantBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
 
             samplerState = new SamplerState(device, new SamplerStateDescription()
             {
@@ -97,17 +106,19 @@ float4 PShader(PSInput input) : SV_Target
             });
         }
 
-        public void Render(DeviceContext deviceContext, ShaderResourceView shaderResourceView, OutputDuplicatePointerShapeType outputDuplicatePointerShapeType)
+        public void Render(DeviceContext deviceContext, ShaderResourceView cursorShaderResourceView, ShaderResourceView backgroundShaderResourceView, OutputDuplicatePointerShapeType outputDuplicatePointerShapeType)
         {
-            SetShaderParameters(deviceContext, shaderResourceView, outputDuplicatePointerShapeType);
+            SetShaderParameters(deviceContext, cursorShaderResourceView, backgroundShaderResourceView, outputDuplicatePointerShapeType);
             RenderShader(deviceContext);
 
-            if (shaderResourceView != null)
+            if (cursorShaderResourceView != null)
                 deviceContext.PixelShader.SetShaderResource(0, null);
+            if (backgroundShaderResourceView != null)
+                deviceContext.PixelShader.SetShaderResource(1, null);
         }
 
         private int oldOutputDuplicatePointerShapeType = -1;
-        private void SetShaderParameters(DeviceContext deviceContext, ShaderResourceView shaderResourceView, OutputDuplicatePointerShapeType outputDuplicatePointerShapeType)
+        private void SetShaderParameters(DeviceContext deviceContext, ShaderResourceView cursorShaderResourceView, ShaderResourceView backgroundShaderResourceView, OutputDuplicatePointerShapeType outputDuplicatePointerShapeType)
         {
             if (oldOutputDuplicatePointerShapeType != (int)outputDuplicatePointerShapeType)
             {
@@ -119,7 +130,11 @@ float4 PShader(PSInput input) : SV_Target
             }
 
             deviceContext.PixelShader.SetConstantBuffer(0, argsBuffer);
-            deviceContext.PixelShader.SetShaderResource(0, shaderResourceView);
+
+            if (cursorShaderResourceView != null)
+                deviceContext.PixelShader.SetShaderResource(0, cursorShaderResourceView);
+            if (backgroundShaderResourceView != null)
+                deviceContext.PixelShader.SetShaderResource(1, backgroundShaderResourceView);
         }
 
         private void RenderShader(DeviceContext deviceContext)
