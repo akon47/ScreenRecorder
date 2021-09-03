@@ -41,7 +41,7 @@ namespace ScreenRecorder.DirectX
 		{
 			get
 			{
-				return string.Format("{0}: {1}x{2} @ {3},{4}{5}", AdapterDescription, Width, Height, Left, Top, IsPrimary ? " (기본 디스플레이)" : "");
+				return string.Format("{0}: {1}x{2} @ {3},{4}{5}", AdapterDescription, Width, Height, Left, Top, IsPrimary ? $" ({ScreenRecorder.Properties.Resources.PrimaryDisplay})" : "");
 			}
 		}
     }
