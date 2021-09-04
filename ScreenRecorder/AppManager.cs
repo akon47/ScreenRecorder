@@ -105,6 +105,7 @@ namespace ScreenRecorder
             };
             EncoderAudioCodecs = new EncoderAudioCodec[]
             {
+                new EncoderAudioCodec(MediaEncoder.AudioCodec.None, "No Audio"),
                 new EncoderAudioCodec(MediaEncoder.AudioCodec.Aac, "AAC (Advanced Audio Coding)"),
                 new EncoderAudioCodec(MediaEncoder.AudioCodec.Mp3, "MP3 (MPEG audio layer 3)"),
             };
