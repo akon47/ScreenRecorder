@@ -10,7 +10,7 @@ using SharpDX.DXGI;
 
 namespace ScreenRecorder.DirectX
 {
-    public class MonitorInfo
+    public class MonitorInfo : ICaptureTarget
     {
         public string AdapterDescription { get; set; }
         public string DeviceName { get; set; }

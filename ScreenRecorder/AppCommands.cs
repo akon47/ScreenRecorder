@@ -176,15 +176,14 @@ namespace ScreenRecorder
         }
         #endregion
 
+        #region Private Command Fields
         private DelegateCommand startScreenRecordCommand;
         private DelegateCommand pauseScreenRecordCommand;
         private DelegateCommand stopScreenRecordCommand;
-
         private DelegateCommand openFolderInWindowExplorerCommand;
-
         private DelegateCommand openRecordDirecotryCommand;
-
         private DelegateCommand selectRecordDirectory;
+        #endregion
 
         #region Record Commands
         public DelegateCommand StartScreenRecordCommand => startScreenRecordCommand ??
@@ -229,6 +228,13 @@ namespace ScreenRecorder
                                     AppConfig.Instance.SelectedRecordAudioCodec : MediaEncoder.AudioCodec.Aac;
                                 var displayDeviceName = AppConfig.Instance.AdvancedSettings ?
                                     AppConfig.Instance.ScreenCaptureMonitor : System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
+
+                                switch(displayDeviceName)
+                                {
+                                    case CaptureTarget.PrimaryCaptureTargetDeviceName:
+                                        displayDeviceName = System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
+                                        break;
+                                }
 
                                 // Start Record
                                 try
@@ -326,7 +332,5 @@ namespace ScreenRecorder
                 }
                 return false;
             }));
-
-
     }
 }

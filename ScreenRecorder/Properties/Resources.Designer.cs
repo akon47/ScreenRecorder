@@ -214,6 +214,15 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
+        ///   Hotkey Settings과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string HotkeySettings {
+            get {
+                return ResourceManager.GetString("HotkeySettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Open a recording folder in File Explorer과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string OpenEncodingFolderInFileExplorer {

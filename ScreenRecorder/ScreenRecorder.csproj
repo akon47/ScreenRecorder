@@ -117,6 +117,7 @@
     <Compile Include="AudioSource\IAudioSource.cs" />
     <Compile Include="AudioSource\LoopbackAudioSource.cs" />
     <Compile Include="BitrateItem.cs" />
+    <Compile Include="CaptureTarget.cs" />
     <Compile Include="Command\DelegateCommand.cs" />
     <Compile Include="Config\ConfigFileSaveWorker.cs" />
     <Compile Include="Config\IConfig.cs" />

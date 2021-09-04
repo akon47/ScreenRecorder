@@ -151,7 +151,7 @@ namespace ScreenRecorder
 
                 if(string.IsNullOrWhiteSpace(ScreenCaptureMonitor))
                 {
-                    ScreenCaptureMonitor = System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
+                    ScreenCaptureMonitor = CaptureTarget.PrimaryDisplay.DeviceName;
                 }
             }
         }

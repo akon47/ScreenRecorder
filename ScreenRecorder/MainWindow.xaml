@@ -30,7 +30,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -60,7 +60,9 @@
                             </TextBlock.Style>
                         </TextBlock>
 
-                        <Button Grid.Column="1" Grid.Row="0" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_FolderOpen}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenRecordDirecotryCommand}" Width="20" Height="20" Margin="3,0,3,0"/>
+                        <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal">
+                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_FolderOpen}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenRecordDirecotryCommand}" Width="20" Height="20" Margin="3,0,3,0" />
+                        </StackPanel>
                     </Grid>
                     
 
@@ -249,14 +251,29 @@
                 <Grid Grid.Column="0" Grid.Row="1">
                     <ToggleButton Name="recordSetting" Focusable="False" Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{StaticResource Icon_Settings}" ToolTip="{x:Static properties:Resources.EncoderSettings}" Foreground="DarkGray" Margin="3"/>
                     <Popup StaysOpen="False" IsOpen="{Binding Path=IsChecked, ElementName=recordSetting, Mode=TwoWay}" Placement="Bottom" Opened="Popup_Opened">
-                        <Border MinWidth="375" BorderThickness="1" BorderBrush="Black" Background="#434343">
+                        <Border MinWidth="400" BorderThickness="1" BorderBrush="Black" Background="#434343" SnapsToDevicePixels="True">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <Border Grid.Column="0" Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="Black" Background="#212121" Margin="0,0,0,0">
-                                    <TextBlock Text="{x:Static properties:Resources.EncoderSettings}" Foreground="White" Margin="6,6,6,6" VerticalAlignment="Center"/>
+                                    <Grid Margin="3">
+                                        <TextBlock Text="{x:Static properties:Resources.EncoderSettings}" Foreground="White" VerticalAlignment="Center" Margin="3,0"/>
+
+                                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                                            <StackPanel.Resources>
+                                                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                                                    <Setter Property="Foreground" Value="DarkGray" />
+                                                    <Setter Property="Focusable" Value="False" />
+                                                    <Setter Property="Margin" Value="3,0,0,0" />
+                                                    <Setter Property="Width" Value="25" />
+                                                    <Setter Property="Height" Value="25" />
+                                                </Style>
+                                            </StackPanel.Resources>
+                                            <!--<Button Content="{StaticResource Icon_Keyboard}" Focusable="False" ToolTip="{x:Static properties:Resources.HotkeySettings}"/>-->
+                                        </StackPanel>
+                                    </Grid>
                                 </Border>
                                 <Grid Grid.Column="0" Grid.Row="1">
                                     <Border Margin="5" CornerRadius="2" Background="#212121" BorderBrush="Black" BorderThickness="1">
@@ -346,7 +363,7 @@
                                                 </ComboBox.Items>
                                             </ComboBox>
                                             <Grid Grid.Column="1" Grid.Row="5" Margin="3" Tag="AdvancedSettings">
-                                                <ComboBox Name="comboBox_captureDisplay" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=ActiveMonitors, Mode=OneWay}" SelectedValuePath="DeviceName" DisplayMemberPath="Description" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureMonitor, Mode=TwoWay}" IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}"/>
+                                                <ComboBox Name="comboBox_captureDisplay" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=CaptureTargets, Mode=OneWay}" SelectedValuePath="DeviceName" DisplayMemberPath="Description" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureMonitor, Mode=TwoWay}" IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}" />
                                                 <TextBlock Text="{x:Static properties:Resources.DisplayNotFound}" Foreground="Red" VerticalAlignment="Center" Margin="6,0,30,0" IsHitTestVisible="False">
                                                     <TextBlock.Style>
                                                         <Style TargetType="{x:Type TextBlock}">

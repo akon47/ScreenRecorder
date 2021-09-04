@@ -168,6 +168,9 @@
   <data name="FailedToStartRecording" xml:space="preserve">
     <value>녹화 시작에 실패하였습니다</value>
   </data>
+  <data name="HotkeySettings" xml:space="preserve">
+    <value>단축키 설정</value>
+  </data>
   <data name="OpenEncodingFolderInFileExplorer" xml:space="preserve">
     <value>파일 탐색기에서 녹화 폴더 열기</value>
   </data>

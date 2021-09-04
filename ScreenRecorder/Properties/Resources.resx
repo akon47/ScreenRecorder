@@ -168,6 +168,9 @@
   <data name="FailedToStartRecording" xml:space="preserve">
     <value>Failed to start recording</value>
   </data>
+  <data name="HotkeySettings" xml:space="preserve">
+    <value>Hotkey Settings</value>
+  </data>
   <data name="OpenEncodingFolderInFileExplorer" xml:space="preserve">
     <value>Open a recording folder in File Explorer</value>
   </data>
