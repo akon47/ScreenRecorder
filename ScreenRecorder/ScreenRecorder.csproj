@@ -122,6 +122,7 @@
     <Compile Include="Config\ConfigFileSaveWorker.cs" />
     <Compile Include="Config\IConfig.cs" />
     <Compile Include="Config\XmlConfig.cs" />
+    <Compile Include="CustomConverter.cs" />
     <Compile Include="DirectX\DuplicatorCapture.cs" />
     <Compile Include="DirectX\NV12Converter.cs" />
     <Compile Include="DirectX\Shader\ColorShader.cs" />
@@ -141,6 +142,14 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.ko-KR.resx</DependentUpon>
     </Compile>
+    <Compile Include="Region\RegionSelectionMode.cs" />
+    <Compile Include="Region\RegionSelectionResult.cs" />
+    <Compile Include="Region\RegionSelector.cs" />
+    <Compile Include="Region\RegionSelectedEvent.cs" />
+    <Compile Include="Region\RegionSelectorWindow.xaml.cs">
+      <DependentUpon>RegionSelectorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Region\WindowRegion.cs" />
     <Compile Include="Shortcut\IShortcut.cs" />
     <Compile Include="VideoSource\IVideoSource.cs" />
     <Compile Include="NotifyPropertyBase.cs" />
@@ -165,6 +174,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Region\RegionSelectorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -183,10 +196,12 @@
     <EmbeddedResource Include="Properties\Resources.ko-KR.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.ko-KR.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include=".editorconfig" />
     <None Include="packages.config" />
@@ -212,8 +227,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Region\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

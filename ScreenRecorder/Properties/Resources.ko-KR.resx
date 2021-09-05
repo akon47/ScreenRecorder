@@ -123,8 +123,23 @@
   <data name="Browse" xml:space="preserve">
     <value>찾아보기</value>
   </data>
+  <data name="CaptureCancel" xml:space="preserve">
+    <value>캡쳐 취소</value>
+  </data>
   <data name="CaptureCursor" xml:space="preserve">
     <value>커서 캡쳐</value>
+  </data>
+  <data name="CaptureDisplay" xml:space="preserve">
+    <value>디스플레이 캡쳐</value>
+  </data>
+  <data name="CaptureRegion" xml:space="preserve">
+    <value>사각형 캡쳐</value>
+  </data>
+  <data name="CaptureRegionByUserSelection" xml:space="preserve">
+    <value>사용자가 선택한 캡쳐 영역</value>
+  </data>
+  <data name="CaptureWindow" xml:space="preserve">
+    <value>창 캡쳐</value>
   </data>
   <data name="DisplayNotFound" xml:space="preserve">
     <value>디스플레이를 찾을 수 없습니다</value>

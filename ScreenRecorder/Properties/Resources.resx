@@ -123,8 +123,23 @@
   <data name="Browse" xml:space="preserve">
     <value>Browse</value>
   </data>
+  <data name="CaptureCancel" xml:space="preserve">
+    <value>Capture Cancel</value>
+  </data>
   <data name="CaptureCursor" xml:space="preserve">
     <value>Capture Cursor</value>
+  </data>
+  <data name="CaptureDisplay" xml:space="preserve">
+    <value>Capture Display</value>
+  </data>
+  <data name="CaptureRegion" xml:space="preserve">
+    <value>Capture Region</value>
+  </data>
+  <data name="CaptureRegionByUserSelection" xml:space="preserve">
+    <value>Capture region by user selection</value>
+  </data>
+  <data name="CaptureWindow" xml:space="preserve">
+    <value>Capture Window</value>
   </data>
   <data name="DisplayNotFound" xml:space="preserve">
     <value>The display you set could not be found</value>

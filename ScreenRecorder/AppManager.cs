@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 using ScreenRecorder.DirectX;
 using ScreenRecorder.Encoder;
@@ -112,7 +113,8 @@ namespace ScreenRecorder
 
             CaptureTargets = new ICaptureTarget[]
             {
-                CaptureTarget.PrimaryDisplay
+                CaptureTarget.ByUserChoiceCaptureTarget,
+                CaptureTarget.PrimaryDisplay,
             }.Concat(DuplicatorCapture.GetActiveMonitorInfos()).ToArray();
 
             CheckHardwareCodec();

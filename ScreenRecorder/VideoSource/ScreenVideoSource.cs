@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Windows;
 using ScreenRecorder.DirectX;
 
 namespace ScreenRecorder.VideoSource
@@ -9,6 +10,7 @@ namespace ScreenRecorder.VideoSource
         private class ScreenVideoSourceArguments
         {
             public string DeviceName { get; set; }
+            public Rect Region { get; set; }
             public bool DrawCursor { get; set; }
         }
 
@@ -18,7 +20,7 @@ namespace ScreenRecorder.VideoSource
         private ManualResetEvent needToStop;
         private AutoResetEvent needToReset;
 
-        public ScreenVideoSource(string deviceName, bool drawCursor)
+        public ScreenVideoSource(string deviceName, Rect region, bool drawCursor)
         {
             needToReset = new AutoResetEvent(false);
             needToStop = new ManualResetEvent(false);
@@ -26,7 +28,8 @@ namespace ScreenRecorder.VideoSource
             workerThread.Start(new ScreenVideoSourceArguments()
             {
                 DeviceName = deviceName,
-                DrawCursor = drawCursor
+                Region = region,
+                DrawCursor = drawCursor,
             });
 
             //SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
@@ -42,11 +45,13 @@ namespace ScreenRecorder.VideoSource
         {
             string deviceName = null;
             bool drawCursor = true;
+            Rect region = new Rect(0, 0, double.MaxValue, double.MaxValue);
 
             if (argument is ScreenVideoSourceArguments screenVideoSourceArguments)
             {
                 deviceName = screenVideoSourceArguments.DeviceName;
                 drawCursor = screenVideoSourceArguments.DrawCursor;
+                region = screenVideoSourceArguments.Region;
             }
 
             using (SystemClockEvent systemClockEvent = new SystemClockEvent())
@@ -55,7 +60,7 @@ namespace ScreenRecorder.VideoSource
                 {
                     try
                     {
-                        using (DuplicatorCapture displayCapture = new DuplicatorCapture(deviceName, drawCursor))
+                        using (DuplicatorCapture displayCapture = new DuplicatorCapture(deviceName, region, drawCursor))
                         {
                             while (!needToStop.WaitOne(0, false))
                             {

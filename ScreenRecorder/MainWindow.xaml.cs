@@ -30,6 +30,7 @@ namespace ScreenRecorder
         public MainWindow()
         {
             InitializeComponent();
+
             #region Load Window Location
             try
             {
@@ -53,7 +54,7 @@ namespace ScreenRecorder
 
             // 자기 자신은 캡쳐가 안 되도록 하기 위해 사용
             // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowdisplayaffinity
-            Utils.SetWindowDisplayAffinity(source.Handle, true);
+            Utils.SetWindowDisplayedOnlyMonitor(source.Handle, true);
         }
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -138,7 +139,7 @@ namespace ScreenRecorder
                 IntPtr popupWindowHandle = popup.GetPopupWindowHandle();
                 if(popupWindowHandle != IntPtr.Zero)
                 {
-                    Utils.SetWindowDisplayAffinity(popupWindowHandle, true);
+                    Utils.SetWindowDisplayedOnlyMonitor(popupWindowHandle, true);
                 }
             }
         }

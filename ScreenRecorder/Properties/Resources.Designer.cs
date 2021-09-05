@@ -79,11 +79,56 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
+        ///   Capture Cancel과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string CaptureCancel {
+            get {
+                return ResourceManager.GetString("CaptureCancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Capture Cursor과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string CaptureCursor {
             get {
                 return ResourceManager.GetString("CaptureCursor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Capture Display과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string CaptureDisplay {
+            get {
+                return ResourceManager.GetString("CaptureDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Capture Region과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string CaptureRegion {
+            get {
+                return ResourceManager.GetString("CaptureRegion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Capture region by user selection과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string CaptureRegionByUserSelection {
+            get {
+                return ResourceManager.GetString("CaptureRegionByUserSelection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Capture Window과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string CaptureWindow {
+            get {
+                return ResourceManager.GetString("CaptureWindow", resourceCulture);
             }
         }
         

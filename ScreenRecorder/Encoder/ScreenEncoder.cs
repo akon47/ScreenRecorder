@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Windows;
 using MediaEncoder;
 using ScreenRecorder.AudioSource;
 using ScreenRecorder.DirectX;
@@ -15,7 +16,7 @@ namespace ScreenRecorder.Encoder
         private ScreenVideoSource screenVideoSource;
         private LoopbackAudioSource loopbackAudioSource;
 
-        public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, bool drawCursor = true)
+        public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, Rect region, bool drawCursor = true)
         {
             if (base.IsRunning)
                 return;
@@ -26,12 +27,13 @@ namespace ScreenRecorder.Encoder
                 throw new ArgumentException($"{deviceName} is not exist");
             }
 
-            screenVideoSource = new ScreenVideoSource(deviceName, drawCursor);
+            screenVideoSource = new ScreenVideoSource(deviceName, region, drawCursor);
             loopbackAudioSource = new LoopbackAudioSource();
             try
             {
+                Rect validRegion = Rect.Intersect(region, new Rect(0, 0, monitorInfo.Width, monitorInfo.Height));
                 base.Start(format, url,
-                    screenVideoSource, videoCodec, videoBitrate, new VideoSize(monitorInfo.Width, monitorInfo.Height),
+                    screenVideoSource, videoCodec, videoBitrate, new VideoSize((int)validRegion.Width, (int)validRegion.Height),
                     loopbackAudioSource, audioCodec, audioBitrate);
             }
             catch (Exception ex)
