@@ -30,6 +30,9 @@ It is a simple recording program with the ability to record the screen.
   - MP3 codecs can also be selected from the Advanced Settings menu if necessary.
 - The program itself is recorded without being included in the recording screen.
 - Cursor capture settings allow you to set whether the mouse cursor is captured or not.
+- Record by specifying an region by the user
+  - You have the following selection options:
+    - Capture Region, Capture Window, Capture Display
 
 ## 💡 System requirements
 - Platforms Supported: Windows 10 64bit Version 2004 or newer (*I haven't tested it on other platforms*)
