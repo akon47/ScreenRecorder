@@ -76,7 +76,7 @@ namespace ScreenRecorder.Region
                     if (!string.IsNullOrWhiteSpace(selectedTargetDevice) && selectedTargetBounds.Width > 0 && selectedTargetBounds.Height > 0)
                     {
                         selectionStarted = false;
-                        RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, selectedTargetDevice, GetScreenBounds(selectedTargetDevice), selectedTargetBounds, false));
+                        RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, selectedTargetDevice, GetScreenBounds(selectedTargetDevice), selectedTargetBounds, !(selectedTargetBounds.Width > 0 && selectedTargetBounds.Height > 0)));
                     }
                     break;
             }
@@ -153,7 +153,8 @@ namespace ScreenRecorder.Region
                 {
                     case RegionSelectionMode.UserRegion:
                         selectionStarted = false;
-                        RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, selectedTargetDevice, GetScreenBounds(selectedTargetDevice), GetUserRegion(), false));
+                        Rect userRegion = GetUserRegion();
+                        RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, selectedTargetDevice, GetScreenBounds(selectedTargetDevice), userRegion, !(userRegion.Width > 0 && userRegion.Height > 0)));
                         break;
                     case RegionSelectionMode.WindowRegion:
 

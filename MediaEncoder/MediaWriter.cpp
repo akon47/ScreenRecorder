@@ -187,7 +187,7 @@ namespace MediaEncoder {
 			AVCodecContext* videoCodecContext;
 			AVCodecID videoCodecId = m_videoCodec == AVCodecID::AV_CODEC_ID_PROBE && formatContext->oformat != nullptr ? formatContext->oformat->video_codec : m_videoCodec;
 			const AVCodec* videoCodec = nullptr;
-			if (!forceSoftwareEncoder)
+			if (!forceSoftwareEncoder && m_width >= 100 && m_height >= 100)
 			{
 				if (videoCodecId == AVCodecID::AV_CODEC_ID_H264)
 				{
@@ -225,7 +225,7 @@ namespace MediaEncoder {
 				videoCodecContext->pix_fmt = videoCodec->pix_fmts[0];
 
 				AVPixelFormat targetPixelFormat = AV_PIX_FMT_YUV420P;
-				if ((videoCodecId == AVCodecID::AV_CODEC_ID_H264 || videoCodecId == AVCodecID::AV_CODEC_ID_H265) && !forceSoftwareEncoder)
+				if ((videoCodecId == AVCodecID::AV_CODEC_ID_H264 || videoCodecId == AVCodecID::AV_CODEC_ID_H265) && strncmp(videoCodec->name, "libx", 4) != 0)
 				{
 					if (h264_nvenc || hevc_nvenc)
 					{

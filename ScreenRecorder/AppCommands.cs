@@ -256,13 +256,14 @@ namespace ScreenRecorder
                                                 displayDeviceName = result.DeviceName;
                                                 region = result.Region;
 
-                                                if(((int)region.Width % 2) != 0)
+                                                region.Width = ((int)region.Width) & (~0x01);
+                                                region.Height = ((int)region.Height) & (~0x01);
+
+                                                if(region.Width < 100 || region.Height < 100)
                                                 {
-                                                    region.Width++;
-                                                }
-                                                if (((int)region.Height % 2) != 0)
-                                                {
-                                                    region.Height++;
+                                                    MessageBox.Show(ScreenRecorder.Properties.Resources.RegionSizeError,
+                                                        AppConstants.AppName, MessageBoxButton.OK, MessageBoxImage.Error);
+                                                    return;
                                                 }
                                             }
                                         }

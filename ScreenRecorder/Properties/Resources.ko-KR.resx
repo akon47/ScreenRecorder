@@ -198,6 +198,9 @@
   <data name="RecordingPathDoesNotExist" xml:space="preserve">
     <value>녹화 경로가 존재하지 않습니다</value>
   </data>
+  <data name="RegionSizeError" xml:space="preserve">
+    <value>100 x 100 보다 작은 영역은 녹화할 수 없습니다</value>
+  </data>
   <data name="SetsTheRecordingPath" xml:space="preserve">
     <value>녹화 경로를 설정합니다</value>
   </data>

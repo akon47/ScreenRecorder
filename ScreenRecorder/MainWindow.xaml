@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ScreenRecorder"
         xmlns:properties="clr-namespace:ScreenRecorder.Properties"
         mc:Ignorable="d"
-        Icon="pack://application:,,,/icon.ico"
+        Icon="pack://application:,,,/icon.ico" SnapsToDevicePixels="True"
         WindowStyle="None" ResizeMode="NoResize" Background="Transparent" AllowsTransparency="False" Topmost="True" WindowStartupLocation="Manual"
         Title="" Height="72" SizeToContent="Width">
     <Window.Resources>

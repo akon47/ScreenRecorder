@@ -54,7 +54,9 @@ namespace ScreenRecorder
 
             // 자기 자신은 캡쳐가 안 되도록 하기 위해 사용
             // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowdisplayaffinity
+#if !DEBUG
             Utils.SetWindowDisplayedOnlyMonitor(source.Handle, true);
+#endif
         }
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -64,7 +66,7 @@ namespace ScreenRecorder
             switch (msg)
             {
                 case 0x0046:
-                    #region Magnetic Move
+#region Magnetic Move
                     if (windowHandle != IntPtr.Zero)
                     {
                         WINDOWPOS windowPos = (WINDOWPOS)message.GetLParam(typeof(WINDOWPOS));
@@ -97,22 +99,22 @@ namespace ScreenRecorder
                         }
                         Marshal.StructureToPtr(windowPos, lParam, false);
                     }
-                    #endregion
+#endregion
                     break;
             }
 
             return IntPtr.Zero;
         }
 
-        #region Window Moving
+#region Window Moving
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
                 DragMove();
         }
-        #endregion
+#endregion
 
-        #region Commands
+#region Commands
         private void CloseCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Close();
@@ -122,7 +124,7 @@ namespace ScreenRecorder
         {
             e.CanExecute = true;
         }
-        #endregion
+#endregion
 
         protected override void OnClosing(CancelEventArgs e)
         {
@@ -139,7 +141,9 @@ namespace ScreenRecorder
                 IntPtr popupWindowHandle = popup.GetPopupWindowHandle();
                 if(popupWindowHandle != IntPtr.Zero)
                 {
+#if !DEBUG
                     Utils.SetWindowDisplayedOnlyMonitor(popupWindowHandle, true);
+#endif
                 }
             }
         }
