@@ -14,6 +14,9 @@ namespace ScreenRecorder
 
         protected override void OnStartup(StartupEventArgs e)
         {
+#if DEBUG
+            ScreenRecorder.Properties.Resources.Culture = new System.Globalization.CultureInfo("en-US");
+#endif
             try
             {
                 Mutex = new Mutex(true, AppConstants.AppName, out bool isNew);

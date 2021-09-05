@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 using ScreenRecorder.DirectX;
 using ScreenRecorder.Encoder;
@@ -75,11 +77,11 @@ namespace ScreenRecorder
             private set => SetProperty(ref encoderAudioCodecs, value);
         }
 
-        private MonitorInfo[] activeMonitors;
-        public MonitorInfo[] ActiveMonitors
+        private ICaptureTarget[] captureTargets;
+        public ICaptureTarget[] CaptureTargets
         {
-            get => activeMonitors;
-            private set => SetProperty(ref activeMonitors, value);
+            get => captureTargets;
+            private set => SetProperty(ref captureTargets, value);
         }
 
         public void Initialize()
@@ -104,10 +106,16 @@ namespace ScreenRecorder
             };
             EncoderAudioCodecs = new EncoderAudioCodec[]
             {
+                new EncoderAudioCodec(MediaEncoder.AudioCodec.None, "No Audio"),
                 new EncoderAudioCodec(MediaEncoder.AudioCodec.Aac, "AAC (Advanced Audio Coding)"),
                 new EncoderAudioCodec(MediaEncoder.AudioCodec.Mp3, "MP3 (MPEG audio layer 3)"),
             };
-            ActiveMonitors = DuplicatorCapture.GetActiveMonitorInfos();
+
+            CaptureTargets = new ICaptureTarget[]
+            {
+                CaptureTarget.ByUserChoiceCaptureTarget,
+                CaptureTarget.PrimaryDisplay,
+            }.Concat(DuplicatorCapture.GetActiveMonitorInfos()).ToArray();
 
             CheckHardwareCodec();
 

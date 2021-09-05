@@ -123,8 +123,23 @@
   <data name="Browse" xml:space="preserve">
     <value>Browse</value>
   </data>
+  <data name="CaptureCancel" xml:space="preserve">
+    <value>Capture Cancel</value>
+  </data>
   <data name="CaptureCursor" xml:space="preserve">
     <value>Capture Cursor</value>
+  </data>
+  <data name="CaptureDisplay" xml:space="preserve">
+    <value>Capture Display</value>
+  </data>
+  <data name="CaptureRegion" xml:space="preserve">
+    <value>Capture Region</value>
+  </data>
+  <data name="CaptureRegionByUserSelection" xml:space="preserve">
+    <value>Capture region by user selection</value>
+  </data>
+  <data name="CaptureWindow" xml:space="preserve">
+    <value>Capture Window</value>
   </data>
   <data name="DisplayNotFound" xml:space="preserve">
     <value>The display you set could not be found</value>
@@ -168,6 +183,9 @@
   <data name="FailedToStartRecording" xml:space="preserve">
     <value>Failed to start recording</value>
   </data>
+  <data name="HotkeySettings" xml:space="preserve">
+    <value>Hotkey Settings</value>
+  </data>
   <data name="OpenEncodingFolderInFileExplorer" xml:space="preserve">
     <value>Open a recording folder in File Explorer</value>
   </data>
@@ -179,6 +197,9 @@
   </data>
   <data name="RecordingPathDoesNotExist" xml:space="preserve">
     <value>Recording path does not exist</value>
+  </data>
+  <data name="RegionSizeError" xml:space="preserve">
+    <value>Region less than 100 x 100 cannot be recorded</value>
   </data>
   <data name="SetsTheRecordingPath" xml:space="preserve">
     <value>Sets the recording path</value>

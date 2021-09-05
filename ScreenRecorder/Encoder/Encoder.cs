@@ -532,7 +532,7 @@ namespace ScreenRecorder.Encoder
             {
                 if (argument is EncoderArguments encoderArguments)
                 {
-                    using (MediaBuffer mediaBuffer = new MediaBuffer(encoderArguments.VideoSource, encoderArguments.AudioSource))
+                    using (MediaBuffer mediaBuffer = new MediaBuffer(encoderArguments.VideoSource, encoderArguments.AudioCodec == AudioCodec.None ? null : encoderArguments.AudioSource))
                     {
                         using (MediaWriter mediaWriter = new MediaWriter(
                             encoderArguments.VideoSize.Width, encoderArguments.VideoSize.Height, (int)AppConstants.Framerate, 1,

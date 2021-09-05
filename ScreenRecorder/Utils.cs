@@ -2,12 +2,27 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media;
 
 namespace ScreenRecorder
 {
     public class Utils
     {
+        [DllImport("gdi32.dll", EntryPoint = "DeleteObject")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool DeleteObject([In] IntPtr hObject);
+
+        static public ImageSource ImageSourceFromBitmap(System.Drawing.Bitmap bmp)
+        {
+            var handle = bmp.GetHbitmap();
+            try
+            {
+                return Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+            }
+            finally { DeleteObject(handle); }
+        }
+
         static public TimeSpan VideoFramesCountToTimeSpan(ulong videoFramesCount)
         {
             return TimeSpan.FromSeconds(videoFramesCount / AppConstants.Framerate);
@@ -32,9 +47,18 @@ namespace ScreenRecorder
         [DllImport("user32.dll")]
         static extern bool SetWindowDisplayAffinity(IntPtr hwnd, uint affinity);
 
-        public static bool SetWindowDisplayAffinity(IntPtr hWnd, bool enabled)
+        [DllImport("user32.dll")]
+        static extern bool GetWindowDisplayAffinity(IntPtr hwnd, out uint affinity);
+
+        public static bool SetWindowDisplayedOnlyMonitor(IntPtr hWnd, bool enabled)
         {
             return SetWindowDisplayAffinity(hWnd, (uint)(enabled ? 0x11 : 0x00));
+        }
+
+        public static bool IsWindowDisplayedOnlyMonitor(IntPtr hWnd)
+        {
+            GetWindowDisplayAffinity(hWnd, out uint affinity);
+            return affinity == 0x11;
         }
 
         public static Rect ComputeUniformBounds(Rect availableBounds, Size contentSize)

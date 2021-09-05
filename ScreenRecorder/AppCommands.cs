@@ -176,15 +176,14 @@ namespace ScreenRecorder
         }
         #endregion
 
+        #region Private Command Fields
         private DelegateCommand startScreenRecordCommand;
         private DelegateCommand pauseScreenRecordCommand;
         private DelegateCommand stopScreenRecordCommand;
-
         private DelegateCommand openFolderInWindowExplorerCommand;
-
         private DelegateCommand openRecordDirecotryCommand;
-
         private DelegateCommand selectRecordDirectory;
+        #endregion
 
         #region Record Commands
         public DelegateCommand StartScreenRecordCommand => startScreenRecordCommand ??
@@ -229,6 +228,52 @@ namespace ScreenRecorder
                                     AppConfig.Instance.SelectedRecordAudioCodec : MediaEncoder.AudioCodec.Aac;
                                 var displayDeviceName = AppConfig.Instance.AdvancedSettings ?
                                     AppConfig.Instance.ScreenCaptureMonitor : System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
+                                var region = new Rect(0, 0, double.MaxValue, double.MaxValue);
+
+                                switch(displayDeviceName)
+                                {
+                                    case CaptureTarget.PrimaryCaptureTargetDeviceName:
+                                        #region Select PrimayDisplay
+                                        displayDeviceName = System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
+                                        #endregion
+                                        break;
+                                    case CaptureTarget.ByUserChoiceTargetDeviceName:
+                                        #region Select Region
+                                        var regionSelectorWindow = new Region.RegionSelectorWindow()
+                                        {
+                                            RegionSelectionMode = AppConfig.Instance.RegionSelectionMode
+                                        };
+                                        try
+                                        {
+                                            if (!regionSelectorWindow.ShowDialog().Value)
+                                            {
+                                                return;
+                                            }
+
+                                            var result = regionSelectorWindow.RegionSelectionResult;
+                                            if (result != null)
+                                            {
+                                                displayDeviceName = result.DeviceName;
+                                                region = result.Region;
+
+                                                region.Width = ((int)region.Width) & (~0x01);
+                                                region.Height = ((int)region.Height) & (~0x01);
+
+                                                if(region.Width < 100 || region.Height < 100)
+                                                {
+                                                    MessageBox.Show(ScreenRecorder.Properties.Resources.RegionSizeError,
+                                                        AppConstants.AppName, MessageBoxButton.OK, MessageBoxImage.Error);
+                                                    return;
+                                                }
+                                            }
+                                        }
+                                        finally
+                                        {
+                                            AppConfig.Instance.RegionSelectionMode = regionSelectorWindow.RegionSelectionMode;
+                                        }
+                                        break;
+                                        #endregion
+                                }
 
                                 // Start Record
                                 try
@@ -236,7 +281,7 @@ namespace ScreenRecorder
                                     AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
                                             videoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
                                             audioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
-                                            displayDeviceName,
+                                            displayDeviceName, region,
                                             AppConfig.Instance.ScreenCaptureCursorVisible);
                                 }
                                 catch
@@ -326,7 +371,5 @@ namespace ScreenRecorder
                 }
                 return false;
             }));
-
-
     }
 }
