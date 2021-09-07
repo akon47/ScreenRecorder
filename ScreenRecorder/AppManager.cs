@@ -115,7 +115,7 @@ namespace ScreenRecorder
             {
                 CaptureTarget.ByUserChoiceCaptureTarget,
                 CaptureTarget.PrimaryDisplay,
-            }.Concat(DuplicatorCapture.GetActiveMonitorInfos()).ToArray();
+            }.Concat(MonitorInfo.GetActiveMonitorInfos()).ToArray();
 
             CheckHardwareCodec();
 

@@ -21,7 +21,7 @@ namespace ScreenRecorder.Encoder
             if (base.IsRunning)
                 return;
 
-            MonitorInfo monitorInfo = DuplicatorCapture.GetActiveMonitorInfos()?.FirstOrDefault(x => x.DeviceName.Equals(deviceName));
+            MonitorInfo monitorInfo = MonitorInfo.GetActiveMonitorInfos()?.FirstOrDefault(x => x.DeviceName.Equals(deviceName));
             if (monitorInfo == null)
             {
                 throw new ArgumentException($"{deviceName} is not exist");

@@ -10,104 +10,8 @@ using SharpDX.DXGI;
 
 namespace ScreenRecorder.DirectX
 {
-    public class MonitorInfo : ICaptureTarget
-    {
-        public string AdapterDescription { get; set; }
-        public string DeviceName { get; set; }
-        public int AdapterIndex { get; set; }
-        public int OutputIndex { get; set; }
-        public bool IsPrimary { get; set; }
-        public int Left { get; set; }
-        public int Top { get; set; }
-        public int Right { get; set; }
-        public int Bottom { get; set; }
-        public int Width
-        {
-            get
-            {
-                return Right - Left;
-            }
-        }
-
-        public int Height
-        {
-            get
-            {
-                return Bottom - Top;
-            }
-        }
-
-        public System.Windows.Rect Bounds
-        {
-            get
-            {
-                return new System.Windows.Rect(Left, Top, Width, Height);
-            }
-        }
-
-        public string Description
-        {
-            get
-            {
-                return string.Format("{0}: {1}x{2} @ {3},{4}{5}", AdapterDescription, Width, Height, Left, Top, IsPrimary ? $" ({ScreenRecorder.Properties.Resources.PrimaryDisplay})" : "");
-            }
-        }
-    }
-
     public sealed class DuplicatorCapture : IDisposable
     {
-        static public MonitorInfo GetPrimaryMonitorInfo()
-        {
-            foreach (MonitorInfo monitorInfo in GetActiveMonitorInfos())
-            {
-                if (monitorInfo.IsPrimary)
-                {
-                    return monitorInfo;
-                }
-            }
-            return null;
-        }
-
-        static public MonitorInfo[] GetActiveMonitorInfos()
-        {
-            List<MonitorInfo> monitorInfos = new List<MonitorInfo>();
-            using (Factory1 factory = new Factory1())
-            {
-                int adapterCount = factory.GetAdapterCount1();
-                for (int i = 0; i < adapterCount; i++)
-                {
-                    using (Adapter1 adapter = factory.GetAdapter1(i))
-                    {
-                        int outputCount = adapter.GetOutputCount();
-                        string primaryDeviceName = System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
-                        for (int j = 0; j < outputCount; j++)
-                        {
-                            using (SharpDX.DXGI.Output output = adapter.GetOutput(j))
-                            {
-                                if (output.Description.IsAttachedToDesktop)
-                                {
-                                    monitorInfos.Add(new MonitorInfo()
-                                    {
-                                        AdapterDescription = adapter.Description1.Description,
-                                        DeviceName = output.Description.DeviceName,
-                                        AdapterIndex = i,
-                                        OutputIndex = j,
-                                        IsPrimary = (primaryDeviceName.Equals(output.Description.DeviceName)),
-                                        Left = output.Description.DesktopBounds.Left,
-                                        Top = output.Description.DesktopBounds.Top,
-                                        Right = output.Description.DesktopBounds.Right,
-                                        Bottom = output.Description.DesktopBounds.Bottom
-                                    });
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return monitorInfos.Count > 0 ? monitorInfos.ToArray() : null;
-        }
-
         private Output output;
         private Output1 output1;
         private SharpDX.Direct3D11.Device device;
@@ -115,7 +19,6 @@ namespace ScreenRecorder.DirectX
         private OutputDuplication duplicatedOutput;
         private Texture2D renderTargetTexture, regionTexture;
         private RenderTargetView renderTargetView;
-        private Texture2D readableRenderTargetTexture;
 
         private Texture2D nv12Texture, readableNv12Texture;
         private NV12Converter nv12Converter;
@@ -141,167 +44,190 @@ namespace ScreenRecorder.DirectX
 
         public DuplicatorCapture(string deviceName, System.Windows.Rect region, bool drawCursor)
         {
-            this.drawCursor = drawCursor;
+            if (GetOutputFromDeviceName(deviceName, out Adapter1 adapter, out Output output))
+            {
+                this.drawCursor = drawCursor;
+                this.region = System.Windows.Rect.Intersect(region, new System.Windows.Rect(0, 0, Math.Abs(output.Description.DesktopBounds.Right - output.Description.DesktopBounds.Left), Math.Abs(output.Description.DesktopBounds.Bottom - output.Description.DesktopBounds.Top)));
+                this.screenWidth = (int)this.region.Width;
+                this.screenHeight = (int)this.region.Height;
+                this.output = output;
+
+                try
+                {
+                    #region DirectX Device Initialize
+                    device = new SharpDX.Direct3D11.Device(adapter, DeviceCreationFlags.SingleThreaded);
+                    context = device.ImmediateContext;
+                    Texture2DDescription renderTargetTexture2DDescription = new Texture2DDescription()
+                    {
+                        Width = screenWidth,
+                        Height = screenHeight,
+                        MipLevels = 1,
+                        ArraySize = 1,
+                        Format = Format.B8G8R8A8_UNorm,
+                        SampleDescription = new SampleDescription(1, 0),
+                        Usage = ResourceUsage.Default,
+                        BindFlags = BindFlags.RenderTarget,
+                        CpuAccessFlags = CpuAccessFlags.None,
+                        OptionFlags = ResourceOptionFlags.None
+                    };
+                    renderTargetTexture = new Texture2D(device, renderTargetTexture2DDescription);
+                    renderTargetView = new RenderTargetView(device, renderTargetTexture, new RenderTargetViewDescription()
+                    {
+                        Format = renderTargetTexture2DDescription.Format,
+                        Dimension = RenderTargetViewDimension.Texture2D,
+                        Texture2D = new RenderTargetViewDescription.Texture2DResource() { MipSlice = 0 }
+                    });
+                    #endregion
+
+                    #region DuplicatedOutput Initialize
+                    output1 = output.QueryInterface<Output1>();
+                    duplicatedOutput = output1.DuplicateOutput(device);
+                    #endregion
+
+                    #region Region Texture Initialize
+                    // Create Textures for Region Capture
+                    regionTexture = new Texture2D(device, new Texture2DDescription()
+                    {
+                        Width = screenWidth,
+                        Height = screenHeight,
+                        MipLevels = 1,
+                        ArraySize = 1,
+                        Format = Format.B8G8R8A8_UNorm,
+                        SampleDescription = new SampleDescription(1, 0),
+                        Usage = ResourceUsage.Default,
+                        BindFlags = BindFlags.ShaderResource | BindFlags.RenderTarget,
+                        CpuAccessFlags = CpuAccessFlags.None,
+                        OptionFlags = ResourceOptionFlags.None
+                    });
+                    regionShaderResourceView = new ShaderResourceView(device, regionTexture);
+                    #endregion
+
+                    #region NV12 Texture Initialize
+                    /// Create resources for converting to NV12 to reduce the amount of transmitted from GPU memory to system memory as much as possible.
+                    Texture2DDescription nv12TextureDesc = new Texture2DDescription()
+                    {
+                        Width = screenWidth,
+                        Height = screenHeight,
+                        MipLevels = 1,
+                        ArraySize = 1,
+                        Format = Format.NV12,
+                        SampleDescription = new SampleDescription(1, 0),
+                        Usage = ResourceUsage.Default,
+                        BindFlags = BindFlags.RenderTarget,
+                        CpuAccessFlags = CpuAccessFlags.None,
+                        OptionFlags = ResourceOptionFlags.None
+                    };
+                    nv12Texture = new Texture2D(device, nv12TextureDesc);
+                    Texture2DDescription readableNv12TextureDesc = nv12TextureDesc;
+                    readableNv12TextureDesc.BindFlags = BindFlags.None;
+                    readableNv12TextureDesc.Usage = ResourceUsage.Staging;
+                    readableNv12TextureDesc.CpuAccessFlags = CpuAccessFlags.Read;
+                    readableNv12TextureDesc.SampleDescription = new SampleDescription(1, 0);
+                    readableNv12TextureDesc.OptionFlags = ResourceOptionFlags.None;
+                    readableNv12Texture = new Texture2D(device, readableNv12TextureDesc);
+
+                    nv12Converter = new NV12Converter(device, context);
+                    #endregion
+
+                    #region BlendState
+                    context.OutputMerger.BlendState = CreateAlphaBlendState(device, true);
+                    context.OutputMerger.BlendFactor = new Color4(0.0f, 0.0f, 0.0f, 0.0f);
+                    unchecked
+                    {
+                        context.OutputMerger.BlendSampleMask = (int)0xffffffff;
+                    }
+                    #endregion
+
+                    #region Rasterizer Initialize
+                    context.Rasterizer.State = new RasterizerState(device, new RasterizerStateDescription()
+                    {
+                        IsAntialiasedLineEnabled = false,
+                        CullMode = CullMode.None,
+                        DepthBias = 0,
+                        DepthBiasClamp = 0.0f,
+                        IsDepthClipEnabled = false,
+                        FillMode = FillMode.Solid,
+                        IsFrontCounterClockwise = false,
+                        IsMultisampleEnabled = false,
+                        IsScissorEnabled = false,
+                        SlopeScaledDepthBias = 0.0f
+                    });
+                    context.Rasterizer.SetViewport(new Viewport(0, 0, screenWidth, screenHeight, 0.0f, 1.0f));
+                    #endregion
+
+                    #region Shader Initialize
+                    colorShader = new ColorShader();
+                    colorShader.Initialize(device);
+
+                    if (drawCursor)
+                    {
+                        cursorShader = new CursorShader();
+                        cursorShader.Initialize(device);
+                    }
+                    #endregion
+
+                    #region Initialize Buffers
+                    verticesBuffer = new SharpDX.Direct3D11.Buffer(device, (Vector3.SizeInBytes + Vector2.SizeInBytes) * 6,
+                        ResourceUsage.Dynamic, BindFlags.VertexBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
+                    vertextBufferBinding = new VertexBufferBinding(verticesBuffer, Vector3.SizeInBytes + Vector2.SizeInBytes, 0);
+                    #endregion
+
+                    context.OutputMerger.SetTargets(renderTargetView);
+                    context.ClearRenderTargetView(renderTargetView, new Color4(0, 0, 0, 0));
+                    context.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
+
+                    dataPointer = Marshal.AllocHGlobal(screenWidth * screenHeight * 4);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Dispose();
+                    throw ex;
+                }
+                finally
+                {
+                    adapter.Dispose();
+                }
+            }
+
+            throw new InvalidOperationException("create output failed");
+        }
+
+        #region Private Methods
+        private bool GetOutputFromDeviceName(string deviceName, out Adapter1 adapter1, out Output output)
+        {
             using (Factory1 factory = new Factory1())
             {
                 int adapterCount = factory.GetAdapterCount1();
                 for (int i = 0; i < adapterCount; i++)
                 {
-                    using (Adapter1 adapter = factory.GetAdapter1(i))
+                    Adapter1 _adapter = factory.GetAdapter1(i);
+                    int outputCount = _adapter.GetOutputCount();
+                    if (string.IsNullOrWhiteSpace(deviceName))
                     {
-                        int outputCount = adapter.GetOutputCount();
-                        if (string.IsNullOrWhiteSpace(deviceName))
+                        deviceName = System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
+                    }
+                    for (int j = 0; j < outputCount; j++)
+                    {
+                        Output _output = _adapter.GetOutput(j);
+                        if (_output.Description.IsAttachedToDesktop && _output.Description.DeviceName.Equals(deviceName))
                         {
-                            deviceName = System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
+                            output = _output;
+                            adapter1 = _adapter;
+                            return true;
                         }
-                        for (int j = 0; j < outputCount; j++)
+                        else
                         {
-                            output = adapter.GetOutput(j);
-                            if (output.Description.IsAttachedToDesktop && output.Description.DeviceName.Equals(deviceName))
-                            {
-                                //this.screenWidth = Math.Abs(output.Description.DesktopBounds.Right - output.Description.DesktopBounds.Left);
-                                //this.screenHeight = Math.Abs(output.Description.DesktopBounds.Bottom - output.Description.DesktopBounds.Top);
-
-                                this.region = System.Windows.Rect.Intersect(region, new System.Windows.Rect(0, 0, Math.Abs(output.Description.DesktopBounds.Right - output.Description.DesktopBounds.Left), Math.Abs(output.Description.DesktopBounds.Bottom - output.Description.DesktopBounds.Top)));
-                                this.screenWidth = (int)this.region.Width;
-                                this.screenHeight = (int)this.region.Height;
-
-                                try
-                                {
-                                    output1 = output.QueryInterface<Output1>();
-                                    device = new SharpDX.Direct3D11.Device(adapter, DeviceCreationFlags.SingleThreaded);
-                                    context = device.ImmediateContext;
-                                    duplicatedOutput = output1.DuplicateOutput(device);
-                                    Texture2DDescription renderTargetTexture2DDescription = new Texture2DDescription()
-                                    {
-                                        Width = screenWidth,
-                                        Height = screenHeight,
-                                        MipLevels = 1,
-                                        ArraySize = 1,
-                                        Format = Format.B8G8R8A8_UNorm,
-                                        SampleDescription = new SampleDescription(1, 0),
-                                        Usage = ResourceUsage.Default,
-                                        BindFlags = BindFlags.RenderTarget,
-                                        CpuAccessFlags = CpuAccessFlags.None,
-                                        OptionFlags = ResourceOptionFlags.None
-                                    };
-                                    renderTargetTexture = new Texture2D(device, renderTargetTexture2DDescription);
-                                    renderTargetView = new RenderTargetView(device, renderTargetTexture, new RenderTargetViewDescription()
-                                    {
-                                        Format = renderTargetTexture2DDescription.Format,
-                                        Dimension = RenderTargetViewDimension.Texture2D,
-                                        Texture2D = new RenderTargetViewDescription.Texture2DResource() { MipSlice = 0 }
-                                    });
-
-                                    Texture2DDescription readableRenderTargetTexture2DDescription = renderTargetTexture2DDescription;
-                                    readableRenderTargetTexture2DDescription.BindFlags = BindFlags.None;
-                                    readableRenderTargetTexture2DDescription.Usage = ResourceUsage.Staging;
-                                    readableRenderTargetTexture2DDescription.CpuAccessFlags = CpuAccessFlags.Read;
-                                    readableRenderTargetTexture2DDescription.SampleDescription = new SampleDescription(1, 0);
-                                    readableRenderTargetTexture2DDescription.OptionFlags = ResourceOptionFlags.None;
-                                    readableRenderTargetTexture = new Texture2D(device, readableRenderTargetTexture2DDescription);
-
-                                    regionTexture = new Texture2D(device, new Texture2DDescription()
-                                    {
-                                        Width = screenWidth,
-                                        Height = screenHeight,
-                                        MipLevels = 1,
-                                        ArraySize = 1,
-                                        Format = Format.B8G8R8A8_UNorm,
-                                        SampleDescription = new SampleDescription(1, 0),
-                                        Usage = ResourceUsage.Default,
-                                        BindFlags = BindFlags.ShaderResource | BindFlags.RenderTarget,
-                                        CpuAccessFlags = CpuAccessFlags.None,
-                                        OptionFlags = ResourceOptionFlags.None
-                                    });
-                                    regionShaderResourceView = new ShaderResourceView(device, regionTexture);
-
-                                    //
-                                    Texture2DDescription nv12TextureDesc = new Texture2DDescription()
-                                    {
-                                        Width = screenWidth,
-                                        Height = screenHeight,
-                                        MipLevels = 1,
-                                        ArraySize = 1,
-                                        Format = Format.NV12,
-                                        SampleDescription = new SampleDescription(1, 0),
-                                        Usage = ResourceUsage.Default,
-                                        BindFlags = BindFlags.RenderTarget,
-                                        CpuAccessFlags = CpuAccessFlags.None,
-                                        OptionFlags = ResourceOptionFlags.None
-                                    };
-                                    nv12Texture = new Texture2D(device, nv12TextureDesc);
-                                    Texture2DDescription readableNv12TextureDesc = nv12TextureDesc;
-                                    readableNv12TextureDesc.BindFlags = BindFlags.None;
-                                    readableNv12TextureDesc.Usage = ResourceUsage.Staging;
-                                    readableNv12TextureDesc.CpuAccessFlags = CpuAccessFlags.Read;
-                                    readableNv12TextureDesc.SampleDescription = new SampleDescription(1, 0);
-                                    readableNv12TextureDesc.OptionFlags = ResourceOptionFlags.None;
-                                    readableNv12Texture = new Texture2D(device, readableNv12TextureDesc);
-
-                                    nv12Converter = new NV12Converter(device, context);
-                                    //
-
-                                    context.OutputMerger.BlendState = CreateAlphaBlendState(device, true);
-                                    context.OutputMerger.BlendFactor = new Color4(0.0f, 0.0f, 0.0f, 0.0f);
-                                    unchecked
-                                    {
-                                        context.OutputMerger.BlendSampleMask = (int)0xffffffff;
-                                    }
-
-                                    context.Rasterizer.State = new RasterizerState(device, new RasterizerStateDescription()
-                                    {
-                                        IsAntialiasedLineEnabled = false,
-                                        CullMode = CullMode.None,
-                                        DepthBias = 0,
-                                        DepthBiasClamp = 0.0f,
-                                        IsDepthClipEnabled = false,
-                                        FillMode = FillMode.Solid,
-                                        IsFrontCounterClockwise = false,
-                                        IsMultisampleEnabled = false,
-                                        IsScissorEnabled = false,
-                                        SlopeScaledDepthBias = 0.0f
-                                    });
-
-                                    context.Rasterizer.SetViewport(new Viewport(0, 0, screenWidth, screenHeight, 0.0f, 1.0f));
-
-
-                                    colorShader = new ColorShader();
-                                    colorShader.Initialize(device);
-
-                                    if (drawCursor)
-                                    {
-                                        cursorShader = new CursorShader();
-                                        cursorShader.Initialize(device);
-                                    }
-
-                                    verticesBuffer = new SharpDX.Direct3D11.Buffer(device, (Vector3.SizeInBytes + Vector2.SizeInBytes) * 6,
-                                        ResourceUsage.Dynamic, BindFlags.VertexBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
-                                    vertextBufferBinding = new VertexBufferBinding(verticesBuffer, Vector3.SizeInBytes + Vector2.SizeInBytes, 0);
-
-                                    context.OutputMerger.SetTargets(renderTargetView);
-                                    context.ClearRenderTargetView(renderTargetView, new Color4(0, 0, 0, 0));
-                                    context.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
-
-                                    dataPointer = Marshal.AllocHGlobal(screenWidth * screenHeight * 4);
-                                    return;
-                                }
-                                catch(Exception ex)
-                                {
-                                    Dispose();
-                                    throw ex;
-                                }
-                            }
-                            else
-                            {
-                                output.Dispose();
-                            }
+                            _output.Dispose();
                         }
                     }
+                    _adapter.Dispose();
                 }
             }
 
-            throw new InvalidOperationException("create output failed");
+            adapter1 = null;
+            output = null;
+            return false;
         }
 
         private void UpdateBuffers(DeviceContext deviceContext, int positionX, int positionY, int width, int height)
@@ -365,21 +291,52 @@ namespace ScreenRecorder.DirectX
             return new BlendState(device, blendStateDescription);
         }
 
-        private class PointerInfo
+        private void UpdatePointerInfo(OutputDuplicateFrameInformation duplicateFrameInformation, ref PointerInfo pointerInfo)
         {
-            public byte[] PtrShapeBuffer;
-            public OutputDuplicatePointerShapeInformation ShapeInfo;
-            public Point Position;
-            public bool Visible;
-            public int BufferSize;
-            public long LastTimeStamp;
+            if (duplicateFrameInformation.LastMouseUpdateTime != 0)
+            {
+                if (duplicateFrameInformation.PointerPosition.Visible)
+                {
+                    pointerInfo.Position = new SharpDX.Point(duplicateFrameInformation.PointerPosition.Position.X, duplicateFrameInformation.PointerPosition.Position.Y);
+                    pointerInfo.LastTimeStamp = duplicateFrameInformation.LastMouseUpdateTime;
+                    pointerInfo.Visible = duplicateFrameInformation.PointerPosition.Visible;
+                }
+                else
+                {
+                    pointerInfo.Visible = false;
+                }
 
-            public int Left { get => Position.X; }
-            public int Top { get => Position.Y; }
-            public int Right { get => (Position.X + ShapeInfo.Width); }
-            public int Bottom { get => (Position.Y + ShapeInfo.Height); }
+                if (duplicateFrameInformation.PointerShapeBufferSize != 0)
+                {
+                    if (duplicateFrameInformation.PointerShapeBufferSize > pointerInfo.BufferSize)
+                    {
+                        pointerInfo.PtrShapeBuffer = new byte[duplicateFrameInformation.PointerShapeBufferSize];
+                        pointerInfo.BufferSize = duplicateFrameInformation.PointerShapeBufferSize;
+                    }
+
+                    try
+                    {
+                        unsafe
+                        {
+                            fixed (byte* ptrShapeBufferPtr = pointerInfo.PtrShapeBuffer)
+                            {
+                                duplicatedOutput.GetFramePointerShape(duplicateFrameInformation.PointerShapeBufferSize, (IntPtr)ptrShapeBufferPtr, out pointerInfo.BufferSize, out pointerInfo.ShapeInfo);
+                            }
+                        }
+                    }
+                    catch (SharpDXException ex)
+                    {
+                        if (ex.ResultCode.Failure)
+                        {
+
+                        }
+                    }
+                }
+            }
         }
+        #endregion
 
+        #region Public Methods
         public bool AcquireNextFrame(out IntPtr dataPointer, out int width, out int height, out int stride, out MediaEncoder.PixelFormat pixelFormat)
         {
             SharpDX.DXGI.Resource screenResource;
@@ -392,14 +349,13 @@ namespace ScreenRecorder.DirectX
                 {
                     try
                     {
-                        using (var displayTexture2D = screenResource.QueryInterface<Texture2D>())
+                        using (Texture2D displayTexture2D = screenResource.QueryInterface<Texture2D>())
                         {
                             // crop
                             context.CopySubresourceRegion(displayTexture2D, 0,
                                 new ResourceRegion((int)region.Left, (int)region.Top, 0, (int)region.Right, (int)region.Bottom, 1),
                                 regionTexture, 0);
-                            
-                            //
+
                             if (drawCursor)
                             {
                                 using (ShaderResourceView shaderResourceView = new ShaderResourceView(device, regionTexture))
@@ -409,46 +365,7 @@ namespace ScreenRecorder.DirectX
                                     context.InputAssembler.SetVertexBuffers(0, vertextBufferBinding);
                                     colorShader.Render(context, shaderResourceView);
 
-                                    if (duplicateFrameInformation.LastMouseUpdateTime != 0)
-                                    {
-                                        if (duplicateFrameInformation.PointerPosition.Visible)
-                                        {
-                                            pointerInfo.Position = new SharpDX.Point(duplicateFrameInformation.PointerPosition.Position.X, duplicateFrameInformation.PointerPosition.Position.Y);
-                                            pointerInfo.LastTimeStamp = duplicateFrameInformation.LastMouseUpdateTime;
-                                            pointerInfo.Visible = duplicateFrameInformation.PointerPosition.Visible;
-                                        }
-                                        else
-                                        {
-                                            pointerInfo.Visible = false;
-                                        }
-
-                                        if (duplicateFrameInformation.PointerShapeBufferSize != 0)
-                                        {
-                                            if (duplicateFrameInformation.PointerShapeBufferSize > pointerInfo.BufferSize)
-                                            {
-                                                pointerInfo.PtrShapeBuffer = new byte[duplicateFrameInformation.PointerShapeBufferSize];
-                                                pointerInfo.BufferSize = duplicateFrameInformation.PointerShapeBufferSize;
-                                            }
-
-                                            try
-                                            {
-                                                unsafe
-                                                {
-                                                    fixed (byte* ptrShapeBufferPtr = pointerInfo.PtrShapeBuffer)
-                                                    {
-                                                        duplicatedOutput.GetFramePointerShape(duplicateFrameInformation.PointerShapeBufferSize, (IntPtr)ptrShapeBufferPtr, out pointerInfo.BufferSize, out pointerInfo.ShapeInfo);
-                                                    }
-                                                }
-                                            }
-                                            catch (SharpDXException ex)
-                                            {
-                                                if (ex.ResultCode.Failure)
-                                                {
-
-                                                }
-                                            }
-                                        }
-                                    }
+                                    UpdatePointerInfo(duplicateFrameInformation, ref pointerInfo);
 
                                     if (pointerInfo.Visible)
                                     {
@@ -562,11 +479,6 @@ namespace ScreenRecorder.DirectX
             {
                 verticesBuffer.Dispose();
             }
-            if (!readableRenderTargetTexture?.IsDisposed ?? false)
-            {
-                readableRenderTargetTexture.Dispose();
-                readableRenderTargetTexture = null;
-            }
 
             colorShader?.Dispose();
             colorShader = null;
@@ -583,11 +495,17 @@ namespace ScreenRecorder.DirectX
             cursorShader?.Dispose();
             cursorShader = null;
 
-            regionShaderResourceView?.Dispose();
-            regionShaderResourceView = null;
+            if (!regionShaderResourceView?.IsDisposed ?? false)
+            {
+                regionShaderResourceView?.Dispose();
+                regionShaderResourceView = null;
+            }
 
-            regionTexture?.Dispose();
-            regionTexture = null;
+            if (!regionTexture?.IsDisposed ?? false)
+            {
+                regionTexture?.Dispose();
+                regionTexture = null;
+            }
 
             if (!renderTargetView?.IsDisposed ?? false)
             {
@@ -620,5 +538,23 @@ namespace ScreenRecorder.DirectX
                 device = null;
             }
         }
+        #endregion
+
+        #region Private Inner Class
+        private class PointerInfo
+        {
+            public byte[] PtrShapeBuffer;
+            public OutputDuplicatePointerShapeInformation ShapeInfo;
+            public Point Position;
+            public bool Visible;
+            public int BufferSize;
+            public long LastTimeStamp;
+
+            public int Left { get => Position.X; }
+            public int Top { get => Position.Y; }
+            public int Right { get => (Position.X + ShapeInfo.Width); }
+            public int Bottom { get => (Position.Y + ShapeInfo.Height); }
+        }
+        #endregion
     }
 }
