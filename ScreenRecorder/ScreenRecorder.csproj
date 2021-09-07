@@ -116,13 +116,12 @@
     <Compile Include="AppManager.cs" />
     <Compile Include="AudioSource\IAudioSource.cs" />
     <Compile Include="AudioSource\LoopbackAudioSource.cs" />
-    <Compile Include="BitrateItem.cs" />
     <Compile Include="CaptureTarget.cs" />
     <Compile Include="Command\DelegateCommand.cs" />
     <Compile Include="Config\ConfigFileSaveWorker.cs" />
     <Compile Include="Config\IConfig.cs" />
     <Compile Include="Config\XmlConfig.cs" />
-    <Compile Include="CustomConverter.cs" />
+    <Compile Include="CustomConverter\CustomConverter.cs" />
     <Compile Include="DirectX\DuplicatorCapture.cs" />
     <Compile Include="DirectX\MonitorInfo.cs" />
     <Compile Include="DirectX\NV12Converter.cs" />
@@ -153,8 +152,8 @@
     <Compile Include="Region\WindowRegion.cs" />
     <Compile Include="Shortcut\IShortcut.cs" />
     <Compile Include="VideoSource\IVideoSource.cs" />
-    <Compile Include="NotifyPropertyBase.cs" />
-    <Compile Include="ReactiveExtensions.cs" />
+    <Compile Include="Reactive\NotifyPropertyBase.cs" />
+    <Compile Include="Reactive\ReactiveExtensions.cs" />
     <Compile Include="VideoSource\ScreenVideoSource.cs" />
     <Compile Include="SystemClockEvent.cs" />
     <Compile Include="Utils.cs" />

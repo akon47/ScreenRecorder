@@ -82,7 +82,7 @@ namespace ScreenRecorder.AudioSource
                         }
                         catch
                         {
-                            needToStop.WaitOne(1000);
+                            needToStop.WaitOne(500);
                             break;
                         }
 
@@ -143,7 +143,7 @@ namespace ScreenRecorder.AudioSource
             }
             if (workerThread != null)
             {
-                if (workerThread.IsAlive && !workerThread.Join(10000))
+                if (workerThread.IsAlive && !workerThread.Join(1000))
                     workerThread.Abort();
                 workerThread = null;
 
