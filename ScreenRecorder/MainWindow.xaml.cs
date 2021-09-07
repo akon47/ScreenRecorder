@@ -66,7 +66,7 @@ namespace ScreenRecorder
             switch (msg)
             {
                 case 0x0046:
-#region Magnetic Move
+                    #region Magnetic Move
                     if (windowHandle != IntPtr.Zero)
                     {
                         WINDOWPOS windowPos = (WINDOWPOS)message.GetLParam(typeof(WINDOWPOS));
@@ -99,22 +99,22 @@ namespace ScreenRecorder
                         }
                         Marshal.StructureToPtr(windowPos, lParam, false);
                     }
-#endregion
+                    #endregion
                     break;
             }
 
             return IntPtr.Zero;
         }
 
-#region Window Moving
+        #region Window Moving
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
                 DragMove();
         }
-#endregion
+        #endregion
 
-#region Commands
+        #region Commands
         private void CloseCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Close();
@@ -124,7 +124,7 @@ namespace ScreenRecorder
         {
             e.CanExecute = true;
         }
-#endregion
+        #endregion
 
         protected override void OnClosing(CancelEventArgs e)
         {
@@ -136,10 +136,10 @@ namespace ScreenRecorder
 
         private void Popup_Opened(object sender, EventArgs e)
         {
-            if(sender is System.Windows.Controls.Primitives.Popup popup)
+            if (sender is System.Windows.Controls.Primitives.Popup popup)
             {
                 IntPtr popupWindowHandle = popup.GetPopupWindowHandle();
-                if(popupWindowHandle != IntPtr.Zero)
+                if (popupWindowHandle != IntPtr.Zero)
                 {
 #if !DEBUG
                     Utils.SetWindowDisplayedOnlyMonitor(popupWindowHandle, true);

@@ -75,6 +75,10 @@ namespace ScreenRecorder.Region
         public Rect Region { get; private set; }
         public IntPtr Hwnd { get; private set; }
 
+        /// <summary>
+        /// Get the windows you see on the screen from the front.
+        /// </summary>
+        /// <returns></returns>
         static public WindowRegion[] GetWindowRegions()
         {
             List<WindowRegion> windowRegions = new List<WindowRegion>();

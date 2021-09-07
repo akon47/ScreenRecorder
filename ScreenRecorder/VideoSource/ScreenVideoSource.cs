@@ -31,15 +31,7 @@ namespace ScreenRecorder.VideoSource
                 Region = region,
                 DrawCursor = drawCursor,
             });
-
-            //SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
         }
-
-        //private void SystemEvents_DisplaySettingsChanged(object sender, EventArgs e)
-        //{
-        //	if (needToReset != null)
-        //		needToReset.Set();
-        //}
 
         private void WorkerThreadHandler(object argument)
         {
@@ -84,7 +76,7 @@ namespace ScreenRecorder.VideoSource
                             }
                         }
                     }
-                    catch(Exception ex)
+                    catch
                     {
                         if (needToStop.WaitOne(1000, false))
                             break;
@@ -95,8 +87,6 @@ namespace ScreenRecorder.VideoSource
 
         public void Dispose()
         {
-            //SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
-
             if (needToStop != null)
             {
                 needToStop.Set();
