@@ -36,6 +36,7 @@ It is a simple recording program with the ability to record the screen.
 - Record by specifying an region by the user
   - You have the following selection options:
     - Capture Region, Capture Window, Capture Display
+- Recording function using hotkeys.
 
 ## 💡 System requirements
 - Platforms Supported: Windows 10 64bit Version 2004 or newer (*I haven't tested it on other platforms*)
