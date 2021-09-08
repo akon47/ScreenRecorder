@@ -141,6 +141,9 @@
   <data name="CaptureWindow" xml:space="preserve">
     <value>Capture Window</value>
   </data>
+  <data name="DeleteShortcut" xml:space="preserve">
+    <value>Delete shortcut</value>
+  </data>
   <data name="DisplayNotFound" xml:space="preserve">
     <value>The display you set could not be found</value>
   </data>
@@ -183,14 +186,17 @@
   <data name="FailedToStartRecording" xml:space="preserve">
     <value>Failed to start recording</value>
   </data>
-  <data name="HotkeySettings" xml:space="preserve">
-    <value>Hotkey Settings</value>
+  <data name="NotSpecified" xml:space="preserve">
+    <value>Not specified</value>
   </data>
   <data name="OpenEncodingFolderInFileExplorer" xml:space="preserve">
     <value>Open a recording folder in File Explorer</value>
   </data>
   <data name="OpenFolderInFileExplorer" xml:space="preserve">
     <value>Open a folder in File Explorer</value>
+  </data>
+  <data name="PauseRecording" xml:space="preserve">
+    <value>Pause Recording</value>
   </data>
   <data name="PrimaryDisplay" xml:space="preserve">
     <value>Primary Display</value>
@@ -203,6 +209,15 @@
   </data>
   <data name="SetsTheRecordingPath" xml:space="preserve">
     <value>Sets the recording path</value>
+  </data>
+  <data name="ShortcutSettings" xml:space="preserve">
+    <value>Shortcut Settings</value>
+  </data>
+  <data name="StartRecording" xml:space="preserve">
+    <value>Start Recording</value>
+  </data>
+  <data name="StopRecording" xml:space="preserve">
+    <value>Stop Recording</value>
   </data>
   <data name="TheRecordingPathIsNotSet" xml:space="preserve">
     <value>The recording path is not set. Please set the recording path</value>

@@ -274,7 +274,7 @@
                                                     <Setter Property="Height" Value="25" />
                                                 </Style>
                                             </StackPanel.Resources>
-                                            <!--<Button Content="{StaticResource Icon_Keyboard}" Focusable="False" ToolTip="{x:Static properties:Resources.HotkeySettings}"/>-->
+                                            <Button Content="{StaticResource Icon_Keyboard}" Focusable="False" ToolTip="{x:Static properties:Resources.ShortcutSettings}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenShortcutSettingsCommand, Mode=OneWay}"/>
                                         </StackPanel>
                                     </Grid>
                                 </Border>

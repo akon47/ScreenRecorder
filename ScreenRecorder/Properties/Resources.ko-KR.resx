@@ -141,6 +141,9 @@
   <data name="CaptureWindow" xml:space="preserve">
     <value>창 캡쳐</value>
   </data>
+  <data name="DeleteShortcut" xml:space="preserve">
+    <value>단축키 삭제</value>
+  </data>
   <data name="DisplayNotFound" xml:space="preserve">
     <value>디스플레이를 찾을 수 없습니다</value>
   </data>
@@ -183,14 +186,17 @@
   <data name="FailedToStartRecording" xml:space="preserve">
     <value>녹화 시작에 실패하였습니다</value>
   </data>
-  <data name="HotkeySettings" xml:space="preserve">
-    <value>단축키 설정</value>
+  <data name="NotSpecified" xml:space="preserve">
+    <value>지정 안 됨</value>
   </data>
   <data name="OpenEncodingFolderInFileExplorer" xml:space="preserve">
     <value>파일 탐색기에서 녹화 폴더 열기</value>
   </data>
   <data name="OpenFolderInFileExplorer" xml:space="preserve">
     <value>파일 탐색기에서 폴더 열기</value>
+  </data>
+  <data name="PauseRecording" xml:space="preserve">
+    <value>녹화 일시정지</value>
   </data>
   <data name="PrimaryDisplay" xml:space="preserve">
     <value>기본 디스플레이</value>
@@ -203,6 +209,15 @@
   </data>
   <data name="SetsTheRecordingPath" xml:space="preserve">
     <value>녹화 경로를 설정합니다</value>
+  </data>
+  <data name="ShortcutSettings" xml:space="preserve">
+    <value>단축키 설정</value>
+  </data>
+  <data name="StartRecording" xml:space="preserve">
+    <value>녹화 시작</value>
+  </data>
+  <data name="StopRecording" xml:space="preserve">
+    <value>녹화 중지</value>
   </data>
   <data name="TheRecordingPathIsNotSet" xml:space="preserve">
     <value>녹화 경로가 설정되어 있지 않습니다. 녹화 경로를 설정해주세요</value>

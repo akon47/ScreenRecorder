@@ -1,0 +1,127 @@
+﻿<UserControl x:Class="ScreenRecorder.Shortcut.ShortcutEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:properties="clr-namespace:ScreenRecorder.Properties"
+             xmlns:local="clr-namespace:ScreenRecorder.Shortcut"
+             mc:Ignorable="d" Name="root"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <Style x:Key="IconButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                <Setter Property="Foreground" Value="DarkGray" />
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Foreground" Value="#454545" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <Path x:Key="Icon_Close" x:Shared="False" Stretch="Uniform" Stroke="Transparent" Fill="{Binding RelativeSource={RelativeSource AncestorType={x:Type FrameworkElement}}, Path=(TextElement.Foreground)}" Data="F1 M 26.9166,22.1667L 37.9999,33.25L 49.0832,22.1668L 53.8332,26.9168L 42.7499,38L 53.8332,49.0834L 49.0833,53.8334L 37.9999,42.75L 26.9166,53.8334L 22.1666,49.0833L 33.25,38L 22.1667,26.9167L 26.9166,22.1667 Z "/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Margin="1">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" SharedSizeGroup="Title"/>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25" />
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Path=Title, ElementName=root, Mode=OneWay}" Foreground="White" VerticalAlignment="Center" TextAlignment="Center" Margin="5,0,5,0">
+            <TextBlock.Style>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
+                    <Setter Property="Margin" Value="0,0,1.5,0" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=Title, ElementName=root, Mode=OneWay}" Value="{x:Null}">
+                            <Setter Property="Margin" Value="0" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+        <TextBox Grid.Column="1" Grid.Row="0" FontWeight="Bold" TextAlignment="Center" PreviewKeyDown="TextBox_PreviewKeyDown" ContextMenu="{x:Null}" VerticalContentAlignment="Center">
+            <TextBox.Style>
+                <Style TargetType="{x:Type TextBox}">
+                    <Setter Property="SnapsToDevicePixels" Value="True" />
+                    <Setter Property="OverridesDefaultStyle" Value="True" />
+                    <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
+                    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                    <Setter Property="MinWidth" Value="120" />
+                    <Setter Property="MinHeight" Value="20" />
+                    <Setter Property="AllowDrop" Value="true" />
+                    <Setter Property="Text" Value="{Binding Path=Shortcut.KeyGestureString, ElementName=root, Mode=OneWay}" />
+                    <Setter Property="Margin" Value="1.5,0,0,0" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type TextBoxBase}">
+                                <Border Name="Border" CornerRadius="2" Padding="2" BorderThickness="1">
+                                    <Border.Background>
+                                        <SolidColorBrush Color="#FFE8EDF9" />
+                                    </Border.Background>
+                                    <Border.BorderBrush>
+                                        <SolidColorBrush Color="#FF888888" />
+                                    </Border.BorderBrush>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
+                                                        <EasingColorKeyFrame KeyTime="0" Value="#FFE8EDF9" />
+                                                    </ColorAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="ReadOnly">
+                                                <Storyboard>
+                                                    <ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
+                                                        <EasingColorKeyFrame KeyTime="0" Value="#FFC5CBF9" />
+                                                    </ColorAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="MouseOver" />
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <ScrollViewer Margin="0" x:Name="PART_ContentHost" />
+                                        <Button Click="button_deleteShortcut_Click" Grid.Column="1" Grid.Row="0" Content="{StaticResource Icon_Close}" Width="18" Height="18" Focusable="False" ToolTip="{x:Static properties:Resources.DeleteShortcut}">
+                                            <Button.Style>
+                                                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButtonStyle}">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Path=Shortcut.KeyGesture, ElementName=root, Mode=OneWay}" Value="{x:Null}">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Path=ShortcutEditable, ElementName=root, Mode=OneWay}" Value="False">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=Shortcut.KeyGestureString, ElementName=root, Mode=OneWay}" Value="{x:Null}">
+                            <Setter Property="Text" Value="{x:Static properties:Resources.NotSpecified}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=ShortcutEditable, ElementName=root, Mode=OneWay}" Value="False">
+                            <Setter Property="IsReadOnly" Value="True" />
+                            <Setter Property="IsEnabled" Value="False" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=Title, ElementName=root, Mode=OneWay}" Value="{x:Null}">
+                            <Setter Property="Margin" Value="0" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBox.Style>
+        </TextBox>
+    </Grid>
+</UserControl>
