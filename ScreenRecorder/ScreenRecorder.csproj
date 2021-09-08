@@ -152,7 +152,14 @@
       <DependentUpon>RegionSelectorWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Region\WindowRegion.cs" />
+    <Compile Include="Shortcut\GlobalHotKey.cs" />
     <Compile Include="Shortcut\IShortcut.cs" />
+    <Compile Include="Shortcut\ShortcutEditor.xaml.cs">
+      <DependentUpon>ShortcutEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Shortcut\ShortcutEditorWindow.xaml.cs">
+      <DependentUpon>ShortcutEditorWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="VideoSource\IVideoSource.cs" />
     <Compile Include="Reactive\NotifyPropertyBase.cs" />
     <Compile Include="Reactive\ReactiveExtensions.cs" />
@@ -177,6 +184,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Region\RegionSelectorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Shortcut\ShortcutEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Shortcut\ShortcutEditorWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
