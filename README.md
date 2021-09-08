@@ -15,11 +15,11 @@
 It is a simple recording program with the ability to record the screen.
 
 ### Default Settings
-![screenshot1_en](https://user-images.githubusercontent.com/49547202/131763726-8a209e6d-cbfe-40de-9043-efc6f75f07fb.png)
+![screenshot1_en](https://user-images.githubusercontent.com/49547202/132599938-5a34d781-1ff3-49f8-8e0f-470517120850.png)
 
 
 ### Advanced Settings
-![screenshot2_en](https://user-images.githubusercontent.com/49547202/131944482-16ca371c-6542-4a70-b721-e2fc447ec096.png)
+![screenshot2_en](https://user-images.githubusercontent.com/49547202/132599944-ed239dab-0ca5-4c98-8417-69c8e7b926c3.png)
 
 ## 📃 Usage
 - Pressing the round button starts recording and stops when pressing the square button.
