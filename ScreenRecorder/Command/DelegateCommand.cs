@@ -58,6 +58,8 @@ namespace ScreenRecorder.Command
 
         #endregion
 
+        private GlobalHotKey globalHotKey;
+
         #region ICommand Members
         public bool IsExecuting
         {
@@ -72,7 +74,20 @@ namespace ScreenRecorder.Command
             set
             {
                 if (SetProperty(ref keyGesture, value))
+                {
                     base.NotifyPropertyChanged(nameof(KeyGestureString), nameof(Key), nameof(Modifiers));
+
+                    if(keyGesture != null)
+                    {
+                        globalHotKey?.Dispose();
+                        globalHotKey = new GlobalHotKey(this);
+                    }
+                    else
+                    {
+                        globalHotKey?.Dispose();
+                        globalHotKey = null;
+                    }
+                }
             }
         }
 

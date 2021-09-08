@@ -57,7 +57,8 @@ namespace ScreenRecorder
                 }
             }
 
-            EventManager.RegisterClassHandler(typeof(Window), System.Windows.Input.Keyboard.PreviewKeyDownEvent, new KeyEventHandler(PreviewKeyDown), true);
+            // then use globalhotkey
+            //EventManager.RegisterClassHandler(typeof(Window), System.Windows.Input.Keyboard.PreviewKeyDownEvent, new KeyEventHandler(PreviewKeyDown), true);
 
             configFileSaveWorker = new ConfigFileSaveWorker(this, ConfigFilePath);
         }
@@ -183,6 +184,8 @@ namespace ScreenRecorder
         private DelegateCommand openFolderInWindowExplorerCommand;
         private DelegateCommand openRecordDirecotryCommand;
         private DelegateCommand selectRecordDirectory;
+
+        private DelegateCommand openShortcutSettingsCommand;
         #endregion
 
         #region Record Commands
@@ -370,6 +373,22 @@ namespace ScreenRecorder
                     return System.IO.Directory.Exists(folder);
                 }
                 return false;
+            }));
+
+        public DelegateCommand OpenShortcutSettingsCommand => openShortcutSettingsCommand ??
+            (openShortcutSettingsCommand = new DelegateCommand(o =>
+            {
+                try
+                {
+                    Shortcut.GlobalHotKey.PassthroughGlobalHotKey = true;
+                    Shortcut.ShortcutEditorWindow shortcutEditorWindow = new Shortcut.ShortcutEditorWindow();
+                    shortcutEditorWindow.Owner = Application.Current.MainWindow;
+                    shortcutEditorWindow.ShowDialog();
+                }
+                finally
+                {
+                    Shortcut.GlobalHotKey.PassthroughGlobalHotKey = false;
+                }
             }));
     }
 }

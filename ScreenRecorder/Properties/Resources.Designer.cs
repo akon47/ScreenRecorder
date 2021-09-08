@@ -133,6 +133,15 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
+        ///   Delete shortcut과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string DeleteShortcut {
+            get {
+                return ResourceManager.GetString("DeleteShortcut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   The display you set could not be found과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string DisplayNotFound {
@@ -259,11 +268,11 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
-        ///   Hotkey Settings과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   Not specified과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        public static string HotkeySettings {
+        public static string NotSpecified {
             get {
-                return ResourceManager.GetString("HotkeySettings", resourceCulture);
+                return ResourceManager.GetString("NotSpecified", resourceCulture);
             }
         }
         
@@ -282,6 +291,15 @@ namespace ScreenRecorder.Properties {
         public static string OpenFolderInFileExplorer {
             get {
                 return ResourceManager.GetString("OpenFolderInFileExplorer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Pause Recording과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string PauseRecording {
+            get {
+                return ResourceManager.GetString("PauseRecording", resourceCulture);
             }
         }
         
@@ -318,6 +336,33 @@ namespace ScreenRecorder.Properties {
         public static string SetsTheRecordingPath {
             get {
                 return ResourceManager.GetString("SetsTheRecordingPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Shortcut Settings과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string ShortcutSettings {
+            get {
+                return ResourceManager.GetString("ShortcutSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Start Recording과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string StartRecording {
+            get {
+                return ResourceManager.GetString("StartRecording", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Stop Recording과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string StopRecording {
+            get {
+                return ResourceManager.GetString("StopRecording", resourceCulture);
             }
         }
         

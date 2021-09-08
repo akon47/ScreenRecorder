@@ -3,8 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:ScreenRecorder"
         xmlns:properties="clr-namespace:ScreenRecorder.Properties"
+        xmlns:cc="clr-namespace:CustomConverter"
         mc:Ignorable="d"
         Icon="pack://application:,,,/icon.ico" SnapsToDevicePixels="True"
         WindowStyle="None" ResizeMode="NoResize" Background="Transparent" AllowsTransparency="False" Topmost="True" WindowStartupLocation="Manual"
@@ -14,6 +16,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Icons.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <cc:BitrateFormatter x:Key="bitrateFormatter" />
         </ResourceDictionary>
     </Window.Resources>
     <Window.CommandBindings>
@@ -271,7 +274,7 @@
                                                     <Setter Property="Height" Value="25" />
                                                 </Style>
                                             </StackPanel.Resources>
-                                            <!--<Button Content="{StaticResource Icon_Keyboard}" Focusable="False" ToolTip="{x:Static properties:Resources.HotkeySettings}"/>-->
+                                            <Button Content="{StaticResource Icon_Keyboard}" Focusable="False" ToolTip="{x:Static properties:Resources.ShortcutSettings}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenShortcutSettingsCommand, Mode=OneWay}"/>
                                         </StackPanel>
                                     </Grid>
                                 </Border>
@@ -335,31 +338,41 @@
 
                                             <ComboBox Grid.Column="1" Grid.Row="0" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderFormats, Mode=OneWay}" SelectedValuePath="Format" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordFormat, Mode=TwoWay}"/>
                                             <ComboBox Grid.Column="1" Grid.Row="1" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderVideoCodecs, Mode=OneWay}" SelectedValuePath="VideoCodec" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoCodec, Mode=TwoWay}" IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}"/>
-                                            <ComboBox Grid.Column="1" Grid.Row="2" Margin="3" Name="comboBox_videoBitrate" DisplayMemberPath="Description" SelectedValuePath="Bitrate" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoBitrate, Mode=TwoWay}">
+                                            <ComboBox Grid.Column="1" Grid.Row="2" Margin="3" Name="comboBox_videoBitrate" SelectedItem="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoBitrate, Mode=TwoWay}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Converter={StaticResource bitrateFormatter}}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
                                                 <ComboBox.Items>
-                                                    <local:BitrateItem Bitrate="1000000" />
-                                                    <local:BitrateItem Bitrate="2000000" />
-                                                    <local:BitrateItem Bitrate="3000000" />
-                                                    <local:BitrateItem Bitrate="4000000" />
-                                                    <local:BitrateItem Bitrate="5000000" />
-                                                    <local:BitrateItem Bitrate="6000000" />
-                                                    <local:BitrateItem Bitrate="7000000" />
-                                                    <local:BitrateItem Bitrate="8000000" />
-                                                    <local:BitrateItem Bitrate="9000000" />
-                                                    <local:BitrateItem Bitrate="10000000" />
-                                                    <local:BitrateItem Bitrate="15000000" />
-                                                    <local:BitrateItem Bitrate="20000000" />
-                                                    <local:BitrateItem Bitrate="30000000" />
+                                                    <sys:Int32>1000000</sys:Int32>
+                                                    <sys:Int32>2000000</sys:Int32>
+                                                    <sys:Int32>3000000</sys:Int32>
+                                                    <sys:Int32>4000000</sys:Int32>
+                                                    <sys:Int32>5000000</sys:Int32>
+                                                    <sys:Int32>6000000</sys:Int32>
+                                                    <sys:Int32>7000000</sys:Int32>
+                                                    <sys:Int32>8000000</sys:Int32>
+                                                    <sys:Int32>9000000</sys:Int32>
+                                                    <sys:Int32>10000000</sys:Int32>
+                                                    <sys:Int32>15000000</sys:Int32>
+                                                    <sys:Int32>20000000</sys:Int32>
+                                                    <sys:Int32>30000000</sys:Int32>
                                                 </ComboBox.Items>
                                             </ComboBox>
                                             <ComboBox Grid.Column="1" Grid.Row="3" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderAudioCodecs, Mode=OneWay}" SelectedValuePath="AudioCodec" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordAudioCodec, Mode=TwoWay}" IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}"/>
-                                            <ComboBox Grid.Column="1" Grid.Row="4" Margin="3" DisplayMemberPath="Description" SelectedValuePath="Bitrate" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordAudioBitrate, Mode=TwoWay}">
+                                            <ComboBox Grid.Column="1" Grid.Row="4" Margin="3" SelectedItem="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordAudioBitrate, Mode=TwoWay}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Converter={StaticResource bitrateFormatter}}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
                                                 <ComboBox.Items>
-                                                    <local:BitrateItem Bitrate="64000" />
-                                                    <local:BitrateItem Bitrate="128000" />
-                                                    <local:BitrateItem Bitrate="160000" />
-                                                    <local:BitrateItem Bitrate="192000" />
-                                                    <local:BitrateItem Bitrate="320000" />
+                                                    <sys:Int32>64000</sys:Int32>
+                                                    <sys:Int32>128000</sys:Int32>
+                                                    <sys:Int32>160000</sys:Int32>
+                                                    <sys:Int32>192000</sys:Int32>
+                                                    <sys:Int32>320000</sys:Int32>
                                                 </ComboBox.Items>
                                             </ComboBox>
                                             <Grid Grid.Column="1" Grid.Row="5" Margin="3" Tag="AdvancedSettings">
