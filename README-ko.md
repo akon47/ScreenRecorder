@@ -14,10 +14,10 @@
 컴퓨터 화면과 기본 오디오 재생 장치의 오디오를 녹화하는 기능을 가진 녹화 프로그램 입니다.   
 
 ### 기본 설정
-![screenshot1_ko](https://user-images.githubusercontent.com/49547202/131764241-29e60789-027e-4bd6-b14b-84ef597804d9.png)
+![screenshot1_ko](https://user-images.githubusercontent.com/49547202/132599965-c29c185a-fca5-4b6f-95a6-4fa6fe678532.png)
 
 ### 고급 설정
-![screenshot2_ko](https://user-images.githubusercontent.com/49547202/131944518-c9b17490-a8f9-4841-b012-121cc75d9611.png)
+![screenshot2_ko](https://user-images.githubusercontent.com/49547202/132599969-3d16f97d-de6e-42ad-b0c8-459eadaebb6a.png)
 
 ## 📃 사용법
 - 동그란 버튼을 누르면 녹화가 시작되고 사각형 버튼을 누르면 정지됩니다.
