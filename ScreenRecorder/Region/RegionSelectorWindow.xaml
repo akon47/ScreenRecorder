@@ -7,8 +7,8 @@
         xmlns:screenRecorder="clr-namespace:ScreenRecorder"
         xmlns:cc="clr-namespace:CustomConverter"
         xmlns:properties="clr-namespace:ScreenRecorder.Properties"
-        mc:Ignorable="d" Loaded="Window_Loaded" Name="root"
-        WindowStyle="None" AllowsTransparency="True" Background="{x:Null}" Topmost="True" ShowInTaskbar="False" WindowStartupLocation="Manual"
+        mc:Ignorable="d" Loaded="Window_Loaded" Name="root" ResizeMode="NoResize" RenderOptions.BitmapScalingMode="NearestNeighbor"
+        WindowStyle="None" AllowsTransparency="True" Topmost="True" ShowInTaskbar="False" WindowStartupLocation="Manual"
         Title="">
     <Window.Resources>
         <ResourceDictionary>
@@ -18,17 +18,17 @@
             <cc:EnumBooleanConverter x:Key="enumBooleanConverter" />
         </ResourceDictionary>
     </Window.Resources>
-    <Window.Triggers>
+    <!--<Window.Triggers>
         <EventTrigger RoutedEvent="Window.Loaded">
             <BeginStoryboard>
                 <Storyboard>
-                    <DoubleAnimation Duration="00:00:00.200" Storyboard.TargetProperty="Opacity" From="0" To="1" />
+                    <DoubleAnimation Storyboard.TargetName="regionSelector" Duration="00:00:00.400" Storyboard.TargetProperty="Opacity" From="0" To="1"/>
                 </Storyboard>
             </BeginStoryboard>
         </EventTrigger>
-    </Window.Triggers>
-    <Grid>
-        <local:RegionSelector x:Name="regionSelector" RegionSelected="regionSelector_RegionSelected" RegionSelectionMode="{Binding Path=RegionSelectionMode, ElementName=root, Mode=OneWay}"/>
+    </Window.Triggers>-->
+    <Grid ClipToBounds="True">
+        <local:RegionSelector x:Name="regionSelector" RegionSelected="regionSelector_RegionSelected" RegionSelectionMode="{Binding Path=RegionSelectionMode, ElementName=root, Mode=OneWay}" />
         <Canvas>
             <Grid Name="regionMenuRoot" Width="162" Height="43" ClipToBounds="True">
                 <Border Background="#212121" CornerRadius="0,0,5,5">
@@ -39,7 +39,7 @@
                         <EventTrigger RoutedEvent="Border.Loaded">
                             <BeginStoryboard>
                                 <Storyboard>
-                                    <DoubleAnimation BeginTime="00:00:00.200" Duration="00:00:00.200" Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)" From="-50" To="0" />
+                                    <DoubleAnimation BeginTime="00:00:00.300" Duration="00:00:00.300" Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)" From="-50" To="0" />
                                 </Storyboard>
                             </BeginStoryboard>
                         </EventTrigger>
@@ -74,7 +74,6 @@
                     </Grid>
                 </Border>
             </Grid>
-            
         </Canvas>
     </Grid>
 </Window>

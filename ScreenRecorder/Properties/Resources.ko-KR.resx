@@ -157,7 +157,7 @@
     <value>녹화 경로</value>
   </data>
   <data name="EncoderCaptureDisplay" xml:space="preserve">
-    <value>디스플레이 장치</value>
+    <value>캡쳐 대상</value>
   </data>
   <data name="EncoderFileFormat" xml:space="preserve">
     <value>파일 포맷</value>

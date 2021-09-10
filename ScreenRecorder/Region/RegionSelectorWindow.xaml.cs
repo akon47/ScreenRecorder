@@ -59,7 +59,9 @@ namespace ScreenRecorder.Region
                     {
                         g.CopyFromScreen(0, 0, 0, 0, bounds.Size, System.Drawing.CopyPixelOperation.SourceCopy);
                     }
-                    Background = new ImageBrush(Utils.ImageSourceFromBitmap(bitmap));
+                    ImageBrush imageBrush = new ImageBrush(Utils.ImageSourceFromBitmap(bitmap));
+                    imageBrush.Freeze();
+                    Background = imageBrush;
                 }
                 regionSelector.StartSelection();
             }

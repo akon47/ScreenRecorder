@@ -157,7 +157,7 @@
     <value>Recording Path</value>
   </data>
   <data name="EncoderCaptureDisplay" xml:space="preserve">
-    <value>Display Device</value>
+    <value>Capture Target</value>
   </data>
   <data name="EncoderFileFormat" xml:space="preserve">
     <value>File Format</value>

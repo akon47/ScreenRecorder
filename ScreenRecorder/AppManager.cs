@@ -84,6 +84,20 @@ namespace ScreenRecorder
             private set => SetProperty(ref captureTargets, value);
         }
 
+        private bool notSupportedHwH264 = true;
+        public bool NotSupportedHwH264
+        {
+            get => notSupportedHwH264;
+            private set => SetProperty(ref notSupportedHwH264, value);
+        }
+
+        private bool notSupportedHwHevc = true;
+        public bool NotSupportedHwHevc
+        {
+            get => notSupportedHwHevc;
+            private set => SetProperty(ref notSupportedHwHevc, value);
+        }
+
         public void Initialize()
         {
             if (IsInitialized)
@@ -129,6 +143,8 @@ namespace ScreenRecorder
             await Task.Run(() =>
             {
                 MediaEncoder.MediaWriter.CheckHardwareCodec();
+                NotSupportedHwH264 = !MediaEncoder.MediaWriter.IsSupportedNvencH264() && !MediaEncoder.MediaWriter.IsSupportedQsvH264();
+                NotSupportedHwHevc = !MediaEncoder.MediaWriter.IsSupportedNvencHEVC() && !MediaEncoder.MediaWriter.IsSupportedQsvHEVC();
             });
         }
 
