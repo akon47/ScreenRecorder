@@ -178,7 +178,7 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
-        ///   Display Device과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   Capture Target과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string EncoderCaptureDisplay {
             get {
@@ -268,6 +268,15 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
+        ///   Hardware encoder not found. Use a software encoder.과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string HardwareEncoderNotFoundWarning {
+            get {
+                return ResourceManager.GetString("HardwareEncoderNotFoundWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Not specified과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string NotSpecified {
@@ -318,6 +327,15 @@ namespace ScreenRecorder.Properties {
         public static string RecordingPathDoesNotExist {
             get {
                 return ResourceManager.GetString("RecordingPathDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Record Microphone과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string RecordMicrophone {
+            get {
+                return ResourceManager.GetString("RecordMicrophone", resourceCulture);
             }
         }
         

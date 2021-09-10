@@ -111,12 +111,6 @@ namespace ScreenRecorder.Region
                         {
                             selectedTargetBounds = windowRegion.Region;
                             selectedTargetDevice = screens.FirstOrDefault(s => s.Bounds.Contains((int)movePoint.X, (int)movePoint.Y))?.DeviceName;
-                            //selectedTargetDevice = System.Windows.Forms.Screen.AllScreens.OrderByDescending(s =>
-                            //{
-                            //    Rect intersectRegion = Rect.Intersect(new Rect(s.Bounds.X, s.Bounds.Y, s.Bounds.Width, s.Bounds.Height), windowRegion.Region);
-                            //    return intersectRegion.IsEmpty ? 0 : intersectRegion.Width * intersectRegion.Height;
-                            //}).FirstOrDefault()?.DeviceName;
-
                             break;
                         }
                     }
@@ -165,12 +159,15 @@ namespace ScreenRecorder.Region
         #endregion
 
         #region OnRender
+        private Pen selectorPen = new Pen(Brushes.White, 2);
+        private Brush dimBrush = new SolidColorBrush(Color.FromArgb(150, 0, 0, 0));
         protected override void OnRender(DrawingContext dc)
         {
             if (!selectionStarted)
                 return;
 
             Rect bounds = new Rect(0, 0, ActualWidth, ActualHeight);
+
             dc.DrawRectangle(Brushes.Transparent, null, bounds);
 
             PathGeometry pathGeometry = new PathGeometry();
@@ -180,20 +177,19 @@ namespace ScreenRecorder.Region
                 case RegionSelectionMode.UserRegion:
                     Rect userRegion = GetUserRegion();
                     pathGeometry.AddGeometry(new RectangleGeometry(userRegion));
-
-                    dc.DrawRectangle(null, new Pen(Brushes.White, 2), userRegion);
+                    dc.DrawRectangle(null, selectorPen, userRegion);
                     break;
                 case RegionSelectionMode.WindowRegion:
                     Rect windowRegion = Rect.Intersect(GetDeviceRegion(selectedTargetDevice), selectedTargetBounds);
                     pathGeometry.AddGeometry(new RectangleGeometry(windowRegion));
-                    dc.DrawRectangle(null, new Pen(Brushes.White, 2), windowRegion);
+                    dc.DrawRectangle(null, selectorPen, windowRegion);
                     break;
                 case RegionSelectionMode.DisplayRegion:
                     pathGeometry.AddGeometry(new RectangleGeometry(selectedTargetBounds));
-                    dc.DrawRectangle(null, new Pen(Brushes.White, 2), selectedTargetBounds);
+                    dc.DrawRectangle(null, selectorPen, selectedTargetBounds);
                     break;
             }
-            dc.DrawGeometry(new SolidColorBrush(Color.FromArgb(150, 0, 0, 0)), null, pathGeometry);
+            dc.DrawGeometry(dimBrush, null, pathGeometry);
         }
         #endregion
 

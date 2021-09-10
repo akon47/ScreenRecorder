@@ -5,12 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:ScreenRecorder"
+        xmlns:mediaEncoder="clr-namespace:MediaEncoder;assembly=MediaEncoder"
         xmlns:properties="clr-namespace:ScreenRecorder.Properties"
         xmlns:cc="clr-namespace:CustomConverter"
         mc:Ignorable="d"
         Icon="pack://application:,,,/icon.ico" SnapsToDevicePixels="True"
         WindowStyle="None" ResizeMode="NoResize" Background="Transparent" AllowsTransparency="False" Topmost="True" WindowStartupLocation="Manual"
-        Title="" Height="72" SizeToContent="Width">
+        Title="" Height="72" MinWidth="240" SizeToContent="Width">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -22,10 +23,10 @@
     <Window.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Close" Executed="CloseCommand_Executed" CanExecute="CloseCommand_CanExecute" />
     </Window.CommandBindings>
-    <Border CornerRadius="2" Background="#454545" BorderBrush="Black" BorderThickness="1" MouseDown="Border_MouseDown">
+    <Border CornerRadius="0" Background="#454545" BorderBrush="Black" BorderThickness="1" MouseDown="Border_MouseDown">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Border Grid.Column="0" Margin="5,5,3,5" CornerRadius="2" Background="#212121" BorderBrush="Black" BorderThickness="1">
@@ -63,8 +64,9 @@
                             </TextBlock.Style>
                         </TextBlock>
 
-                        <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal">
-                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_FolderOpen}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenRecordDirecotryCommand}" Width="20" Height="20" Margin="3,0,3,0" />
+                        <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Margin="0,0,2,0">
+                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_CursorClick}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.CaptureRegionByUserSelection}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}" CommandParameter="{x:Static local:CaptureTarget.ByUserChoiceTargetDeviceName}" Width="20" Height="20" Margin="1,0,1,0" />
+                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_FolderOpen}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenRecordDirecotryCommand}" Width="20" Height="20" Margin="1,0,1,0" />
                         </StackPanel>
                     </Grid>
                     
@@ -81,13 +83,34 @@
                                     </Style.Triggers>
                                 </Style>
                             </Viewbox.Style>
-                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}">
+                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}" ToolTip="{x:Static properties:Resources.StartRecording}">
                                 <Button.Style>
                                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
                                         <Setter Property="Visibility" Value="Visible" />
                                         <Setter Property="Content">
                                             <Setter.Value>
-                                                <Ellipse Width="18" Height="18" StrokeThickness="1">
+                                                <Grid Width="22" Height="22">
+                                                    <Ellipse StrokeThickness="2">
+                                                        <Ellipse.Stroke>
+                                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                                <GradientStop Color="#902020" Offset="0.0"/>
+                                                                <GradientStop Color="#702020" Offset="0.5"/>
+                                                                <GradientStop Color="#502020" Offset="1.0"/>
+                                                            </LinearGradientBrush>
+                                                        </Ellipse.Stroke>
+                                                    </Ellipse>
+                                                    <Ellipse Margin="4" StrokeThickness="0">
+                                                        <Ellipse.Fill>
+                                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                                <GradientStop Color="Red" Offset="0.0"/>
+                                                                <GradientStop Color="#702020" Offset="0.5"/>
+                                                                <GradientStop Color="DarkRed" Offset="1.0"/>
+                                                            </LinearGradientBrush>
+                                                        </Ellipse.Fill>
+                                                    </Ellipse>
+                                                </Grid>
+                                                
+                                                <!--<Ellipse Width="18" Height="18" StrokeThickness="1">
                                                     <Ellipse.Fill>
                                                         <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
                                                             <GradientStop Color="Red" Offset="0.0"/>
@@ -102,7 +125,7 @@
                                                             <GradientStop Color="#502020" Offset="1.0"/>
                                                         </LinearGradientBrush>
                                                     </Ellipse.Stroke>
-                                                </Ellipse>
+                                                </Ellipse>-->
                                             </Setter.Value>
                                         </Setter>
                                     </Style>
@@ -121,7 +144,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Viewbox.Style>
-                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=PauseScreenRecordCommand}">
+                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=PauseScreenRecordCommand}" ToolTip="{x:Static properties:Resources.PauseRecording}">
                                 <Button.Style>
                                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -184,7 +207,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Viewbox.Style>
-                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StopScreenRecordCommand}">
+                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StopScreenRecordCommand}" ToolTip="{x:Static properties:Resources.StopRecording}">
                                 <Button.Style>
                                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
                                         <Setter Property="Content">
@@ -252,7 +275,7 @@
                 </Grid.RowDefinitions>
                 <Button Grid.Column="0" Grid.Row="0" Margin="3" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_Close}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.Exit}" Command="ApplicationCommands.Close"/>
                 <Grid Grid.Column="0" Grid.Row="1">
-                    <ToggleButton Name="recordSetting" Focusable="False" Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{StaticResource Icon_Settings}" ToolTip="{x:Static properties:Resources.EncoderSettings}" Foreground="DarkGray" Margin="3"/>
+                    <ToggleButton Name="recordSetting" Focusable="False" Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{StaticResource Icon_Settings}" ToolTip="{x:Static properties:Resources.EncoderSettings}" Foreground="DarkGray" Margin="3" />
                     <Popup StaysOpen="False" IsOpen="{Binding Path=IsChecked, ElementName=recordSetting, Mode=TwoWay}" Placement="Bottom" Opened="Popup_Opened">
                         <Border MinWidth="400" BorderThickness="1" BorderBrush="Black" Background="#434343" SnapsToDevicePixels="True">
                             <Grid>
@@ -274,7 +297,7 @@
                                                     <Setter Property="Height" Value="25" />
                                                 </Style>
                                             </StackPanel.Resources>
-                                            <Button Content="{StaticResource Icon_Keyboard}" Focusable="False" ToolTip="{x:Static properties:Resources.ShortcutSettings}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenShortcutSettingsCommand, Mode=OneWay}"/>
+                                            <Button Content="{StaticResource Icon_Keyboard}" Focusable="False" ToolTip="{x:Static properties:Resources.ShortcutSettings}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenShortcutSettingsCommand, Mode=OneWay}" />
                                         </StackPanel>
                                     </Grid>
                                 </Border>
@@ -321,12 +344,13 @@
                                                 <RowDefinition />
                                                 <RowDefinition Tag="AdvancedSettings" /> <!-- Audio Codec -->
                                                 <RowDefinition />
-                                                <RowDefinition Tag="AdvancedSettings" /> <!-- Capture Display -->
+                                                <RowDefinition /> <!-- Capture Display -->
                                                 <RowDefinition />
                                                 <RowDefinition />
                                                 <RowDefinition />
                                                 <RowDefinition />
                                                 <RowDefinition />
+                                                <RowDefinition /> <!-- Warning -->
                                             </Grid.RowDefinitions>
                                             <TextBlock Grid.Column="0" Grid.Row="0" Text="{x:Static properties:Resources.EncoderFileFormat}" Margin="3" />
                                             <TextBlock Grid.Column="0" Grid.Row="1" Text="{x:Static properties:Resources.EncoderVideoCodec}" Margin="3" />
@@ -375,8 +399,8 @@
                                                     <sys:Int32>320000</sys:Int32>
                                                 </ComboBox.Items>
                                             </ComboBox>
-                                            <Grid Grid.Column="1" Grid.Row="5" Margin="3" Tag="AdvancedSettings">
-                                                <ComboBox Name="comboBox_captureDisplay" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=CaptureTargets, Mode=OneWay}" SelectedValuePath="DeviceName" DisplayMemberPath="Description" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureMonitor, Mode=TwoWay}" IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}" />
+                                            <Grid Grid.Column="1" Grid.Row="5" Margin="3">
+                                                <ComboBox Name="comboBox_captureDisplay" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=CaptureTargets, Mode=OneWay}" SelectedValuePath="DeviceName" DisplayMemberPath="Description" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureMonitor, Mode=TwoWay}" />
                                                 <TextBlock Text="{x:Static properties:Resources.DisplayNotFound}" Foreground="Red" VerticalAlignment="Center" Margin="6,0,30,0" IsHitTestVisible="False">
                                                     <TextBlock.Style>
                                                         <Style TargetType="{x:Type TextBlock}">
@@ -405,9 +429,51 @@
                                                 <Button Grid.Column="1" Grid.Row="0" Margin="0,3,3,3" Content="{x:Static properties:Resources.Browse}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=SelectRecordDirectory, Mode=OneWay}"/>
                                             </Grid>
                                             <StackPanel Grid.Column="0" Grid.Row="7" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <CheckBox Content="{x:Static properties:Resources.RecordMicrophone}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=RecordMicrophone, Mode=TwoWay}" Foreground="White" Margin="5,2,0,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 <CheckBox Content="{x:Static properties:Resources.CaptureCursor}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureCursorVisible, Mode=TwoWay}" Foreground="White" Margin="5,2,0,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 <CheckBox Content="{x:Static properties:Resources.AdvancedSettings}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=TwoWay}" Foreground="White" Margin="5,2,5,5" HorizontalAlignment="Right" />
                                             </StackPanel>
+
+                                            <Border Grid.Column="0" Grid.Row="8" Grid.ColumnSpan="2" Margin="3" HorizontalAlignment="Center" BorderBrush="Transparent" BorderThickness="0" CornerRadius="3" Background="#313131">
+                                                <Border.Style>
+                                                    <Style TargetType="{x:Type Border}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                        <Style.Triggers>
+                                                            <MultiDataTrigger>
+                                                                <MultiDataTrigger.Conditions>
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}" Value="False" />
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=NotSupportedHwH264, Mode=OneWay}" Value="True" />
+                                                                </MultiDataTrigger.Conditions>
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </MultiDataTrigger>
+                                                            <MultiDataTrigger>
+                                                                <MultiDataTrigger.Conditions>
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}" Value="True" />
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=NotSupportedHwH264, Mode=OneWay}" Value="True" />
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoCodec, Mode=OneWay}" Value="{x:Static mediaEncoder:VideoCodec.H264}" />
+                                                                </MultiDataTrigger.Conditions>
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </MultiDataTrigger>
+                                                            <MultiDataTrigger>
+                                                                <MultiDataTrigger.Conditions>
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}" Value="True" />
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=NotSupportedHwHevc, Mode=OneWay}" Value="True" />
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoCodec, Mode=OneWay}" Value="{x:Static mediaEncoder:VideoCodec.H265}" />
+                                                                </MultiDataTrigger.Conditions>
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </MultiDataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <Grid Margin="3">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <ContentPresenter Content="{StaticResource Icon_Warning}" Margin="5"/>
+                                                    <TextBlock Text="{x:Static properties:Resources.HardwareEncoderNotFoundWarning}" TextWrapping="WrapWithOverflow" TextTrimming="None" Grid.Column="1" TextAlignment="Center" Margin="0,0,5,0" MaxWidth="320"/>
+                                                </Grid>
+                                            </Border>
                                         </Grid>
                                     </Border>
                                 </Grid>

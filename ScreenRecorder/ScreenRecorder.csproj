@@ -114,6 +114,9 @@
     <Compile Include="AppConfig.cs" />
     <Compile Include="AppConstants.cs" />
     <Compile Include="AppManager.cs" />
+    <Compile Include="AudioSource\AudioCaptureSource.cs" />
+    <Compile Include="AudioSource\AudioMixer.cs" />
+    <Compile Include="AudioSource\AudioSourceResampler.cs" />
     <Compile Include="AudioSource\IAudioSource.cs" />
     <Compile Include="AudioSource\LoopbackAudioSource.cs" />
     <Compile Include="CaptureTarget.cs" />
@@ -139,6 +142,7 @@
     <Compile Include="Encoder\EncoderVideoCodec.cs" />
     <Compile Include="Encoder\ScreenEncoder.cs" />
     <Compile Include="Extensions\Extensions.cs" />
+    <Compile Include="AudioInputDevice.cs" />
     <Compile Include="Properties\Resources.ko-KR.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

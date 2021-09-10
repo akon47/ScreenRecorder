@@ -157,7 +157,7 @@
     <value>Recording Path</value>
   </data>
   <data name="EncoderCaptureDisplay" xml:space="preserve">
-    <value>Display Device</value>
+    <value>Capture Target</value>
   </data>
   <data name="EncoderFileFormat" xml:space="preserve">
     <value>File Format</value>
@@ -186,6 +186,9 @@
   <data name="FailedToStartRecording" xml:space="preserve">
     <value>Failed to start recording</value>
   </data>
+  <data name="HardwareEncoderNotFoundWarning" xml:space="preserve">
+    <value>Hardware encoder not found. Use a software encoder.</value>
+  </data>
   <data name="NotSpecified" xml:space="preserve">
     <value>Not specified</value>
   </data>
@@ -203,6 +206,9 @@
   </data>
   <data name="RecordingPathDoesNotExist" xml:space="preserve">
     <value>Recording path does not exist</value>
+  </data>
+  <data name="RecordMicrophone" xml:space="preserve">
+    <value>Record Microphone</value>
   </data>
   <data name="RegionSizeError" xml:space="preserve">
     <value>Region less than 100 x 100 cannot be recorded</value>

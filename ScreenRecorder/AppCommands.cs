@@ -229,8 +229,7 @@ namespace ScreenRecorder
                                     AppConfig.Instance.SelectedRecordVideoCodec : MediaEncoder.VideoCodec.H264;
                                 var audioCodec = AppConfig.Instance.AdvancedSettings ?
                                     AppConfig.Instance.SelectedRecordAudioCodec : MediaEncoder.AudioCodec.Aac;
-                                var displayDeviceName = AppConfig.Instance.AdvancedSettings ?
-                                    AppConfig.Instance.ScreenCaptureMonitor : System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
+                                var displayDeviceName = o is string target ? target : AppConfig.Instance.ScreenCaptureMonitor;
                                 var region = new Rect(0, 0, double.MaxValue, double.MaxValue);
 
                                 switch(displayDeviceName)
@@ -285,7 +284,8 @@ namespace ScreenRecorder
                                             videoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
                                             audioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
                                             displayDeviceName, region,
-                                            AppConfig.Instance.ScreenCaptureCursorVisible);
+                                            AppConfig.Instance.ScreenCaptureCursorVisible,
+                                            AppConfig.Instance.RecordMicrophone);
                                 }
                                 catch
                                 {
