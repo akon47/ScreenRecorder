@@ -331,6 +331,15 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
+        ///   Record Microphone과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string RecordMicrophone {
+            get {
+                return ResourceManager.GetString("RecordMicrophone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Region less than 100 x 100 cannot be recorded과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string RegionSizeError {

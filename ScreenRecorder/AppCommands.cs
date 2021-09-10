@@ -284,7 +284,8 @@ namespace ScreenRecorder
                                             videoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
                                             audioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
                                             displayDeviceName, region,
-                                            AppConfig.Instance.ScreenCaptureCursorVisible);
+                                            AppConfig.Instance.ScreenCaptureCursorVisible,
+                                            AppConfig.Instance.RecordMicrophone);
                                 }
                                 catch
                                 {

@@ -429,6 +429,7 @@
                                                 <Button Grid.Column="1" Grid.Row="0" Margin="0,3,3,3" Content="{x:Static properties:Resources.Browse}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=SelectRecordDirectory, Mode=OneWay}"/>
                                             </Grid>
                                             <StackPanel Grid.Column="0" Grid.Row="7" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <CheckBox Content="{x:Static properties:Resources.RecordMicrophone}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=RecordMicrophone, Mode=TwoWay}" Foreground="White" Margin="5,2,0,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 <CheckBox Content="{x:Static properties:Resources.CaptureCursor}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureCursorVisible, Mode=TwoWay}" Foreground="White" Margin="5,2,0,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 <CheckBox Content="{x:Static properties:Resources.AdvancedSettings}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=TwoWay}" Foreground="White" Margin="5,2,5,5" HorizontalAlignment="Right" />
                                             </StackPanel>

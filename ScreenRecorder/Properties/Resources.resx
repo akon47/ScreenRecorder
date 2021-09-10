@@ -207,6 +207,9 @@
   <data name="RecordingPathDoesNotExist" xml:space="preserve">
     <value>Recording path does not exist</value>
   </data>
+  <data name="RecordMicrophone" xml:space="preserve">
+    <value>Record Microphone</value>
+  </data>
   <data name="RegionSizeError" xml:space="preserve">
     <value>Region less than 100 x 100 cannot be recorded</value>
   </data>
