@@ -15,11 +15,11 @@
 It is a simple recording program with the ability to record the screen.
 
 ### Default Settings
-![screenshot1_en](https://user-images.githubusercontent.com/49547202/132599938-5a34d781-1ff3-49f8-8e0f-470517120850.png)
+![screenshot1_en](https://user-images.githubusercontent.com/49547202/132877051-fccf792b-bc02-48dd-b4bf-81bd2409a8aa.png)
 
 
 ### Advanced Settings
-![screenshot2_en](https://user-images.githubusercontent.com/49547202/132599944-ed239dab-0ca5-4c98-8417-69c8e7b926c3.png)
+![screenshot2_en](https://user-images.githubusercontent.com/49547202/132877059-2249d2e4-9b4e-45ee-bad6-34de84221560.png)
 
 ## 📃 Usage
 - Pressing the round button starts recording and stops when pressing the square button.
@@ -37,6 +37,7 @@ It is a simple recording program with the ability to record the screen.
   - You have the following selection options:
     - Capture Region, Capture Window, Capture Display
 - Recording function using hotkeys.
+- Microphone recording function (Record system default capture device)
 
 ## 💡 System requirements
 - Platforms Supported: Windows 10 64bit Version 2004 or newer (*I haven't tested it on other platforms*)
