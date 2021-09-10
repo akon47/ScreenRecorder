@@ -342,7 +342,7 @@
                                                 <RowDefinition />
                                                 <RowDefinition Tag="AdvancedSettings" /> <!-- Audio Codec -->
                                                 <RowDefinition />
-                                                <RowDefinition Tag="AdvancedSettings" /> <!-- Capture Display -->
+                                                <RowDefinition /> <!-- Capture Display -->
                                                 <RowDefinition />
                                                 <RowDefinition />
                                                 <RowDefinition />
@@ -396,8 +396,8 @@
                                                     <sys:Int32>320000</sys:Int32>
                                                 </ComboBox.Items>
                                             </ComboBox>
-                                            <Grid Grid.Column="1" Grid.Row="5" Margin="3" Tag="AdvancedSettings">
-                                                <ComboBox Name="comboBox_captureDisplay" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=CaptureTargets, Mode=OneWay}" SelectedValuePath="DeviceName" DisplayMemberPath="Description" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureMonitor, Mode=TwoWay}" IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}" />
+                                            <Grid Grid.Column="1" Grid.Row="5" Margin="3">
+                                                <ComboBox Name="comboBox_captureDisplay" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=CaptureTargets, Mode=OneWay}" SelectedValuePath="DeviceName" DisplayMemberPath="Description" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureMonitor, Mode=TwoWay}" />
                                                 <TextBlock Text="{x:Static properties:Resources.DisplayNotFound}" Foreground="Red" VerticalAlignment="Center" Margin="6,0,30,0" IsHitTestVisible="False">
                                                     <TextBlock.Style>
                                                         <Style TargetType="{x:Type TextBlock}">

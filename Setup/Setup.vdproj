@@ -159,6 +159,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_54A0063C27AC3BC628777E5BE735BCA8"
+        "OwnerKey" = "8:_3C6494BFE21840E7A935CA4596E91F15"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_5C28C073E3F76A3EFDF86643A04D9DDA"
         "OwnerKey" = "8:_3C6494BFE21840E7A935CA4596E91F15"
         "MsmSig" = "8:_UNDEFINED"
@@ -166,7 +172,7 @@
         "Entry"
         {
         "MsmKey" = "8:_5C28C073E3F76A3EFDF86643A04D9DDA"
-        "OwnerKey" = "8:_AC188A1E5ED163EF968CE0C63140A294"
+        "OwnerKey" = "8:_54A0063C27AC3BC628777E5BE735BCA8"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -291,12 +297,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_AC188A1E5ED163EF968CE0C63140A294"
-        "OwnerKey" = "8:_3C6494BFE21840E7A935CA4596E91F15"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_B7252D7801928F9CDAB06EB231F670C1"
         "OwnerKey" = "8:_3C6494BFE21840E7A935CA4596E91F15"
         "MsmSig" = "8:_UNDEFINED"
@@ -376,12 +376,6 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_AC188A1E5ED163EF968CE0C63140A294"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_8DE2286B806CDD9215E7301E4832CE40"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -431,6 +425,12 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_94D2091918DC5CE626DD2C22CCA23708"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_54A0063C27AC3BC628777E5BE735BCA8"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -948,6 +948,37 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_54A0063C27AC3BC628777E5BE735BCA8"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:MediaEncoder, Version=0.0.0.0, Culture=neutral, processorArchitecture=AMD64"
+                "ScatterAssemblies"
+                {
+                    "_54A0063C27AC3BC628777E5BE735BCA8"
+                    {
+                    "Name" = "8:MediaEncoder.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:MediaEncoder.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_7D9EF09E5DF34B809E04523D54E7AEFD"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_5C28C073E3F76A3EFDF86643A04D9DDA"
             {
             "AssemblyRegister" = "3:1"
@@ -1259,37 +1290,6 @@
                     }
                 }
             "SourcePath" = "8:System.IO.Compression.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_7D9EF09E5DF34B809E04523D54E7AEFD"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_AC188A1E5ED163EF968CE0C63140A294"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:MediaEncoder, Version=0.0.0.0, Culture=neutral, processorArchitecture=AMD64"
-                "ScatterAssemblies"
-                {
-                    "_AC188A1E5ED163EF968CE0C63140A294"
-                    {
-                    "Name" = "8:MediaEncoder.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:MediaEncoder.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_7D9EF09E5DF34B809E04523D54E7AEFD"
@@ -1712,7 +1712,7 @@
                 {
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_90433DDE1B6840A18E7BE7D1F53145A6"
                     {
-                    "Sequence" = "3:100"
+                    "Sequence" = "3:110"
                     "DisplayName" = "8:마침"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
@@ -2169,7 +2169,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_3C6494BFE21840E7A935CA4596E91F15"
             {
-            "SourcePath" = "8:"
+            "SourcePath" = "8:..\\ScreenRecorder\\obj\\x64\\Release\\ScreenRecorder.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_7D9EF09E5DF34B809E04523D54E7AEFD"
