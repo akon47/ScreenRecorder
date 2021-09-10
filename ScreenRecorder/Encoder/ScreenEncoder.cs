@@ -14,9 +14,12 @@ namespace ScreenRecorder.Encoder
     public class ScreenEncoder : Encoder
     {
         private ScreenVideoSource screenVideoSource;
-        private LoopbackAudioSource loopbackAudioSource;
 
-        public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, Rect region, bool drawCursor = true)
+        private AudioMixer audioMixer;
+        private LoopbackAudioSource loopbackAudioSource;
+        private AudioCaptureSource audioCaptureSource;
+
+        public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, Rect region, bool drawCursor, bool recordMicrophone)
         {
             if (base.IsRunning)
                 return;
@@ -28,13 +31,22 @@ namespace ScreenRecorder.Encoder
             }
 
             screenVideoSource = new ScreenVideoSource(deviceName, region, drawCursor);
+
+            
             loopbackAudioSource = new LoopbackAudioSource();
+            IAudioSource audioSource = loopbackAudioSource;
+            if (recordMicrophone)
+            {
+                audioCaptureSource = new AudioCaptureSource();
+                audioMixer = new AudioMixer(loopbackAudioSource, audioCaptureSource);
+                audioSource = audioMixer;
+            }
             try
             {
                 Rect validRegion = Rect.Intersect(region, new Rect(0, 0, monitorInfo.Width, monitorInfo.Height));
                 base.Start(format, url,
                     screenVideoSource, videoCodec, videoBitrate, new VideoSize((int)validRegion.Width, (int)validRegion.Height),
-                    loopbackAudioSource, audioCodec, audioBitrate);
+                    audioSource, audioCodec, audioBitrate);
             }
             catch (Exception ex)
             {
@@ -42,6 +54,15 @@ namespace ScreenRecorder.Encoder
 
                 screenVideoSource?.Dispose();
                 screenVideoSource = null;
+
+                audioMixer?.Dispose();
+                audioMixer = null;
+
+                loopbackAudioSource?.Dispose();
+                loopbackAudioSource = null;
+
+                audioCaptureSource?.Dispose();
+                audioCaptureSource = null;
                 throw ex;
             }
         }
@@ -51,8 +72,14 @@ namespace ScreenRecorder.Encoder
             screenVideoSource?.Dispose();
             screenVideoSource = null;
 
+            audioMixer?.Dispose();
+            audioMixer = null;
+
             loopbackAudioSource?.Dispose();
             loopbackAudioSource = null;
+
+            audioCaptureSource?.Dispose();
+            audioCaptureSource = null;
         }
     }
 }

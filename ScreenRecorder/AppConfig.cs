@@ -76,6 +76,8 @@ namespace ScreenRecorder
                 config.Add(nameof(RecordDirectory), RecordDirectory);
                 config.Add(nameof(RegionSelectionMode), Enum.GetName(typeof(RegionSelectionMode), RegionSelectionMode));
 
+                config.Add(nameof(RecordMicrophone), RecordMicrophone.ToString());
+
                 config.Add(nameof(WindowLeft), WindowLeft.ToString());
                 config.Add(nameof(WindowTop), WindowTop.ToString());
 
@@ -91,7 +93,7 @@ namespace ScreenRecorder
 
                 if (config != null)
                 {
-                    ScreenCaptureMonitor = Config.Config.GetString(config, nameof(ScreenCaptureMonitor), CaptureTarget.PrimaryDisplay.DeviceName);
+                    ScreenCaptureMonitor = Config.Config.GetString(config, nameof(ScreenCaptureMonitor), CaptureTarget.PrimaryCaptureTargetDeviceName);
                     ScreenCaptureCursorVisible = Config.Config.GetBool(config, nameof(ScreenCaptureCursorVisible), true);
 
                     AdvancedSettings = Config.Config.GetBool(config, nameof(AdvancedSettings), false);
@@ -103,6 +105,8 @@ namespace ScreenRecorder
                     SelectedRecordAudioBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordAudioBitrate), 160000);
                     RecordDirectory = Config.Config.GetString(config, nameof(RecordDirectory), Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
                     RegionSelectionMode = Config.Config.GetEnum<RegionSelectionMode>(config, nameof(RegionSelectionMode), RegionSelectionMode.UserRegion);
+
+                    RecordMicrophone = Config.Config.GetBool(config, nameof(RecordMicrophone), false);
 
                     WindowLeft = Config.Config.GetDouble(config, nameof(WindowLeft), -1.0d);
                     WindowTop = Config.Config.GetDouble(config, nameof(WindowTop), -1.0d);
@@ -119,7 +123,7 @@ namespace ScreenRecorder
             WindowLeft = -1.0d;
             WindowTop = -1.0d;
 
-            ScreenCaptureMonitor = CaptureTarget.PrimaryDisplay.DeviceName;
+            ScreenCaptureMonitor = CaptureTarget.PrimaryCaptureTargetDeviceName;
             ScreenCaptureCursorVisible = true;
 
             AdvancedSettings = false;
@@ -131,6 +135,8 @@ namespace ScreenRecorder
             SelectedRecordAudioBitrate = 160000;
             RecordDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
             RegionSelectionMode = RegionSelectionMode.UserRegion;
+
+            RecordMicrophone = false;
         }
         #endregion
 
@@ -242,6 +248,15 @@ namespace ScreenRecorder
         {
             get => screenCaptureCursorVisible;
             set => SetProperty(ref screenCaptureCursorVisible, value);
+        }
+        #endregion
+
+        #region Audio
+        private bool recordMicrophone;
+        public bool RecordMicrophone
+        {
+            get => recordMicrophone;
+            set => SetProperty(ref recordMicrophone, value);
         }
         #endregion
 

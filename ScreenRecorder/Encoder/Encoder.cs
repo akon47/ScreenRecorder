@@ -250,10 +250,17 @@ namespace ScreenRecorder.Encoder
                     if (enableEvent != null && !enableEvent.WaitOne(0, false))
                         return;
 
-                    resampler.Resampling(eventArgs.Channels, eventArgs.SampleFormat, eventArgs.SampleRate,
-                        2, SampleFormat.S16, 48000, eventArgs.DataPointer, eventArgs.Samples, out IntPtr destData, out int destSamples);
+                    if (eventArgs.Channels != 2 || eventArgs.SampleFormat != SampleFormat.S16 || eventArgs.SampleRate != 48000)
+                    {
+                        resampler.Resampling(eventArgs.Channels, eventArgs.SampleFormat, eventArgs.SampleRate,
+                            2, SampleFormat.S16, 48000, eventArgs.DataPointer, eventArgs.Samples, out IntPtr destData, out int destSamples);
 
-                    srcAudioCircularBuffer.Write(destData, 0, destSamples * 4);
+                        srcAudioCircularBuffer.Write(destData, 0, destSamples * 4);
+                    }
+                    else
+                    {
+                        srcAudioCircularBuffer.Write(eventArgs.DataPointer, 0, eventArgs.Samples * 4);
+                    }
                 }
             }
 
