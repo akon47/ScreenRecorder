@@ -274,7 +274,7 @@
                 </Grid.RowDefinitions>
                 <Button Grid.Column="0" Grid.Row="0" Margin="3" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_Close}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.Exit}" Command="ApplicationCommands.Close"/>
                 <Grid Grid.Column="0" Grid.Row="1">
-                    <ToggleButton Name="recordSetting" Focusable="False" Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{StaticResource Icon_Settings}" ToolTip="{x:Static properties:Resources.EncoderSettings}" Foreground="DarkGray" Margin="3"/>
+                    <ToggleButton Name="recordSetting" Focusable="False" Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{StaticResource Icon_Settings}" ToolTip="{x:Static properties:Resources.EncoderSettings}" Foreground="DarkGray" Margin="3" />
                     <Popup StaysOpen="False" IsOpen="{Binding Path=IsChecked, ElementName=recordSetting, Mode=TwoWay}" Placement="Bottom" Opened="Popup_Opened">
                         <Border MinWidth="400" BorderThickness="1" BorderBrush="Black" Background="#434343" SnapsToDevicePixels="True">
                             <Grid>
@@ -349,6 +349,7 @@
                                                 <RowDefinition />
                                                 <RowDefinition />
                                                 <RowDefinition />
+                                                <RowDefinition /> <!-- Warning -->
                                             </Grid.RowDefinitions>
                                             <TextBlock Grid.Column="0" Grid.Row="0" Text="{x:Static properties:Resources.EncoderFileFormat}" Margin="3" />
                                             <TextBlock Grid.Column="0" Grid.Row="1" Text="{x:Static properties:Resources.EncoderVideoCodec}" Margin="3" />
@@ -430,6 +431,10 @@
                                                 <CheckBox Content="{x:Static properties:Resources.CaptureCursor}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureCursorVisible, Mode=TwoWay}" Foreground="White" Margin="5,2,0,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 <CheckBox Content="{x:Static properties:Resources.AdvancedSettings}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=TwoWay}" Foreground="White" Margin="5,2,5,5" HorizontalAlignment="Right" />
                                             </StackPanel>
+
+                                            <Grid Grid.Column="0" Grid.Row="8" Grid.ColumnSpan="2">
+                                                
+                                            </Grid>
                                         </Grid>
                                     </Border>
                                 </Grid>
