@@ -186,6 +186,9 @@
   <data name="FailedToStartRecording" xml:space="preserve">
     <value>Failed to start recording</value>
   </data>
+  <data name="HardwareEncoderNotFoundWarning" xml:space="preserve">
+    <value>Hardware encoder not found. Use a software encoder.</value>
+  </data>
   <data name="NotSpecified" xml:space="preserve">
     <value>Not specified</value>
   </data>

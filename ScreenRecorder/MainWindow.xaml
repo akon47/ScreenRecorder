@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:ScreenRecorder"
+        xmlns:mediaEncoder="clr-namespace:MediaEncoder;assembly=MediaEncoder"
         xmlns:properties="clr-namespace:ScreenRecorder.Properties"
         xmlns:cc="clr-namespace:CustomConverter"
         mc:Ignorable="d"
@@ -296,7 +297,7 @@
                                                     <Setter Property="Height" Value="25" />
                                                 </Style>
                                             </StackPanel.Resources>
-                                            <Button Content="{StaticResource Icon_Keyboard}" Focusable="False" ToolTip="{x:Static properties:Resources.ShortcutSettings}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenShortcutSettingsCommand, Mode=OneWay}"/>
+                                            <Button Content="{StaticResource Icon_Keyboard}" Focusable="False" ToolTip="{x:Static properties:Resources.ShortcutSettings}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenShortcutSettingsCommand, Mode=OneWay}" />
                                         </StackPanel>
                                     </Grid>
                                 </Border>
@@ -432,9 +433,46 @@
                                                 <CheckBox Content="{x:Static properties:Resources.AdvancedSettings}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=TwoWay}" Foreground="White" Margin="5,2,5,5" HorizontalAlignment="Right" />
                                             </StackPanel>
 
-                                            <Grid Grid.Column="0" Grid.Row="8" Grid.ColumnSpan="2">
-                                                
-                                            </Grid>
+                                            <Border Grid.Column="0" Grid.Row="8" Grid.ColumnSpan="2" Margin="3" HorizontalAlignment="Center" BorderBrush="Transparent" BorderThickness="0" CornerRadius="3" Background="#313131">
+                                                <Border.Style>
+                                                    <Style TargetType="{x:Type Border}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                        <Style.Triggers>
+                                                            <MultiDataTrigger>
+                                                                <MultiDataTrigger.Conditions>
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}" Value="False" />
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=NotSupportedHwH264, Mode=OneWay}" Value="True" />
+                                                                </MultiDataTrigger.Conditions>
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </MultiDataTrigger>
+                                                            <MultiDataTrigger>
+                                                                <MultiDataTrigger.Conditions>
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}" Value="True" />
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=NotSupportedHwH264, Mode=OneWay}" Value="True" />
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoCodec, Mode=OneWay}" Value="{x:Static mediaEncoder:VideoCodec.H264}" />
+                                                                </MultiDataTrigger.Conditions>
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </MultiDataTrigger>
+                                                            <MultiDataTrigger>
+                                                                <MultiDataTrigger.Conditions>
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}" Value="True" />
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=NotSupportedHwHevc, Mode=OneWay}" Value="True" />
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoCodec, Mode=OneWay}" Value="{x:Static mediaEncoder:VideoCodec.H265}" />
+                                                                </MultiDataTrigger.Conditions>
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </MultiDataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <Grid Margin="3">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <ContentPresenter Content="{StaticResource Icon_Warning}" Margin="5"/>
+                                                    <TextBlock Text="{x:Static properties:Resources.HardwareEncoderNotFoundWarning}" TextWrapping="WrapWithOverflow" TextTrimming="None" Grid.Column="1" TextAlignment="Center" Margin="0,0,5,0" MaxWidth="320"/>
+                                                </Grid>
+                                            </Border>
                                         </Grid>
                                     </Border>
                                 </Grid>
