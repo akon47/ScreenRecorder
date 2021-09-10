@@ -186,6 +186,9 @@
   <data name="FailedToStartRecording" xml:space="preserve">
     <value>녹화 시작에 실패하였습니다</value>
   </data>
+  <data name="HardwareEncoderNotFoundWarning" xml:space="preserve">
+    <value>하드웨어 인코더를 찾을 수 없습니다. 소프트웨어 인코더를 사용합니다.</value>
+  </data>
   <data name="NotSpecified" xml:space="preserve">
     <value>지정 안 됨</value>
   </data>
