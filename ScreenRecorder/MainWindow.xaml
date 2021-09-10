@@ -10,7 +10,7 @@
         mc:Ignorable="d"
         Icon="pack://application:,,,/icon.ico" SnapsToDevicePixels="True"
         WindowStyle="None" ResizeMode="NoResize" Background="Transparent" AllowsTransparency="False" Topmost="True" WindowStartupLocation="Manual"
-        Title="" Height="72" SizeToContent="Width">
+        Title="" Height="72" MinWidth="240" SizeToContent="Width">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -22,10 +22,10 @@
     <Window.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Close" Executed="CloseCommand_Executed" CanExecute="CloseCommand_CanExecute" />
     </Window.CommandBindings>
-    <Border CornerRadius="2" Background="#454545" BorderBrush="Black" BorderThickness="1" MouseDown="Border_MouseDown">
+    <Border CornerRadius="0" Background="#454545" BorderBrush="Black" BorderThickness="1" MouseDown="Border_MouseDown">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Border Grid.Column="0" Margin="5,5,3,5" CornerRadius="2" Background="#212121" BorderBrush="Black" BorderThickness="1">
@@ -63,8 +63,9 @@
                             </TextBlock.Style>
                         </TextBlock>
 
-                        <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal">
-                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_FolderOpen}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenRecordDirecotryCommand}" Width="20" Height="20" Margin="3,0,3,0" />
+                        <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Margin="0,0,2,0">
+                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_CursorClick}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.CaptureRegionByUserSelection}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}" CommandParameter="{x:Static local:CaptureTarget.ByUserChoiceTargetDeviceName}" Width="20" Height="20" Margin="1,0,1,0" />
+                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_FolderOpen}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenRecordDirecotryCommand}" Width="20" Height="20" Margin="1,0,1,0" />
                         </StackPanel>
                     </Grid>
                     
@@ -81,7 +82,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Viewbox.Style>
-                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}">
+                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}" ToolTip="{x:Static properties:Resources.StartRecording}">
                                 <Button.Style>
                                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -142,7 +143,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Viewbox.Style>
-                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=PauseScreenRecordCommand}">
+                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=PauseScreenRecordCommand}" ToolTip="{x:Static properties:Resources.PauseRecording}">
                                 <Button.Style>
                                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -205,7 +206,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Viewbox.Style>
-                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StopScreenRecordCommand}">
+                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StopScreenRecordCommand}" ToolTip="{x:Static properties:Resources.StopRecording}">
                                 <Button.Style>
                                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
                                         <Setter Property="Content">
