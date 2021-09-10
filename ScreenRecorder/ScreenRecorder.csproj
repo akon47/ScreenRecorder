@@ -114,6 +114,7 @@
     <Compile Include="AppConfig.cs" />
     <Compile Include="AppConstants.cs" />
     <Compile Include="AppManager.cs" />
+    <Compile Include="AudioSource\AudioCaptureDevice.cs" />
     <Compile Include="AudioSource\IAudioSource.cs" />
     <Compile Include="AudioSource\LoopbackAudioSource.cs" />
     <Compile Include="CaptureTarget.cs" />
