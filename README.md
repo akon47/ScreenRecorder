@@ -66,5 +66,8 @@ The MediaEncoder project uses a shared ffmpeg library that [BtbN](https://github
 - SharpDX: http://sharpdx.org/
 - NAudio: https://github.com/naudio/NAudio
 
+## 🎆 Contributing
+- This project is an open source project. Anyone can contribute in any way.
+
 ## 🐞 Bug Report
-If you find a bug, please report to us posting [issues](https://github.com/akon47/ScreenRecorder/issues) on GitHub.
+- If you find a bug, please report to us posting [issues](https://github.com/akon47/ScreenRecorder/issues) on GitHub.
