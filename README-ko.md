@@ -64,5 +64,8 @@ MediaEncoder 프로젝트에서는 [BtbN](https://github.com/BtbN/FFmpeg-Builds)
 - SharpDX: http://sharpdx.org/
 - NAudio: https://github.com/naudio/NAudio
 
+## 🎆 기여
+- 이 프로젝트는 오픈 소스 프로젝트입니다. 누구나 어떤 부분에서든지 기여가 가능합니다.
+
 ## 🐞 버그 리포트
-만약 버그를 발견하신다면 [issues](https://github.com/akon47/ScreenRecorder/issues) 로 보고해 주세요.
+- 만약 버그를 발견하신다면 [issues](https://github.com/akon47/ScreenRecorder/issues) 로 보고해 주세요.
