@@ -106,11 +106,15 @@ namespace ScreenRecorder
             ScreenEncoder = new ScreenEncoder();
             EncoderFormats = new EncoderFormat[]
             {
+                // recording
                 EncoderFormat.CreateEncoderFormatByFormatString("mp4"),
                 EncoderFormat.CreateEncoderFormatByFormatString("avi"),
                 EncoderFormat.CreateEncoderFormatByFormatString("matroska"),
                 EncoderFormat.CreateEncoderFormatByFormatString("mpegts"),
                 EncoderFormat.CreateEncoderFormatByFormatString("mov"),
+
+                // streaming
+                //EncoderFormat.CreateEncoderFormatByFormatString("flv", "RTMP Streaming"),
             };
             EncoderVideoCodecs = new EncoderVideoCodec[]
             {
