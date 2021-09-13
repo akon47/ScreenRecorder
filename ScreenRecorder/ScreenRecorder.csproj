@@ -130,6 +130,7 @@
     <Compile Include="DirectX\NV12Converter.cs" />
     <Compile Include="DirectX\Shader\ColorShader.cs" />
     <Compile Include="DirectX\Shader\CursorShader.cs" />
+    <Compile Include="DirectX\Shader\Filter\ChromaKeyFilterShader.cs" />
     <Compile Include="DirectX\Shader\Filter\FlipFilterShader.cs" />
     <Compile Include="DirectX\Shader\Filter\IFilterShader.cs" />
     <Compile Include="DirectX\Texture\BitmapTexture.cs" />
