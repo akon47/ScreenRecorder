@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:ScreenRecorder"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary Source="Styles/Generic.xaml" />
     </Application.Resources>
 </Application>
