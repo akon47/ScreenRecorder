@@ -66,6 +66,9 @@ The MediaEncoder project uses a shared ffmpeg library that [BtbN](https://github
 - SharpDX: http://sharpdx.org/
 - NAudio: https://github.com/naudio/NAudio
 
+## 💁 Feature Request
+- If there is a feature you want, please request it in the Issue with the Feature Request label.
+
 ## 🎆 Contributing
 - This project is an open source project. Anyone can contribute in any way.
 
