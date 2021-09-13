@@ -64,6 +64,9 @@ MediaEncoder 프로젝트에서는 [BtbN](https://github.com/BtbN/FFmpeg-Builds)
 - SharpDX: http://sharpdx.org/
 - NAudio: https://github.com/naudio/NAudio
 
+## 💁 기능 요청
+- 원하시는 기능이 있으시면 [issues](https://github.com/akon47/ScreenRecorder/issues)에 **Feature Request** 라벨과 함께 요청해주세요. 
+
 ## 🎆 기여
 - 이 프로젝트는 오픈 소스 프로젝트입니다. 누구나 어떤 부분에서든지 기여가 가능합니다.
 
