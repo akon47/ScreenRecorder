@@ -67,7 +67,7 @@ The MediaEncoder project uses a shared ffmpeg library that [BtbN](https://github
 - NAudio: https://github.com/naudio/NAudio
 
 ## 💁 Feature Request
-- If there is a feature you want, please request it in the Issue with the Feature Request label.
+- If you have any features you want, please request them on the [issues](https://github.com/akon47/ScreenRecorder/issues) with the **Feature Request** label.
 
 ## 🎆 Contributing
 - This project is an open source project. Anyone can contribute in any way.
