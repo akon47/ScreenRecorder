@@ -128,6 +128,7 @@
     <Compile Include="DirectX\DuplicatorCapture.cs" />
     <Compile Include="DirectX\MonitorInfo.cs" />
     <Compile Include="DirectX\NV12Converter.cs" />
+    <Compile Include="DirectX\Renderer\VideoSourcePresenter.cs" />
     <Compile Include="DirectX\Shader\ColorShader.cs" />
     <Compile Include="DirectX\Shader\CursorShader.cs" />
     <Compile Include="DirectX\Shader\Filter\ChromaKeyFilterShader.cs" />
