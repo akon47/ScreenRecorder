@@ -476,7 +476,7 @@ namespace ScreenRecorder.Encoder
             Status = EncoderStatus.Start;
 
             needToStop = new ManualResetEvent(false);
-            workerThread = new Thread(new ParameterizedThreadStart(WorkerThreadHandler)) { Name = "MediaEncoder", IsBackground = true };
+            workerThread = new Thread(new ParameterizedThreadStart(WorkerThreadHandler)) { Name = "Encoder", IsBackground = true };
             workerThread.Start(new EncoderArguments()
             {
                 VideoSource = videoSource,
