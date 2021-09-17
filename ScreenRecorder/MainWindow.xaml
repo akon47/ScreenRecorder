@@ -109,23 +109,6 @@
                                                         </Ellipse.Fill>
                                                     </Ellipse>
                                                 </Grid>
-                                                
-                                                <!--<Ellipse Width="18" Height="18" StrokeThickness="1">
-                                                    <Ellipse.Fill>
-                                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                                            <GradientStop Color="Red" Offset="0.0"/>
-                                                            <GradientStop Color="#702020" Offset="0.5"/>
-                                                            <GradientStop Color="DarkRed" Offset="1.0"/>
-                                                        </LinearGradientBrush>
-                                                    </Ellipse.Fill>
-                                                    <Ellipse.Stroke>
-                                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                                            <GradientStop Color="#902020" Offset="0.0"/>
-                                                            <GradientStop Color="#702020" Offset="0.5"/>
-                                                            <GradientStop Color="#502020" Offset="1.0"/>
-                                                        </LinearGradientBrush>
-                                                    </Ellipse.Stroke>
-                                                </Ellipse>-->
                                             </Setter.Value>
                                         </Setter>
                                     </Style>
@@ -262,7 +245,7 @@
 
                     <Border Grid.Column="2" Grid.Row="1" CornerRadius="5" Background="#101010" Margin="0,3,3,3">
                         <Grid>
-                            <TextBlock Text="{Binding Source={x:Static local:AppManager.Instance}, Path=RecordTime, Mode=OneWay}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Margin="5,2,5,2" TextOptions.TextFormattingMode="Display" />
+                            <TextBlock Text="{Binding Source={x:Static local:AppManager.Instance}, Path=EncodeTime, Mode=OneWay}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Margin="5,2,5,2" TextOptions.TextFormattingMode="Display" />
                         </Grid>
                     </Border>
                 </Grid>

@@ -49,11 +49,11 @@ namespace ScreenRecorder
             private set => SetProperty(ref screenEncoder, value);
         }
 
-        private string recordTime;
-        public string RecordTime
+        private string encodeTime;
+        public string EncodeTime
         {
-            get => recordTime;
-            private set => SetProperty(ref recordTime, value);
+            get => encodeTime;
+            private set => SetProperty(ref encodeTime, value);
         }
 
         private EncoderFormat[] encoderFormats;
@@ -154,7 +154,7 @@ namespace ScreenRecorder
 
         private void CompositionTarget_Rendering(object sender, EventArgs e)
         {
-            RecordTime = Utils.VideoFramesCountToStringTime(screenEncoder.VideoFramesCount);
+            EncodeTime = Utils.VideoFramesCountToStringTime(screenEncoder.VideoFramesCount);
         }
 
         public void Dispose()
