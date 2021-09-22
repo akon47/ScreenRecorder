@@ -109,23 +109,6 @@
                                                         </Ellipse.Fill>
                                                     </Ellipse>
                                                 </Grid>
-                                                
-                                                <!--<Ellipse Width="18" Height="18" StrokeThickness="1">
-                                                    <Ellipse.Fill>
-                                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                                            <GradientStop Color="Red" Offset="0.0"/>
-                                                            <GradientStop Color="#702020" Offset="0.5"/>
-                                                            <GradientStop Color="DarkRed" Offset="1.0"/>
-                                                        </LinearGradientBrush>
-                                                    </Ellipse.Fill>
-                                                    <Ellipse.Stroke>
-                                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                                            <GradientStop Color="#902020" Offset="0.0"/>
-                                                            <GradientStop Color="#702020" Offset="0.5"/>
-                                                            <GradientStop Color="#502020" Offset="1.0"/>
-                                                        </LinearGradientBrush>
-                                                    </Ellipse.Stroke>
-                                                </Ellipse>-->
                                             </Setter.Value>
                                         </Setter>
                                     </Style>
@@ -262,7 +245,7 @@
 
                     <Border Grid.Column="2" Grid.Row="1" CornerRadius="5" Background="#101010" Margin="0,3,3,3">
                         <Grid>
-                            <TextBlock Text="{Binding Source={x:Static local:AppManager.Instance}, Path=RecordTime, Mode=OneWay}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Margin="5,2,5,2" TextOptions.TextFormattingMode="Display" />
+                            <TextBlock Text="{Binding Source={x:Static local:AppManager.Instance}, Path=EncodeTime, Mode=OneWay}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Margin="5,2,5,2" TextOptions.TextFormattingMode="Display" FontFamily="Franklin Gothic Medium"/>
                         </Grid>
                     </Border>
                 </Grid>
@@ -276,7 +259,7 @@
                 <Button Grid.Column="0" Grid.Row="0" Margin="3" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_Close}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.Exit}" Command="ApplicationCommands.Close"/>
                 <Grid Grid.Column="0" Grid.Row="1">
                     <ToggleButton Name="recordSetting" Focusable="False" Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{StaticResource Icon_Settings}" ToolTip="{x:Static properties:Resources.EncoderSettings}" Foreground="DarkGray" Margin="3" />
-                    <Popup StaysOpen="False" IsOpen="{Binding Path=IsChecked, ElementName=recordSetting, Mode=TwoWay}" Placement="Bottom" Opened="Popup_Opened">
+                    <Popup StaysOpen="False" IsOpen="{Binding Path=IsChecked, ElementName=recordSetting, Mode=TwoWay}" Placement="Bottom" local:PopupAttachedProperty.DisplayedOnlyMonitor="True">
                         <Border MinWidth="400" BorderThickness="1" BorderBrush="Black" Background="#434343" SnapsToDevicePixels="True">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -360,7 +343,7 @@
                                             <TextBlock Grid.Column="0" Grid.Row="5" Text="{x:Static properties:Resources.EncoderCaptureDisplay}" Margin="3" />
                                             <TextBlock Grid.Column="0" Grid.Row="6" Text="{x:Static properties:Resources.EncoderBaseDirectory}" Margin="3" />
 
-                                            <ComboBox Grid.Column="1" Grid.Row="0" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderFormats, Mode=OneWay}" SelectedValuePath="Format" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordFormat, Mode=TwoWay}"/>
+                                            <ComboBox Grid.Column="1" Grid.Row="0" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderFormats, Mode=OneWay}" SelectedValuePath="Format" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordFormat, Mode=TwoWay}" />
                                             <ComboBox Grid.Column="1" Grid.Row="1" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderVideoCodecs, Mode=OneWay}" SelectedValuePath="VideoCodec" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoCodec, Mode=TwoWay}" IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}"/>
                                             <ComboBox Grid.Column="1" Grid.Row="2" Margin="3" Name="comboBox_videoBitrate" SelectedItem="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoBitrate, Mode=TwoWay}">
                                                 <ComboBox.ItemTemplate>

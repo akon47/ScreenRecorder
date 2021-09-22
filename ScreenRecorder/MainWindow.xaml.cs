@@ -59,6 +59,7 @@ namespace ScreenRecorder
 #endif
         }
 
+        #region Window Moving
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             var message = System.Windows.Forms.Message.Create(hwnd, msg, wParam, lParam);
@@ -106,7 +107,6 @@ namespace ScreenRecorder
             return IntPtr.Zero;
         }
 
-        #region Window Moving
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
@@ -132,20 +132,6 @@ namespace ScreenRecorder
 
             AppConfig.Instance.WindowLeft = this.Left;
             AppConfig.Instance.WindowTop = this.Top;
-        }
-
-        private void Popup_Opened(object sender, EventArgs e)
-        {
-            if (sender is System.Windows.Controls.Primitives.Popup popup)
-            {
-                IntPtr popupWindowHandle = popup.GetPopupWindowHandle();
-                if (popupWindowHandle != IntPtr.Zero)
-                {
-#if !DEBUG
-                    Utils.SetWindowDisplayedOnlyMonitor(popupWindowHandle, true);
-#endif
-                }
-            }
         }
     }
 }

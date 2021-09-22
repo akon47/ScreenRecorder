@@ -128,8 +128,10 @@
     <Compile Include="DirectX\DuplicatorCapture.cs" />
     <Compile Include="DirectX\MonitorInfo.cs" />
     <Compile Include="DirectX\NV12Converter.cs" />
+    <Compile Include="DirectX\Renderer\VideoSourcePresenter.cs" />
     <Compile Include="DirectX\Shader\ColorShader.cs" />
     <Compile Include="DirectX\Shader\CursorShader.cs" />
+    <Compile Include="DirectX\Shader\Filter\ChromaKeyFilterShader.cs" />
     <Compile Include="DirectX\Shader\Filter\FlipFilterShader.cs" />
     <Compile Include="DirectX\Shader\Filter\IFilterShader.cs" />
     <Compile Include="DirectX\Texture\BitmapTexture.cs" />
@@ -142,7 +144,6 @@
     <Compile Include="Encoder\EncoderVideoCodec.cs" />
     <Compile Include="Encoder\ScreenEncoder.cs" />
     <Compile Include="Extensions\Extensions.cs" />
-    <Compile Include="AudioInputDevice.cs" />
     <Compile Include="Properties\Resources.ko-KR.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -171,6 +172,7 @@
     <Compile Include="SystemClockEvent.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="VideoSource\VideoSize.cs" />
+    <Compile Include="PopupAttachedProperty.cs" />
     <Page Include="Icons.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -196,6 +198,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Shortcut\ShortcutEditorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Generic.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

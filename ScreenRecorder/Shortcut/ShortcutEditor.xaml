@@ -50,6 +50,8 @@
                     <Setter Property="MinWidth" Value="120" />
                     <Setter Property="MinHeight" Value="20" />
                     <Setter Property="AllowDrop" Value="true" />
+                    <Setter Property="CaretBrush" Value="White" />
+                    <Setter Property="Foreground" Value="White" />
                     <Setter Property="Text" Value="{Binding Path=Shortcut.KeyGestureString, ElementName=root, Mode=OneWay}" />
                     <Setter Property="Margin" Value="1.5,0,0,0" />
                     <Setter Property="Template">
@@ -57,7 +59,7 @@
                             <ControlTemplate TargetType="{x:Type TextBoxBase}">
                                 <Border Name="Border" CornerRadius="2" Padding="2" BorderThickness="1">
                                     <Border.Background>
-                                        <SolidColorBrush Color="#FFE8EDF9" />
+                                        <SolidColorBrush Color="#212121" />
                                     </Border.Background>
                                     <Border.BorderBrush>
                                         <SolidColorBrush Color="#FF888888" />
@@ -68,14 +70,14 @@
                                             <VisualState x:Name="Disabled">
                                                 <Storyboard>
                                                     <ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
-                                                        <EasingColorKeyFrame KeyTime="0" Value="#FFE8EDF9" />
+                                                        <EasingColorKeyFrame KeyTime="0" Value="#606060" />
                                                     </ColorAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
                                             <VisualState x:Name="ReadOnly">
                                                 <Storyboard>
                                                     <ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
-                                                        <EasingColorKeyFrame KeyTime="0" Value="#FFC5CBF9" />
+                                                        <EasingColorKeyFrame KeyTime="0" Value="#FFA0A0A0" />
                                                     </ColorAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
