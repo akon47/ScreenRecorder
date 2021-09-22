@@ -114,18 +114,6 @@ namespace ScreenRecorder
         }
         #endregion
 
-        #region Commands
-        private void CloseCommand_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            Close();
-        }
-
-        private void CloseCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = true;
-        }
-        #endregion
-
         protected override void OnClosing(CancelEventArgs e)
         {
             base.OnClosing(e);

@@ -186,6 +186,8 @@ namespace ScreenRecorder
         private DelegateCommand selectRecordDirectory;
 
         private DelegateCommand openShortcutSettingsCommand;
+
+        private DelegateCommand windowCloseCommand;
         #endregion
 
         #region Record Commands
@@ -355,6 +357,7 @@ namespace ScreenRecorder
             }));
         #endregion
 
+        #region Common Commands
         public DelegateCommand OpenFolderInWindowExplorerCommand => openFolderInWindowExplorerCommand ??
             (openFolderInWindowExplorerCommand = new DelegateCommand(o =>
             {
@@ -374,7 +377,9 @@ namespace ScreenRecorder
                 }
                 return false;
             }));
+        #endregion
 
+        #region Shortcut Commands
         public DelegateCommand OpenShortcutSettingsCommand => openShortcutSettingsCommand ??
             (openShortcutSettingsCommand = new DelegateCommand(o =>
             {
@@ -390,5 +395,20 @@ namespace ScreenRecorder
                     Shortcut.GlobalHotKey.PassthroughGlobalHotKey = false;
                 }
             }));
+        #endregion
+
+        #region Window Commands
+        public DelegateCommand WindowCloseCommand => windowCloseCommand ??
+            (windowCloseCommand = new DelegateCommand(o =>
+            {
+                if (o is Window window)
+                {
+                    window.Close();
+                }
+            }, o =>
+            {
+                return o is Window;
+            }));
+        #endregion
     }
 }
