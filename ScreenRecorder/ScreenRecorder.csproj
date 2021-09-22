@@ -172,6 +172,7 @@
     <Compile Include="SystemClockEvent.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="VideoSource\VideoSize.cs" />
+    <Compile Include="PopupAttachedProperty.cs" />
     <Page Include="Icons.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
