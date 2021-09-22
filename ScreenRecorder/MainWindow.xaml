@@ -10,6 +10,8 @@
         xmlns:cc="clr-namespace:CustomConverter"
         mc:Ignorable="d"
         Icon="pack://application:,,,/icon.ico" SnapsToDevicePixels="True"
+        Left="{Binding Source={x:Static local:AppConfig.Instance}, Path=WindowLeft, Mode=TwoWay}"
+        Top="{Binding Source={x:Static local:AppConfig.Instance}, Path=WindowTop, Mode=TwoWay}"
         WindowStyle="None" ResizeMode="NoResize" Background="Transparent" AllowsTransparency="False" Topmost="True" WindowStartupLocation="Manual"
         Title="" Height="72" MinWidth="240" SizeToContent="Width">
     <Window.Resources>

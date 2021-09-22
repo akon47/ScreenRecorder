@@ -172,14 +172,14 @@ namespace ScreenRecorder
         private double windowLeft;
         public double WindowLeft
         {
-            get => windowLeft;
+            get => Math.Max(0, windowLeft);
             set => SetProperty(ref windowLeft, value);
         }
 
         private double windowTop;
         public double WindowTop
         {
-            get => windowTop;
+            get => Math.Max(0, windowTop);
             set => SetProperty(ref windowTop, value);
         }
         #endregion
