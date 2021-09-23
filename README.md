@@ -50,6 +50,7 @@ It is a simple recording program with the ability to record the screen.
 
 ## 📚 References
 - [Softpedia review of v1.0.4](https://www.softpedia.com/get/Multimedia/Video/Video-Recording/ScreenRecorder-K.shtml)
+- [ilovefreesoftware review](https://www.ilovefreesoftware.com/08/windows-10/free-screen-recorder-for-windows-select-desired-gpu-for-recording.html)
 
 ## 👨‍💻 Build
 
