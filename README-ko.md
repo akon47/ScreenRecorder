@@ -14,10 +14,10 @@
 컴퓨터 화면과 기본 오디오 재생 장치의 오디오를 녹화하는 기능을 가진 녹화 프로그램 입니다.   
 
 ### 기본 설정
-![screenshot1_ko](https://user-images.githubusercontent.com/49547202/132877362-061d038c-8e0b-453d-8b88-d361469d4190.png)
+![screenshot1_ko](https://user-images.githubusercontent.com/49547202/134748885-e8b78db0-4c8a-4048-9de3-930d0905d7d9.png)
 
 ### 고급 설정
-![screenshot2_ko](https://user-images.githubusercontent.com/49547202/132877376-7b49ec7a-0420-49b0-a184-a1b2e4cb52a6.png)
+![screenshot2_ko](https://user-images.githubusercontent.com/49547202/134748886-9c09b7bf-4d6f-401f-8864-f37a382bf031.png)
 
 ## 📃 사용법
 - 동그란 버튼을 누르면 녹화가 시작되고 사각형 버튼을 누르면 정지됩니다.
@@ -36,6 +36,9 @@
     - 사각 영역 지정, 윈도우 영역 지정, 디스플레이 영역 지정
 - 핫키를 이용한 녹화 기능.
 - 마이크 녹음기능 (시스템 기본 캡쳐 장치를 녹음합니다)
+- 기본적으로 녹화 프레임 레이트는 60 fps로 녹화됩니다.
+  - 필요한 경우 고급 설정 메뉴에서 다른 프레임 레이트도 선택이 가능합니다.
+    - 15, 24, 25, 30, 48, 50, 60, 120, 144 fps
 
 ## 💡 시스템 요구 사항
 - 지원되는 플랫폼: Windows 10 64bit Version 2004 또는 이상 (*다른 플랫폼에서는 테스트해보지 못헀습니다*)
