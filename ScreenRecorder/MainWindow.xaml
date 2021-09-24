@@ -323,24 +323,23 @@
                                             <Grid.RowDefinitions>
                                                 <RowDefinition />
                                                 <RowDefinition Tag="AdvancedSettings" /> <!-- Video Codec -->
-                                                <RowDefinition />
+                                                <RowDefinition />                        <!-- Video Bitrate -->
                                                 <RowDefinition Tag="AdvancedSettings" /> <!-- Audio Codec -->
-                                                <RowDefinition />
-                                                <RowDefinition /> <!-- Capture Display -->
-                                                <RowDefinition />
-                                                <RowDefinition />
-                                                <RowDefinition />
-                                                <RowDefinition />
-                                                <RowDefinition />
-                                                <RowDefinition /> <!-- Warning -->
+                                                <RowDefinition />                        <!-- Audio Bitrate -->
+                                                <RowDefinition Tag="AdvancedSettings" /> <!-- Frame Rate -->
+                                                <RowDefinition />                        <!-- Capture Display -->
+                                                <RowDefinition />                        <!-- Recording Path -->
+                                                <RowDefinition />                        <!-- ETC Options -->
+                                                <RowDefinition />                        <!-- Warning -->
                                             </Grid.RowDefinitions>
                                             <TextBlock Grid.Column="0" Grid.Row="0" Text="{x:Static properties:Resources.EncoderFileFormat}" Margin="3" />
                                             <TextBlock Grid.Column="0" Grid.Row="1" Text="{x:Static properties:Resources.EncoderVideoCodec}" Margin="3" />
                                             <TextBlock Grid.Column="0" Grid.Row="2" Text="{x:Static properties:Resources.EncoderVideoBitrate}" Margin="3" />
                                             <TextBlock Grid.Column="0" Grid.Row="3" Text="{x:Static properties:Resources.EncoderAudioCodec}" Margin="3" />
                                             <TextBlock Grid.Column="0" Grid.Row="4" Text="{x:Static properties:Resources.EncoderAudioBitrate}" Margin="3" />
-                                            <TextBlock Grid.Column="0" Grid.Row="5" Text="{x:Static properties:Resources.EncoderCaptureDisplay}" Margin="3" />
-                                            <TextBlock Grid.Column="0" Grid.Row="6" Text="{x:Static properties:Resources.EncoderBaseDirectory}" Margin="3" />
+                                            <TextBlock Grid.Column="0" Grid.Row="5" Text="{x:Static properties:Resources.EncoderFrameRate}" Margin="3" />
+                                            <TextBlock Grid.Column="0" Grid.Row="6" Text="{x:Static properties:Resources.EncoderCaptureDisplay}" Margin="3" />
+                                            <TextBlock Grid.Column="0" Grid.Row="7" Text="{x:Static properties:Resources.EncoderBaseDirectory}" Margin="3" />
 
                                             <ComboBox Grid.Column="1" Grid.Row="0" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderFormats, Mode=OneWay}" SelectedValuePath="Format" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordFormat, Mode=TwoWay}" />
                                             <ComboBox Grid.Column="1" Grid.Row="1" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderVideoCodecs, Mode=OneWay}" SelectedValuePath="VideoCodec" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoCodec, Mode=TwoWay}" IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}"/>
@@ -381,7 +380,20 @@
                                                     <sys:Int32>320000</sys:Int32>
                                                 </ComboBox.Items>
                                             </ComboBox>
-                                            <Grid Grid.Column="1" Grid.Row="5" Margin="3">
+                                            <ComboBox Grid.Column="1" Grid.Row="5" Margin="3" SelectedItem="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordFrameRate, Mode=TwoWay}" ItemStringFormat="0 fps">
+                                                <ComboBox.Items>
+                                                    <sys:Int32>15</sys:Int32>
+                                                    <sys:Int32>24</sys:Int32>
+                                                    <sys:Int32>25</sys:Int32>
+                                                    <sys:Int32>30</sys:Int32>
+                                                    <sys:Int32>48</sys:Int32>
+                                                    <sys:Int32>50</sys:Int32>
+                                                    <sys:Int32>60</sys:Int32>
+                                                    <sys:Int32>120</sys:Int32>
+                                                    <sys:Int32>144</sys:Int32>
+                                                </ComboBox.Items>
+                                            </ComboBox>
+                                            <Grid Grid.Column="1" Grid.Row="6" Margin="3">
                                                 <ComboBox Name="comboBox_captureDisplay" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=CaptureTargets, Mode=OneWay}" SelectedValuePath="DeviceName" DisplayMemberPath="Description" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureMonitor, Mode=TwoWay}" />
                                                 <TextBlock Text="{x:Static properties:Resources.DisplayNotFound}" Foreground="Red" VerticalAlignment="Center" Margin="6,0,30,0" IsHitTestVisible="False">
                                                     <TextBlock.Style>
@@ -396,7 +408,7 @@
                                                     </TextBlock.Style>
                                                 </TextBlock>
                                             </Grid>
-                                            <Grid Grid.Column="1" Grid.Row="6">
+                                            <Grid Grid.Column="1" Grid.Row="7">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="80" />
@@ -410,13 +422,12 @@
                                                 </TextBox>
                                                 <Button Grid.Column="1" Grid.Row="0" Margin="0,3,3,3" Content="{x:Static properties:Resources.Browse}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=SelectRecordDirectory, Mode=OneWay}"/>
                                             </Grid>
-                                            <StackPanel Grid.Column="0" Grid.Row="7" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <StackPanel Grid.Column="0" Grid.Row="8" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
                                                 <CheckBox Content="{x:Static properties:Resources.RecordMicrophone}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=RecordMicrophone, Mode=TwoWay}" Foreground="White" Margin="5,2,0,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 <CheckBox Content="{x:Static properties:Resources.CaptureCursor}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureCursorVisible, Mode=TwoWay}" Foreground="White" Margin="5,2,0,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 <CheckBox Content="{x:Static properties:Resources.AdvancedSettings}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=TwoWay}" Foreground="White" Margin="5,2,5,5" HorizontalAlignment="Right" />
                                             </StackPanel>
-
-                                            <Border Grid.Column="0" Grid.Row="8" Grid.ColumnSpan="2" Margin="3" HorizontalAlignment="Center" BorderBrush="Transparent" BorderThickness="0" CornerRadius="3" Background="#313131">
+                                            <Border Grid.Column="0" Grid.Row="9" Grid.ColumnSpan="2" Margin="3,3,3,6" HorizontalAlignment="Center" BorderBrush="Transparent" BorderThickness="0" CornerRadius="3" Background="#313131">
                                                 <Border.Style>
                                                     <Style TargetType="{x:Type Border}">
                                                         <Setter Property="Visibility" Value="Collapsed" />

@@ -30,6 +30,13 @@ namespace ScreenRecorder
 
                     SystemClockEvent.Start();
                     AppManager.Instance.Initialize();
+                    AppConfig.Instance.WhenChanged(() =>
+                    {
+                        SystemClockEvent.Framerate = AppConfig.Instance.AdvancedSettings ? 
+                            AppConfig.Instance.SelectedRecordFrameRate : 60;
+                    },
+                    nameof(AppConfig.SelectedRecordFrameRate),
+                    nameof(AppConfig.AdvancedSettings));
 
                     base.OnStartup(e);
                 }

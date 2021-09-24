@@ -8,19 +8,46 @@ namespace ScreenRecorder
     {
         private const int MAX_EVENT_COUNT = 8;
 
-        static private object syncObject = new object();
-        static private int referenceCount = -1;
-        static private AutoResetEvent[] events = new AutoResetEvent[MAX_EVENT_COUNT];
-        static private Thread workerThread;
-        static private ManualResetEvent needToStop;
+        private static readonly object syncObject = new object();
+        private static int referenceCount = -1;
+        private static readonly AutoResetEvent[] events = new AutoResetEvent[MAX_EVENT_COUNT];
+        private static Thread workerThread;
+        private static ManualResetEvent needToStop;
+        private static int frameRate = 60;
+        private static long interval;
+        private static long sleepLimit;
 
         static SystemClockEvent()
         {
             for (int i = 0; i < events.Length; i++)
+            {
                 events[i] = new AutoResetEvent(false);
+            }
         }
 
-        static public void Start()
+        public static int Framerate
+        {
+            get => frameRate;
+            set
+            {
+                lock (syncObject)
+                {
+                    if (frameRate != value)
+                    {
+                        frameRate = value;
+                        UpdateInterval();
+                    }
+                }
+            }
+        }
+
+        private static void UpdateInterval()
+        {
+            interval = (long)(Stopwatch.Frequency / (double)frameRate);
+            sleepLimit = interval - (Stopwatch.Frequency / 500);
+        }
+
+        public static void Start()
         {
             lock (syncObject)
             {
@@ -31,7 +58,7 @@ namespace ScreenRecorder
             }
         }
 
-        static public void Stop()
+        public static void Stop()
         {
             try
             {
@@ -53,12 +80,11 @@ namespace ScreenRecorder
             catch { }
         }
 
-        static void WorkerThreadHandler()
+        private static void WorkerThreadHandler()
         {
-            long interval = (long)(Stopwatch.Frequency / AppConstants.Framerate);
-            long sleepLimit = interval - (Stopwatch.Frequency / 500);
-            long prevTick = Stopwatch.GetTimestamp();
+            UpdateInterval();
 
+            long prevTick = Stopwatch.GetTimestamp();
             while (!needToStop.WaitOne(0, false))
             {
                 long currentTick = Stopwatch.GetTimestamp();
@@ -75,31 +101,32 @@ namespace ScreenRecorder
                         break;
                 }
             }
-
         }
 
-        private int currentReferenceIndex = -1;
+        private readonly int currentReferenceIndex;
 
         public SystemClockEvent()
         {
-            currentReferenceIndex = Interlocked.Increment(ref SystemClockEvent.referenceCount);
+            currentReferenceIndex = Interlocked.Increment(ref referenceCount);
             if (currentReferenceIndex >= MAX_EVENT_COUNT)
+            {
                 throw new OutOfMemoryException();
+            }
         }
 
         public bool WaitOne(int millisecondsTimeout = Timeout.Infinite)
         {
-            return SystemClockEvent.events[currentReferenceIndex].WaitOne(millisecondsTimeout);
+            return events[currentReferenceIndex].WaitOne(millisecondsTimeout);
         }
 
         public bool WaitOne(int millisecondsTimeout, bool exitContext)
         {
-            return SystemClockEvent.events[currentReferenceIndex].WaitOne(millisecondsTimeout, exitContext);
+            return events[currentReferenceIndex].WaitOne(millisecondsTimeout, exitContext);
         }
 
         public void Dispose()
         {
-            Interlocked.Decrement(ref SystemClockEvent.referenceCount);
+            _ = Interlocked.Decrement(ref referenceCount);
         }
     }
 }
