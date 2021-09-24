@@ -15,11 +15,10 @@
 It is a simple recording program with the ability to record the screen.
 
 ### Default Settings
-![screenshot1_en](https://user-images.githubusercontent.com/49547202/132877051-fccf792b-bc02-48dd-b4bf-81bd2409a8aa.png)
-
+![screenshot1_en](https://user-images.githubusercontent.com/49547202/134748812-81cabf11-99fb-43a0-80e9-9c4bbd23a64b.png)
 
 ### Advanced Settings
-![screenshot2_en](https://user-images.githubusercontent.com/49547202/132877059-2249d2e4-9b4e-45ee-bad6-34de84221560.png)
+![screenshot2_en](https://user-images.githubusercontent.com/49547202/134748816-12f8df6b-c113-4678-ad0d-e2e2929766e3.png)
 
 ## 📃 Usage
 - Pressing the round button starts recording and stops when pressing the square button.
@@ -38,6 +37,9 @@ It is a simple recording program with the ability to record the screen.
     - Capture Region, Capture Window, Capture Display
 - Recording function using hotkeys.
 - Microphone recording function (Record system default capture device)
+- By default, the recording frame rate is 60 fps.
+  - Other frame rates can also be selected in the advanced settings menu if required.
+    - 15, 24, 25, 30, 48, 50, 60, 120, 144 fps
 
 ## 💡 System requirements
 - Platforms Supported: Windows 10 64bit Version 2004 or newer (*I haven't tested it on other platforms*)
