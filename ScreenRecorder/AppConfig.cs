@@ -73,6 +73,8 @@ namespace ScreenRecorder
 
                 config.Add(nameof(SelectedRecordVideoBitrate), SelectedRecordVideoBitrate.ToString());
                 config.Add(nameof(SelectedRecordAudioBitrate), SelectedRecordAudioBitrate.ToString());
+                config.Add(nameof(SelectedRecordFrameRate), SelectedRecordFrameRate.ToString());
+
                 config.Add(nameof(RecordDirectory), RecordDirectory);
                 config.Add(nameof(RegionSelectionMode), Enum.GetName(typeof(RegionSelectionMode), RegionSelectionMode));
 
@@ -103,6 +105,7 @@ namespace ScreenRecorder
                     SelectedRecordAudioCodec = Config.Config.GetEnum<AudioCodec>(config, nameof(SelectedRecordAudioCodec), AudioCodec.Aac);
                     SelectedRecordVideoBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordVideoBitrate), 5000000);
                     SelectedRecordAudioBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordAudioBitrate), 160000);
+                    SelectedRecordFrameRate = Config.Config.GetInt32(config, nameof(SelectedRecordFrameRate), 60);
                     RecordDirectory = Config.Config.GetString(config, nameof(RecordDirectory), Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
                     RegionSelectionMode = Config.Config.GetEnum<RegionSelectionMode>(config, nameof(RegionSelectionMode), RegionSelectionMode.UserRegion);
 
@@ -133,6 +136,7 @@ namespace ScreenRecorder
             SelectedRecordAudioCodec = AudioCodec.Aac;
             SelectedRecordVideoBitrate = 5000000;
             SelectedRecordAudioBitrate = 160000;
+            SelectedRecordFrameRate = 60;
             RecordDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
             RegionSelectionMode = RegionSelectionMode.UserRegion;
 
@@ -218,6 +222,13 @@ namespace ScreenRecorder
         {
             get => selectedRecordAudioBitrate;
             set => SetProperty(ref selectedRecordAudioBitrate, value);
+        }
+
+        private int selectedRecordFrameRate;
+        public int SelectedRecordFrameRate
+        {
+            get => selectedRecordFrameRate;
+            set => SetProperty(ref selectedRecordFrameRate, value);
         }
 
         private string recordDirectory;

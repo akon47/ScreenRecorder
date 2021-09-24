@@ -162,6 +162,9 @@
   <data name="EncoderFileFormat" xml:space="preserve">
     <value>File Format</value>
   </data>
+  <data name="EncoderFrameRate" xml:space="preserve">
+    <value>Frame Rate</value>
+  </data>
   <data name="EncoderSettings" xml:space="preserve">
     <value>Recording Settings</value>
   </data>

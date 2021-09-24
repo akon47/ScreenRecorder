@@ -162,6 +162,9 @@
   <data name="EncoderFileFormat" xml:space="preserve">
     <value>파일 포맷</value>
   </data>
+  <data name="EncoderFrameRate" xml:space="preserve">
+    <value>프레임 레이트</value>
+  </data>
   <data name="EncoderSettings" xml:space="preserve">
     <value>녹화 설정</value>
   </data>

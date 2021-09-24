@@ -196,6 +196,15 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
+        ///   Frame Rate과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string EncoderFrameRate {
+            get {
+                return ResourceManager.GetString("EncoderFrameRate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recording Settings과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string EncoderSettings {

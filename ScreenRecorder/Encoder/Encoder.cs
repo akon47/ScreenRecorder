@@ -64,7 +64,7 @@ namespace ScreenRecorder.Encoder
                 if (this.audioSource != null)
                 {
                     resampler = new Resampler();
-                    int framePerBytes = (int)((48000.0d / AppConstants.Framerate) * 4);
+                    int framePerBytes = (int)(48000.0d / SystemClockEvent.Framerate * 4);
 
                     this.srcAudioCircularBuffer = new CircularBuffer(framePerBytes * 15);
                     this.audioFrameQueue = new ConcurrentQueue<AudioFrame>();
@@ -80,7 +80,7 @@ namespace ScreenRecorder.Encoder
 
             private void AudioWorkerThreadHandler()
             {
-                int samples = (int)(48000.0d / AppConstants.Framerate);
+                int samples = (int)(48000.0d / SystemClockEvent.Framerate);
 
                 // Keep the minimum number of samples at 1600 (Aac codec has a minimum number of samples, so less than this will cause problems)
                 // I tried to process it on the encoder, but it's easier to implement if I just supply a lot of samples.
@@ -542,7 +542,7 @@ namespace ScreenRecorder.Encoder
                     using (MediaBuffer mediaBuffer = new MediaBuffer(encoderArguments.VideoSource, encoderArguments.AudioCodec == AudioCodec.None ? null : encoderArguments.AudioSource))
                     {
                         using (MediaWriter mediaWriter = new MediaWriter(
-                            encoderArguments.VideoSize.Width, encoderArguments.VideoSize.Height, (int)AppConstants.Framerate, 1,
+                            encoderArguments.VideoSize.Width, encoderArguments.VideoSize.Height, (int)SystemClockEvent.Framerate, 1,
                             encoderArguments.VideoCodec, encoderArguments.VideoBitrate,
                             encoderArguments.AudioCodec, encoderArguments.AudioBitrate))
                         {
