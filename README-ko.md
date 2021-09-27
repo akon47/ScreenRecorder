@@ -65,6 +65,7 @@ MediaEncoder 프로젝트에서는 [BtbN](https://github.com/BtbN/FFmpeg-Builds)
 2. **fmpeg_shared_lib** 폴더 안에 shared ffmpeg 라이브러리의 "**bin, include, lib**" 폴더를 붙여 넣고 빌드 하시면 됩니다.
 
 ## 📦 서드 파티 라이브러리
+- FFmpeg: https://www.ffmpeg.org/
 - SharpDX: http://sharpdx.org/
 - NAudio: https://github.com/naudio/NAudio
 
