@@ -66,6 +66,7 @@ The MediaEncoder project uses a shared ffmpeg library that [BtbN](https://github
 2. Paste the shared ffmpeg library "**bin, include, lib**" folder into the **fmpeg_shared_lib** folder and build it.
 
 ## 📦 Third party libraries
+- FFmpeg: https://www.ffmpeg.org/
 - SharpDX: http://sharpdx.org/
 - NAudio: https://github.com/naudio/NAudio
 
