@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
+using System.Diagnostics;
 using MediaEncoder;
 using ScreenRecorder.AudioSource;
 using ScreenRecorder.DirectX;
@@ -18,6 +19,7 @@ namespace ScreenRecorder.Encoder
         private AudioMixer audioMixer;
         private LoopbackAudioSource loopbackAudioSource;
         private AudioCaptureSource audioCaptureSource;
+        private Utils.ThreadExecutionState? oldSleepState;
 
         public ScreenEncoder()
         {
@@ -28,6 +30,17 @@ namespace ScreenRecorder.Encoder
         {
             if (base.IsRunning)
                 return;
+
+            // to be on the safe side
+            Debug.Assert(screenVideoSource == null);
+            Debug.Assert(loopbackAudioSource == null);
+            Debug.Assert(audioCaptureSource == null);
+            Debug.Assert(audioMixer == null);
+            ScreenEncoder_EncoderStopped(this, null);
+
+            // prevent power saving during capture
+            if (!oldSleepState.HasValue)
+                oldSleepState = Utils.DisableSleep();
 
             MonitorInfo monitorInfo = MonitorInfo.GetActiveMonitorInfos()?.FirstOrDefault(x => x.DeviceName.Equals(deviceName));
             if (monitorInfo == null)
@@ -74,6 +87,15 @@ namespace ScreenRecorder.Encoder
 
             audioCaptureSource?.Dispose();
             audioCaptureSource = null;
+
+            if (eventArgs != null)
+            {
+                if (oldSleepState.HasValue)
+                {
+                    Utils.SetThreadExecutionState(oldSleepState.Value);
+                    oldSleepState = null; ;
+                }
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -82,6 +104,11 @@ namespace ScreenRecorder.Encoder
             {
                 base.Dispose(disposing);
                 this.EncoderStopped -= ScreenEncoder_EncoderStopped;
+                if (oldSleepState.HasValue)
+                {
+                    Utils.SetThreadExecutionState(oldSleepState.Value);
+                    oldSleepState = null;
+                }
             }
         }
     }
