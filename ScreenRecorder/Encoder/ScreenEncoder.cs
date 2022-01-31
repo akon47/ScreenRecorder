@@ -19,6 +19,11 @@ namespace ScreenRecorder.Encoder
         private LoopbackAudioSource loopbackAudioSource;
         private AudioCaptureSource audioCaptureSource;
 
+        public ScreenEncoder()
+        {
+            this.EncoderStopped += ScreenEncoder_EncoderStopped;
+        }
+
         public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, Rect region, bool drawCursor, bool recordMicrophone)
         {
             if (base.IsRunning)
@@ -51,23 +56,12 @@ namespace ScreenRecorder.Encoder
             catch (Exception ex)
             {
                 base.Stop();
-
-                screenVideoSource?.Dispose();
-                screenVideoSource = null;
-
-                audioMixer?.Dispose();
-                audioMixer = null;
-
-                loopbackAudioSource?.Dispose();
-                loopbackAudioSource = null;
-
-                audioCaptureSource?.Dispose();
-                audioCaptureSource = null;
+                ScreenEncoder_EncoderStopped(this, null);
                 throw ex;
             }
         }
 
-        protected override void OnEncoderStopped(EncoderStoppedEventArgs args)
+        private void ScreenEncoder_EncoderStopped(object sender, EncoderStoppedEventArgs eventArgs)
         {
             screenVideoSource?.Dispose();
             screenVideoSource = null;
@@ -80,6 +74,15 @@ namespace ScreenRecorder.Encoder
 
             audioCaptureSource?.Dispose();
             audioCaptureSource = null;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                base.Dispose(disposing);
+                this.EncoderStopped -= ScreenEncoder_EncoderStopped;
+            }
         }
     }
 }

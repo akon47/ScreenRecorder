@@ -462,6 +462,10 @@ namespace ScreenRecorder.Encoder
         }
 
         public event EncoderStoppedEventHandler EncoderStopped;
+        protected virtual void OnEncoderStopped(EncoderStoppedEventArgs args)
+        {
+            this.EncoderStopped?.Invoke(this, args);
+        }
 
         private Thread workerThread = null;
         private ManualResetEvent needToStop = null;
@@ -598,7 +602,6 @@ namespace ScreenRecorder.Encoder
             finally
             {
                 OnEncoderStopped(new EncoderStoppedEventArgs(videoFramesCount, audioSamplesCount, url));
-                EncoderStopped?.Invoke(this, new EncoderStoppedEventArgs(videoFramesCount, audioSamplesCount, url));
                 VideoFramesCount = 0;
                 AudioSamplesCount = 0;
                 Url = "";
@@ -606,11 +609,18 @@ namespace ScreenRecorder.Encoder
             }
         }
 
-        protected virtual void OnEncoderStopped(EncoderStoppedEventArgs args) { }
-
         public void Dispose()
         {
-            Stop();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Stop();
+            }
         }
     }
 }
