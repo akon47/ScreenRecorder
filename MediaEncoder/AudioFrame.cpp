@@ -17,14 +17,20 @@ namespace MediaEncoder {
     {
         CheckIfDisposed();
         int bufferSize = av_samples_get_buffer_size(m_avFrame->linesize, m_avFrame->channels, m_avFrame->nb_samples, (AVSampleFormat)m_avFrame->format, 0);
-        memcpy(m_avFrame->data[0], src.ToPointer(), bufferSize);
+        if (bufferSize > 0)
+            memcpy(m_avFrame->data[0], src.ToPointer(), bufferSize);
+        else
+            System::Diagnostics::Debug::WriteLine("av_samples_get_buffer_size: {0}", bufferSize);
     }
 
     void AudioFrame::ClearFrame()
     {
         CheckIfDisposed();
         int bufferSize = av_samples_get_buffer_size(m_avFrame->linesize, m_avFrame->channels, m_avFrame->nb_samples, (AVSampleFormat)m_avFrame->format, 0);
-        memset(m_avFrame->data[0], 0, bufferSize);
+        if (bufferSize > 0)
+            memset(m_avFrame->data[0], 0, bufferSize);
+        else
+            System::Diagnostics::Debug::WriteLine("av_samples_get_buffer_size: {0}", bufferSize);
     }
 
 }
