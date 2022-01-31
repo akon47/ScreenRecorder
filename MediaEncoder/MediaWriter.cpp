@@ -445,11 +445,12 @@ namespace MediaEncoder {
 
 		AVFormatContext* formatContext = m_data->FormatContext;
 
-		if (m_data->VideoCodecContext != nullptr)
+		if (m_data->VideoCodecContext != nullptr && m_data->VideoFrame != nullptr)
 			write_frame(formatContext, m_data->VideoCodecContext, m_data->VideoStream, nullptr);
-		if (m_data->AudioCodecContext != nullptr)
+		if (m_data->AudioCodecContext != nullptr && m_data->AudioFrame != nullptr)
 			write_frame(formatContext, m_data->AudioCodecContext, m_data->AudioStream, nullptr);
-		av_write_trailer(formatContext);
+		if (m_data->AudioFrame != nullptr || m_data->VideoFrame != nullptr)
+			av_write_trailer(formatContext);
 		avformat_close_input(&formatContext);
 
 		if (formatContext && !(formatContext->oformat->flags & AVFMT_NOFILE))
