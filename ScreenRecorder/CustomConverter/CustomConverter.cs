@@ -90,4 +90,19 @@ namespace CustomConverter
             throw new NotImplementedException();
         }
     }
+
+    public class InvertBooleanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (!(value is bool))
+                return DependencyProperty.UnsetValue;
+            return !(bool)value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return Convert(value, targetType, parameter, culture);
+        }
+    }
 }

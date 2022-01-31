@@ -20,6 +20,7 @@
                 <ResourceDictionary Source="pack://application:,,,/Icons.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <cc:BitrateFormatter x:Key="bitrateFormatter" />
+            <cc:InvertBooleanConverter x:Key="invertBooleanConverter" />
         </ResourceDictionary>
     </Window.Resources>
     <Border CornerRadius="0" Background="#454545" BorderBrush="Black" BorderThickness="1" MouseDown="Border_MouseDown">
@@ -64,8 +65,8 @@
                         </TextBlock>
 
                         <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Margin="0,0,2,0">
-                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_CursorClick}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.CaptureRegionByUserSelection}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}" CommandParameter="{x:Static local:CaptureTarget.ByUserChoiceTargetDeviceName}" Width="20" Height="20" Margin="1,0,1,0" />
-                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_FolderOpen}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenRecordDirecotryCommand}" Width="20" Height="20" Margin="1,0,1,0" />
+                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_CursorClick}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.CaptureRegionByUserSelection}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}" CommandParameter="{x:Static local:CaptureTarget.ByUserChoiceTargetDeviceName}" Width="20" Height="20" Margin="1,0,1,0" IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Converter={StaticResource invertBooleanConverter}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" />
+                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_FolderOpen}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenRecordDirecotryCommand}" Width="20" Height="20" Margin="1,0,1,0" IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Converter={StaticResource invertBooleanConverter}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" />
                         </StackPanel>
                     </Grid>
                     
@@ -257,7 +258,7 @@
                 </Grid.RowDefinitions>
                 <Button Grid.Column="0" Grid.Row="0" Margin="3" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_Close}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.Exit}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=WindowCloseCommand}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
                 <Grid Grid.Column="0" Grid.Row="1">
-                    <ToggleButton Name="recordSetting" Focusable="False" Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{StaticResource Icon_Settings}" ToolTip="{x:Static properties:Resources.EncoderSettings}" Foreground="DarkGray" Margin="3" />
+                    <ToggleButton Name="recordSetting" Focusable="False" Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{StaticResource Icon_Settings}" ToolTip="{x:Static properties:Resources.EncoderSettings}" Foreground="DarkGray" Margin="3" IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Converter={StaticResource invertBooleanConverter}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" />
                     <Popup StaysOpen="False" IsOpen="{Binding Path=IsChecked, ElementName=recordSetting, Mode=TwoWay}" Placement="Bottom" local:PopupAttachedProperty.DisplayedOnlyMonitor="True">
                         <Border MinWidth="400" BorderThickness="1" BorderBrush="Black" Background="#434343" SnapsToDevicePixels="True">
                             <Grid>
