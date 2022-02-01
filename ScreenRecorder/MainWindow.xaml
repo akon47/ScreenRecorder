@@ -83,7 +83,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Viewbox.Style>
-                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}" ToolTip="{x:Static properties:Resources.StartRecording}">
+                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}" ToolTip="{x:Static properties:Resources.StartRecording}" ToolTipOpening="Button_ToolTipOpening">
                                 <Button.Style>
                                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -127,7 +127,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Viewbox.Style>
-                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=PauseScreenRecordCommand}" ToolTip="{x:Static properties:Resources.PauseRecording}">
+                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=PauseScreenRecordCommand}" ToolTip="{x:Static properties:Resources.PauseRecording}" ToolTipOpening="Button_ToolTipOpening">
                                 <Button.Style>
                                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -190,7 +190,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Viewbox.Style>
-                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StopScreenRecordCommand}" ToolTip="{x:Static properties:Resources.StopRecording}">
+                            <Button Width="30" Height="30" Focusable="False" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StopScreenRecordCommand}" ToolTip="{x:Static properties:Resources.StopRecording}" ToolTipOpening="Button_ToolTipOpening">
                                 <Button.Style>
                                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
                                         <Setter Property="Content">
@@ -256,7 +256,7 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <Button Grid.Column="0" Grid.Row="0" Margin="3" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_Close}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.Exit}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=WindowCloseCommand}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                <Button Grid.Column="0" Grid.Row="0" Margin="3" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_Close}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.Exit}" ToolTipOpening="Button_ToolTipOpening" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=WindowCloseCommand}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
                 <Grid Grid.Column="0" Grid.Row="1">
                     <ToggleButton Name="recordSetting" Focusable="False" Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{StaticResource Icon_Settings}" ToolTip="{x:Static properties:Resources.EncoderSettings}" Foreground="DarkGray" Margin="3" IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Converter={StaticResource invertBooleanConverter}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" />
                     <Popup StaysOpen="False" IsOpen="{Binding Path=IsChecked, ElementName=recordSetting, Mode=TwoWay}" Placement="Bottom" local:PopupAttachedProperty.DisplayedOnlyMonitor="True">
