@@ -222,7 +222,7 @@ namespace ScreenRecorder
                             string filePath = string.Format("{0}\\{1}-{2}{3}",
                                 AppConfig.Instance.RecordDirectory,
                                 AppConstants.AppName,
-                                DateTime.Now.ToString("yyyyMMdd-hhmmss.fff"), ext);
+                                DateTime.Now.ToString("yyyyMMdd-HHmmss.fff"), ext);
 
                             if (!System.IO.File.Exists(filePath))
                             {
