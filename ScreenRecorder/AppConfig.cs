@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
+using System.Globalization;
 using MediaEncoder;
 using ScreenRecorder.Config;
 using ScreenRecorder.Region;
+using ScreenRecorder.DirectX;
 
 namespace ScreenRecorder
 {
@@ -64,6 +67,7 @@ namespace ScreenRecorder
                 Dictionary<string, string> config = new Dictionary<string, string>();
                 config.Add(nameof(ScreenCaptureMonitor), ScreenCaptureMonitor);
                 config.Add(nameof(ScreenCaptureCursorVisible), ScreenCaptureCursorVisible.ToString());
+                config.Add(nameof(ScreenCaptureRect), ScreenCaptureRect?.ToString(CultureInfo.InvariantCulture)??"");
 
                 config.Add(nameof(AdvancedSettings), AdvancedSettings.ToString());
 
@@ -80,8 +84,8 @@ namespace ScreenRecorder
 
                 config.Add(nameof(RecordMicrophone), RecordMicrophone.ToString());
 
-                config.Add(nameof(WindowLeft), WindowLeft.ToString());
-                config.Add(nameof(WindowTop), WindowTop.ToString());
+                config.Add(nameof(WindowLeft), WindowLeft.ToString(CultureInfo.InvariantCulture));
+                config.Add(nameof(WindowTop), WindowTop.ToString(CultureInfo.InvariantCulture));
 
                 Config.Config.SaveToFile(filePath, config);
             }
@@ -97,6 +101,8 @@ namespace ScreenRecorder
                 {
                     ScreenCaptureMonitor = Config.Config.GetString(config, nameof(ScreenCaptureMonitor), CaptureTarget.PrimaryCaptureTargetDeviceName);
                     ScreenCaptureCursorVisible = Config.Config.GetBool(config, nameof(ScreenCaptureCursorVisible), true);
+                    ScreenCaptureRect = Config.Config.GetRect(config, nameof(ScreenCaptureRect), null);
+                    AppManager.Instance.ScreenCaptureMonitorDescription = MonitorInfo.GetMonitorInfo(ScreenCaptureMonitor)?.Description ?? "";
 
                     AdvancedSettings = Config.Config.GetBool(config, nameof(AdvancedSettings), false);
 
@@ -259,6 +265,56 @@ namespace ScreenRecorder
         {
             get => screenCaptureCursorVisible;
             set => SetProperty(ref screenCaptureCursorVisible, value);
+        }
+
+        public Rect? ScreenCaptureRect
+        {
+            get => new Rect(ScreenCaptureRectLeft, ScreenCaptureRectTop, ScreenCaptureRectWidth, screenCaptureRectHeight);
+            set
+            {
+                if (value.HasValue)
+                {
+                    ScreenCaptureRectTop = value.Value.Top;
+                    ScreenCaptureRectLeft = value.Value.Left;
+                    ScreenCaptureRectWidth = value.Value.Width;
+                    ScreenCaptureRectHeight = value.Value.Height;
+                }
+                else
+                {
+                    ScreenCaptureRectTop = 0;
+                    ScreenCaptureRectLeft = 0;
+                    ScreenCaptureRectWidth = 0;
+                    ScreenCaptureRectHeight = 0;
+                }
+            }
+        }
+
+        private double screenCaptureRectLeft;
+        public double ScreenCaptureRectLeft
+        {
+            get => Math.Max(0, screenCaptureRectLeft);
+            set => SetProperty(ref screenCaptureRectLeft, value);
+        }
+
+        private double screenCaptureRectTop;
+        public double ScreenCaptureRectTop
+        {
+            get => Math.Max(0, screenCaptureRectTop);
+            set => SetProperty(ref screenCaptureRectTop, value);
+        }
+
+        private double screenCaptureRectWidth;
+        public double ScreenCaptureRectWidth
+        {
+            get => Math.Max(0, screenCaptureRectWidth);
+            set => SetProperty(ref screenCaptureRectWidth, value);
+        }
+
+        private double screenCaptureRectHeight;
+        public double ScreenCaptureRectHeight
+        {
+            get => Math.Max(0, screenCaptureRectHeight);
+            set => SetProperty(ref screenCaptureRectHeight, value);
         }
         #endregion
 

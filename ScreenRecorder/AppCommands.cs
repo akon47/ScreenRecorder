@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Diagnostics;
 using System.Windows.Input;
 using ScreenRecorder.Command;
 using ScreenRecorder.Config;
 using ScreenRecorder.Encoder;
+using ScreenRecorder.DirectX;
 
 namespace ScreenRecorder
 {
@@ -181,6 +183,7 @@ namespace ScreenRecorder
         private DelegateCommand startScreenRecordCommand;
         private DelegateCommand pauseScreenRecordCommand;
         private DelegateCommand stopScreenRecordCommand;
+        private DelegateCommand selectRegionCommand;
         private DelegateCommand openFolderInWindowExplorerCommand;
         private DelegateCommand openRecordDirecotryCommand;
         private DelegateCommand selectRecordDirectory;
@@ -189,6 +192,50 @@ namespace ScreenRecorder
 
         private DelegateCommand windowCloseCommand;
         #endregion
+
+        private Rect? SelectDisplayAndRect (object o)
+        {
+            var region = new Rect(0, 0, double.MaxValue, double.MaxValue);
+            var regionSelectorWindow = new Region.RegionSelectorWindow()
+            {
+                RegionSelectionMode = AppConfig.Instance.RegionSelectionMode
+            };
+            try
+            {
+                if (!regionSelectorWindow.ShowDialog().Value)
+                    return null;
+
+                var result = regionSelectorWindow.RegionSelectionResult;
+                if (result != null)
+                {
+                    string displayDeviceName = result.DeviceName;
+                    var monitorInfo = MonitorInfo.GetMonitorInfo(displayDeviceName);
+                    Debug.Assert(monitorInfo != null);
+                    region = result.Region;
+
+                    // Ensure even numbers ?
+                    region.Width = ((int)region.Width) & (~0x01);
+                    region.Height = ((int)region.Height) & (~0x01);
+
+                    if (region.Width < 100 || region.Height < 100)
+                    {
+                        MessageBox.Show(ScreenRecorder.Properties.Resources.RegionSizeError,
+                            AppConstants.AppName, MessageBoxButton.OK, MessageBoxImage.Error);
+                        return null;
+                    }
+
+                    AppConfig.Instance.ScreenCaptureRect = region;
+                    AppConfig.Instance.ScreenCaptureMonitor = displayDeviceName;
+                    AppManager.Instance.ScreenCaptureMonitorDescription = monitorInfo.Description;
+                }
+            }
+            finally
+            {
+                AppConfig.Instance.RegionSelectionMode = regionSelectorWindow.RegionSelectionMode;
+            }
+
+            return region;
+        }
 
         #region Record Commands
         public DelegateCommand StartScreenRecordCommand => startScreenRecordCommand ??
@@ -217,8 +264,6 @@ namespace ScreenRecorder
                             if (exts != null && exts.Length > 0)
                                 ext += exts[0];
 
-                            DateTime now = DateTime.Now;
-
                             string filePath = string.Format("{0}\\{1}-{2}{3}",
                                 AppConfig.Instance.RecordDirectory,
                                 AppConstants.AppName,
@@ -231,53 +276,24 @@ namespace ScreenRecorder
                                     AppConfig.Instance.SelectedRecordVideoCodec : MediaEncoder.VideoCodec.H264;
                                 var audioCodec = AppConfig.Instance.AdvancedSettings ?
                                     AppConfig.Instance.SelectedRecordAudioCodec : MediaEncoder.AudioCodec.Aac;
-                                var displayDeviceName = o is string target ? target : AppConfig.Instance.ScreenCaptureMonitor;
-                                var region = new Rect(0, 0, double.MaxValue, double.MaxValue);
 
-                                switch(displayDeviceName)
+                                if (!AppConfig.Instance.ScreenCaptureRect.HasValue || AppConfig.Instance.ScreenCaptureRect.Value.IsEmpty)
                                 {
-                                    case CaptureTarget.PrimaryCaptureTargetDeviceName:
-                                        #region Select PrimayDisplay
-                                        displayDeviceName = System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
-                                        #endregion
-                                        break;
-                                    case CaptureTarget.ByUserChoiceTargetDeviceName:
-                                        #region Select Region
-                                        var regionSelectorWindow = new Region.RegionSelectorWindow()
-                                        {
-                                            RegionSelectionMode = AppConfig.Instance.RegionSelectionMode
-                                        };
-                                        try
-                                        {
-                                            if (!regionSelectorWindow.ShowDialog().Value)
-                                            {
-                                                return;
-                                            }
-
-                                            var result = regionSelectorWindow.RegionSelectionResult;
-                                            if (result != null)
-                                            {
-                                                displayDeviceName = result.DeviceName;
-                                                region = result.Region;
-
-                                                region.Width = ((int)region.Width) & (~0x01);
-                                                region.Height = ((int)region.Height) & (~0x01);
-
-                                                if(region.Width < 100 || region.Height < 100)
-                                                {
-                                                    MessageBox.Show(ScreenRecorder.Properties.Resources.RegionSizeError,
-                                                        AppConstants.AppName, MessageBoxButton.OK, MessageBoxImage.Error);
-                                                    return;
-                                                }
-                                            }
-                                        }
-                                        finally
-                                        {
-                                            AppConfig.Instance.RegionSelectionMode = regionSelectorWindow.RegionSelectionMode;
-                                        }
-                                        break;
-                                        #endregion
+                                    // select ScreenCaptureRect and ScreenCaptureMonitor, update ScreenCaptureMonitorDescription
+                                    if (!SelectDisplayAndRect(o).HasValue)
+                                    {
+                                        MessageBox.Show("Unknown capture rect", AppConstants.AppName, MessageBoxButton.OK, MessageBoxImage.Error);
+                                        return;
+                                    }
                                 }
+
+                                MonitorInfo monitorInfo = MonitorInfo.GetMonitorInfo(AppConfig.Instance.ScreenCaptureMonitor);
+                                if (monitorInfo == null)
+                                    throw new ArgumentException($"{AppConfig.Instance.ScreenCaptureMonitor} does not exist");
+
+                                // securety check (coordinates relative to selected monitor with 0,0 as left,top)
+                                Rect monitorRegion = new Rect(0, 0, monitorInfo.Width, monitorInfo.Height);
+                                AppConfig.Instance.ScreenCaptureRect = Rect.Intersect(AppConfig.Instance.ScreenCaptureRect.Value, monitorRegion);
 
                                 // Start Record
                                 try
@@ -285,7 +301,7 @@ namespace ScreenRecorder
                                     AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
                                             videoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
                                             audioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
-                                            displayDeviceName, region,
+                                            monitorInfo.DeviceName, AppConfig.Instance.ScreenCaptureRect.Value,
                                             AppConfig.Instance.ScreenCaptureCursorVisible,
                                             AppConfig.Instance.RecordMicrophone);
                                 }
@@ -321,6 +337,15 @@ namespace ScreenRecorder
                 {
                     AppManager.Instance.ScreenEncoder.Stop();
                 }
+            }));
+
+        public DelegateCommand SelectRegionCommand => selectRegionCommand ??
+            (selectRegionCommand = new DelegateCommand(o =>
+            {
+                if (AppManager.Instance.ScreenEncoder.Status != Encoder.EncoderStatus.Stop)
+                    return;
+
+                SelectDisplayAndRect(o);
             }));
 
         public DelegateCommand SelectRecordDirectory => selectRecordDirectory ??

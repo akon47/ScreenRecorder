@@ -65,7 +65,7 @@
                         </TextBlock>
 
                         <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Margin="0,0,2,0">
-                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_CursorClick}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.CaptureRegionByUserSelection}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}" CommandParameter="{x:Static local:CaptureTarget.ByUserChoiceTargetDeviceName}" Width="20" Height="20" Margin="1,0,1,0" IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Converter={StaticResource invertBooleanConverter}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" />
+                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_CursorClick}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.CaptureRegionByUserSelection}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=SelectRegionCommand}" CommandParameter="{x:Static local:CaptureTarget.ByUserChoiceTargetDeviceName}" Width="20" Height="20" Margin="1,0,1,0" IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Converter={StaticResource invertBooleanConverter}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" />
                             <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_FolderOpen}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenRecordDirecotryCommand}" Width="20" Height="20" Margin="1,0,1,0" IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Converter={StaticResource invertBooleanConverter}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" />
                         </StackPanel>
                     </Grid>
@@ -394,23 +394,21 @@
                                                     <sys:Int32>144</sys:Int32>
                                                 </ComboBox.Items>
                                             </ComboBox>
-                                            <Grid Grid.Column="1" Grid.Row="6" Margin="3">
-                                                <ComboBox Name="comboBox_captureDisplay" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=CaptureTargets, Mode=OneWay}" SelectedValuePath="DeviceName" DisplayMemberPath="Description" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureMonitor, Mode=TwoWay}" />
-                                                <TextBlock Text="{x:Static properties:Resources.DisplayNotFound}" Foreground="Red" VerticalAlignment="Center" Margin="6,0,30,0" IsHitTestVisible="False">
-                                                    <TextBlock.Style>
-                                                        <Style TargetType="{x:Type TextBlock}">
-                                                            <Setter Property="Visibility" Value="Hidden" />
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding Path=SelectedIndex, ElementName=comboBox_captureDisplay, Mode=OneWay}" Value="-1">
-                                                                    <Setter Property="Visibility" Value="Visible" />
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </TextBlock.Style>
-                                                </TextBlock>
-                                            </Grid>
+                                            <Grid Grid.Column="1" Grid.Row="6">
+                                              <StackPanel Grid.Column="1" Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Left">
+                                                <TextBox IsReadOnly="true" Margin="3" MinWidth="200" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppManager.Instance}, Path=ScreenCaptureMonitorDescription, Mode=OneWay}"/>
+                                                <TextBlock Text="Left:"  Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
+                                                <TextBox Margin="3" MinWidth="40" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureRectLeft, Mode=TwoWay}"/>
+                                                <TextBlock Text="Top:" Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
+                                                <TextBox Margin="3" MinWidth="40" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureRectTop, Mode=TwoWay}"/>
+                                                <TextBlock Text="Width:"  Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
+                                                <TextBox Margin="3" MinWidth="40" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureRectWidth, Mode=TwoWay}"/>
+                                                <TextBlock Text="Height:" Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
+                                                <TextBox Margin="3" MinWidth="40" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureRectHeight, Mode=TwoWay}"/>
+                                              </StackPanel>
+                                           </Grid>
                                             <Grid Grid.Column="1" Grid.Row="7">
-                                                <Grid.ColumnDefinitions>
+                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="80" />
                                                 </Grid.ColumnDefinitions>
@@ -423,7 +421,7 @@
                                                 </TextBox>
                                                 <Button Grid.Column="1" Grid.Row="0" Margin="0,3,3,3" Content="{x:Static properties:Resources.Browse}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=SelectRecordDirectory, Mode=OneWay}"/>
                                             </Grid>
-                                            <StackPanel Grid.Column="0" Grid.Row="8" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                          <StackPanel Grid.Column="0" Grid.Row="8" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
                                                 <CheckBox Content="{x:Static properties:Resources.RecordMicrophone}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=RecordMicrophone, Mode=TwoWay}" Foreground="White" Margin="5,2,0,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 <CheckBox Content="{x:Static properties:Resources.CaptureCursor}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureCursorVisible, Mode=TwoWay}" Foreground="White" Margin="5,2,0,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 <CheckBox Content="{x:Static properties:Resources.AdvancedSettings}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=TwoWay}" Foreground="White" Margin="5,2,5,5" HorizontalAlignment="Right" />

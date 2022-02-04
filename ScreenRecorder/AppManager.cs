@@ -98,6 +98,13 @@ namespace ScreenRecorder
             private set => SetProperty(ref notSupportedHwHevc, value);
         }
 
+        private string screenCaptureMonitorDescription;
+        public string ScreenCaptureMonitorDescription
+        {
+            get => screenCaptureMonitorDescription;
+            set => SetProperty(ref screenCaptureMonitorDescription, value);
+        }
+
         public void Initialize()
         {
             if (IsInitialized)
