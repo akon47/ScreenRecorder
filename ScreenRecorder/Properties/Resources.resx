@@ -136,7 +136,7 @@
     <value>Capture Region</value>
   </data>
   <data name="CaptureRegionByUserSelection" xml:space="preserve">
-    <value>Capture region by user selection</value>
+    <value>Select Capture Target</value>
   </data>
   <data name="CaptureWindow" xml:space="preserve">
     <value>Capture Window</value>
