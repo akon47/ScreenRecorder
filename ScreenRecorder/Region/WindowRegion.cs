@@ -11,14 +11,13 @@ namespace ScreenRecorder.Region
     public sealed class WindowRegion
     {
         #region Native Methods
-        public static RECT GetWindowRectangle(IntPtr hWnd)
+        public static Rect GetWindowRectangle(IntPtr hWnd)
         {
-            RECT rect;
-
+            // including type conversation from RECT to Rect
             int size = Marshal.SizeOf(typeof(RECT));
-            DwmGetWindowAttribute(hWnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out rect, size);
-
-            return rect;
+            DwmGetWindowAttribute(hWnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out RECT rect, size);
+            Rect region = new Rect(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
+            return region;
         }
 
         [Flags]
@@ -87,9 +86,7 @@ namespace ScreenRecorder.Region
             {
                 if(IsWindowVisible(hWnd) && !Utils.IsWindowDisplayedOnlyMonitor(hWnd))
                 {
-                    RECT rect = GetWindowRectangle(hWnd);
-
-                    Rect region = new Rect(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
+                    Rect region = GetWindowRectangle(hWnd);
                     if (region.Height > 16 && region.Width > 16)
                     {
                         windowRegions.Add(new WindowRegion() { Region = region, Hwnd = hWnd });

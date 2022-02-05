@@ -32,12 +32,14 @@ namespace ScreenRecorder.Region
         public event RegionSelectedHandler RegionSelected;
 
         #region Private Fields
-        private Point downPoint, movePoint;
+        private Point downPoint, movePoint;   // relative to 0,0 (left,top)
         private Rect selectedTargetBounds;
         private string selectedTargetDevice;
         private bool selectionStarted = false;
         private WindowRegion[] windowRegions;
         private System.Windows.Forms.Screen[] screens;
+        private double _minLeft;
+        private double _minTop;
         #endregion
 
         public RegionSelector()
@@ -47,11 +49,23 @@ namespace ScreenRecorder.Region
             selectedTargetBounds = Rect.Empty;
             screens = System.Windows.Forms.Screen.AllScreens;
             windowRegions = WindowRegion.GetWindowRegions();
+            _minLeft = screens.Min(x => x.Bounds.Left);
+            _minTop = screens.Min(x => x.Bounds.Top);
         }
 
-
-
         #region Mouse Event Handlers
+
+        private System.Windows.Forms.Screen GetScreenDeviceFromMousePoint(Point mousePoint)
+        {
+            mousePoint.Offset(_minLeft, _minTop);
+            return screens.FirstOrDefault(s => s.Bounds.Contains((int)mousePoint.X, (int)mousePoint.Y));
+        }
+
+        private WindowRegion GetWindowRegionFromMousePoint(Point mousePoint)
+        {
+            mousePoint.Offset(_minLeft, _minTop);
+            return windowRegions.FirstOrDefault(s => s.Region.Contains((int)mousePoint.X, (int)mousePoint.Y));
+        }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
@@ -65,18 +79,17 @@ namespace ScreenRecorder.Region
             switch (RegionSelectionMode)
             {
                 case RegionSelectionMode.UserRegion:
-                    var screen = screens.FirstOrDefault(s => s.Bounds.Contains((int)downPoint.X, (int)downPoint.Y));
-                    if (screen != null)
-                    {
-                        selectedTargetDevice = screen.DeviceName;
-                    }
+                    var screen = GetScreenDeviceFromMousePoint(movePoint);
+                    selectedTargetDevice = screen?.DeviceName;
                     break;
                 case RegionSelectionMode.WindowRegion:
                 case RegionSelectionMode.DisplayRegion:
+                    // values should be set before in OnMouseMove
                     if (!string.IsNullOrWhiteSpace(selectedTargetDevice) && selectedTargetBounds.Width > 0 && selectedTargetBounds.Height > 0)
                     {
                         selectionStarted = false;
-                        RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, selectedTargetDevice, GetScreenBounds(selectedTargetDevice), selectedTargetBounds, !(selectedTargetBounds.Width > 0 && selectedTargetBounds.Height > 0)));
+                        RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, selectedTargetDevice, GetDeviceRegion(selectedTargetDevice), 
+                            selectedTargetBounds, !(selectedTargetBounds.Width > 0 && selectedTargetBounds.Height > 0)));
                     }
                     break;
             }
@@ -105,30 +118,26 @@ namespace ScreenRecorder.Region
 
                     selectedTargetBounds = Rect.Empty;
                     selectedTargetDevice = null;
-                    foreach (var windowRegion in windowRegions)
+                    var windowRegion = GetWindowRegionFromMousePoint(movePoint);
+                    if (windowRegion != null)
                     {
-                        if (windowRegion.Region.Contains(movePoint))
-                        {
-                            selectedTargetBounds = windowRegion.Region;
-                            selectedTargetDevice = screens.FirstOrDefault(s => s.Bounds.Contains((int)movePoint.X, (int)movePoint.Y))?.DeviceName;
-                            break;
-                        }
+                        selectedTargetBounds = windowRegion.Region;
+                        selectedTargetDevice = GetScreenDeviceFromMousePoint(movePoint)?.DeviceName;
                     }
                     InvalidateVisual();
                     break;
                 case RegionSelectionMode.DisplayRegion:
                     Cursor = Cursors.Arrow;
 
-                    var screen = screens.FirstOrDefault(s => s.Bounds.Contains((int)movePoint.X, (int)movePoint.Y));
+                    selectedTargetDevice = null;
+
+                    var screen = GetScreenDeviceFromMousePoint(movePoint);
                     if (screen != null)
                     {
                         Rect bounds = new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
-                        if (selectedTargetBounds != bounds)
-                        {
-                            selectedTargetBounds = bounds;
-                            selectedTargetDevice = screen.DeviceName;
-                            InvalidateVisual();
-                        }
+                        selectedTargetBounds = bounds;
+                        selectedTargetDevice = screen.DeviceName;
+                        InvalidateVisual();
                     }
                     break;
             }
@@ -147,8 +156,9 @@ namespace ScreenRecorder.Region
                 {
                     case RegionSelectionMode.UserRegion:
                         selectionStarted = false;
-                        Rect userRegion = GetUserRegion();
-                        RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, selectedTargetDevice, GetScreenBounds(selectedTargetDevice), userRegion, !(userRegion.Width > 0 && userRegion.Height > 0)));
+                        Rect userRegion = GetUserRegion(downPoint, movePoint, true);
+                        RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, selectedTargetDevice, GetDeviceRegion(selectedTargetDevice), 
+                            userRegion, !(userRegion.Width > 0 && userRegion.Height > 0)));
                         break;
                     case RegionSelectionMode.WindowRegion:
 
@@ -175,18 +185,19 @@ namespace ScreenRecorder.Region
             switch (RegionSelectionMode)
             {
                 case RegionSelectionMode.UserRegion:
-                    Rect userRegion = GetUserRegion();
+                    Rect userRegion = GetUserRegion(downPoint, movePoint, false);
                     pathGeometry.AddGeometry(new RectangleGeometry(userRegion));
                     dc.DrawRectangle(null, selectorPen, userRegion);
                     break;
                 case RegionSelectionMode.WindowRegion:
-                    Rect windowRegion = Rect.Intersect(GetDeviceRegion(selectedTargetDevice), selectedTargetBounds);
-                    pathGeometry.AddGeometry(new RectangleGeometry(windowRegion));
-                    dc.DrawRectangle(null, selectorPen, windowRegion);
-                    break;
                 case RegionSelectionMode.DisplayRegion:
-                    pathGeometry.AddGeometry(new RectangleGeometry(selectedTargetBounds));
-                    dc.DrawRectangle(null, selectorPen, selectedTargetBounds);
+                    if (!selectedTargetBounds.IsEmpty)
+                    {
+                        Rect windowRegion = Rect.Intersect(GetDeviceRegion(selectedTargetDevice), selectedTargetBounds);
+                        windowRegion.Offset(-_minLeft, -_minTop);
+                        pathGeometry.AddGeometry(new RectangleGeometry(windowRegion));
+                        dc.DrawRectangle(null, selectorPen, windowRegion);
+                    }
                     break;
             }
             dc.DrawGeometry(dimBrush, null, pathGeometry);
@@ -195,36 +206,26 @@ namespace ScreenRecorder.Region
 
         #region Private Methods
 
-        private Rect GetScreenBounds(string deviceName)
+        private Rect GetUserRegion(Point point1, Point point2, bool absCoord)
         {
-            var screen = screens.FirstOrDefault(s => s.DeviceName == deviceName);
-            if(screen != null)
-            {
-                return new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
-            }
+            Rect selectorRegion = new Rect((int)Math.Min(point1.X, point2.X), (int)Math.Min(point1.Y, point2.Y), (int)Math.Abs(point1.X - point2.X), (int)Math.Abs(point1.Y - point2.Y));
+            Rect deviceRegion = GetDeviceRegion(selectedTargetDevice);
+            if (deviceRegion.IsEmpty)
+                return deviceRegion;
+            if (absCoord)
+                selectorRegion.Offset(_minLeft, _minTop);   // links oben absolute Monitorgrenzen
             else
-            {
-                return Rect.Empty;
-            }
-        }
+                deviceRegion.Offset(-_minLeft, -_minTop);   // links oben ist 0,0
 
-        private Rect GetUserRegion()
-        {
-            Rect selectorRegion = new Rect((int)Math.Min(downPoint.X, movePoint.X), (int)Math.Min(downPoint.Y, movePoint.Y), (int)Math.Abs(downPoint.X - movePoint.X), (int)Math.Abs(downPoint.Y - movePoint.Y));
-            return Rect.Intersect(GetDeviceRegion(selectedTargetDevice), selectorRegion);
+            return Rect.Intersect(deviceRegion, selectorRegion);
         }
 
         private Rect GetDeviceRegion(string deviceName)
         {
             var screen = screens.FirstOrDefault(s => s.DeviceName == deviceName);
-            if (screen != null)
-            {
-                return new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
-            }
-            else
-            {
-                return Rect.Empty;
-            }
+            return (screen != null)
+                ? new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height)
+                : Rect.Empty;
         }
         #endregion
 
