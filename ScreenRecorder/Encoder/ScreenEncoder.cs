@@ -96,6 +96,10 @@ namespace ScreenRecorder.Encoder
                     Utils.SetThreadExecutionState(oldSleepState.Value);
                     oldSleepState = null; ;
                 }
+                if (AppConfig.Instance.CaptureTimeControlled && AppConfig.Instance.ExitProgram)
+                {
+                    Utils.ExitProgram(AppConfig.Instance.ShutDown);
+                }
             }
         }
 
