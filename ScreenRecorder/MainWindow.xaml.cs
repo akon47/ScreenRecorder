@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Controls;
+using System.Text.RegularExpressions;
 
 namespace ScreenRecorder
 {
@@ -112,6 +113,12 @@ namespace ScreenRecorder
                 // Disable tooltips during capturing (main window will already not be captured, s. OnContentRendered)
                 e.Handled = true;
             }
+        }
+
+        private void NumberValidation(object sender, TextCompositionEventArgs e)
+        {
+            Regex regex = new Regex("[^0-9]+");
+            e.Handled = regex.IsMatch(e.Text);
         }
     }
 }

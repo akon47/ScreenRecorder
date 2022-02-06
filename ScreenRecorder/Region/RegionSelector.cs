@@ -34,6 +34,7 @@ namespace ScreenRecorder.Region
         #region Private Fields
         private Point downPoint, movePoint;   // relative to 0,0 (left,top)
         private Rect selectedTargetBounds;
+        private IntPtr selectedHwnd;
         private string selectedTargetDevice;
         private bool selectionStarted = false;
         private WindowRegion[] windowRegions;
@@ -51,6 +52,7 @@ namespace ScreenRecorder.Region
             windowRegions = WindowRegion.GetWindowRegions();
             _minLeft = screens.Min(x => x.Bounds.Left);
             _minTop = screens.Min(x => x.Bounds.Top);
+            selectedHwnd = IntPtr.Zero;
         }
 
         #region Mouse Event Handlers
@@ -89,7 +91,7 @@ namespace ScreenRecorder.Region
                     {
                         selectionStarted = false;
                         RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, selectedTargetDevice, GetDeviceRegion(selectedTargetDevice), 
-                            selectedTargetBounds, !(selectedTargetBounds.Width > 0 && selectedTargetBounds.Height > 0)));
+                            selectedTargetBounds, selectedHwnd, !(selectedTargetBounds.Width > 0 && selectedTargetBounds.Height > 0)));
                     }
                     break;
             }
@@ -118,11 +120,13 @@ namespace ScreenRecorder.Region
 
                     selectedTargetBounds = Rect.Empty;
                     selectedTargetDevice = null;
+                    selectedHwnd = IntPtr.Zero;
                     var windowRegion = GetWindowRegionFromMousePoint(movePoint);
                     if (windowRegion != null)
                     {
                         selectedTargetBounds = windowRegion.Region;
                         selectedTargetDevice = GetScreenDeviceFromMousePoint(movePoint)?.DeviceName;
+                        selectedHwnd = windowRegion.Hwnd;
                     }
                     InvalidateVisual();
                     break;
@@ -158,10 +162,9 @@ namespace ScreenRecorder.Region
                         selectionStarted = false;
                         Rect userRegion = GetUserRegion(downPoint, movePoint, true);
                         RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, selectedTargetDevice, GetDeviceRegion(selectedTargetDevice), 
-                            userRegion, !(userRegion.Width > 0 && userRegion.Height > 0)));
+                            userRegion, selectedHwnd, !(userRegion.Width > 0 && userRegion.Height > 0)));
                         break;
                     case RegionSelectionMode.WindowRegion:
-
                         break;
                 }
             }
@@ -235,6 +238,7 @@ namespace ScreenRecorder.Region
             selectionStarted = true;
             downPoint = movePoint = new Point(0, 0);
             selectedTargetBounds = Rect.Empty;
+            selectedHwnd = IntPtr.Zero;
             InvalidateVisual();
         }
 
@@ -243,7 +247,7 @@ namespace ScreenRecorder.Region
             if (selectionStarted)
             {
                 selectionStarted = false;
-                RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, null, Rect.Empty, Rect.Empty, true));
+                RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, null, Rect.Empty, Rect.Empty, IntPtr.Zero, true));
                 InvalidateVisual();
             }
         }

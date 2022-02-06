@@ -329,6 +329,8 @@
                                                 <RowDefinition />                        <!-- Audio Bitrate -->
                                                 <RowDefinition Tag="AdvancedSettings" /> <!-- Frame Rate -->
                                                 <RowDefinition />                        <!-- Capture Display -->
+                                                <RowDefinition />                        <!-- Capture Display Position and Size -->
+                                                <RowDefinition Tag="AdvancedSettings"/>  <!-- Capture Display Resize during window selection -->
                                                 <RowDefinition />                        <!-- Recording Path -->
                                                 <RowDefinition Tag="AdvancedSettings"/>  <!-- Capture time controlled -->
                                                 <RowDefinition />                        <!-- ETC Options -->
@@ -341,8 +343,8 @@
                                             <TextBlock Grid.Column="0" Grid.Row="4" Text="{x:Static properties:Resources.EncoderAudioBitrate}" Margin="3" />
                                             <TextBlock Grid.Column="0" Grid.Row="5" Text="{x:Static properties:Resources.EncoderFrameRate}" Margin="3" />
                                             <TextBlock Grid.Column="0" Grid.Row="6" Text="{x:Static properties:Resources.EncoderCaptureDisplay}" Margin="3" />
-                                            <TextBlock Grid.Column="0" Grid.Row="7" Text="{x:Static properties:Resources.EncoderBaseDirectory}" Margin="3" />
-                                            <TextBlock Grid.Column="0" Grid.Row="8" Text="TimeControlled" Margin="3" />
+                                            <TextBlock Grid.Column="0" Grid.Row="9" Text="{x:Static properties:Resources.EncoderBaseDirectory}" Margin="3" />
+                                            <TextBlock Grid.Column="0" Grid.Row="10" Text="TimeControlled" Margin="3" />
 
                                             <ComboBox Grid.Column="1" Grid.Row="0" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderFormats, Mode=OneWay}" SelectedValuePath="Format" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordFormat, Mode=TwoWay}" />
                                             <ComboBox Grid.Column="1" Grid.Row="1" Margin="3" ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderVideoCodecs, Mode=OneWay}" SelectedValuePath="VideoCodec" DisplayMemberPath="Name" SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoCodec, Mode=TwoWay}" IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}"/>
@@ -399,17 +401,30 @@
                                             <Grid Grid.Column="1" Grid.Row="6">
                                               <StackPanel Grid.Column="1" Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Left">
                                                 <TextBox IsReadOnly="true" Margin="3" MinWidth="200" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppManager.Instance}, Path=ScreenCaptureMonitorDescription, Mode=OneWay}"/>
-                                                <TextBlock Text="Left:"  Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
-                                                <TextBox Margin="3" MinWidth="40" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureRectLeft, Mode=TwoWay}"/>
-                                                <TextBlock Text="Top:" Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
-                                                <TextBox Margin="3" MinWidth="40" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureRectTop, Mode=TwoWay}"/>
-                                                <TextBlock Text="Width:"  Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
-                                                <TextBox Margin="3" MinWidth="40" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureRectWidth, Mode=TwoWay}"/>
-                                                <TextBlock Text="Height:" Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
-                                                <TextBox Margin="3" MinWidth="40" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureRectHeight, Mode=TwoWay}"/>
                                               </StackPanel>
                                            </Grid>
                                             <Grid Grid.Column="1" Grid.Row="7">
+                                                <StackPanel Grid.Column="1" Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Left">
+                                                    <TextBlock Text="Left:"  Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
+                                                    <TextBox Margin="3" MinWidth="40" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureRectLeft, Mode=TwoWay}"/>
+                                                    <TextBlock Text="Top:" Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
+                                                    <TextBox Margin="3" MinWidth="40" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureRectTop, Mode=TwoWay}"/>
+                                                    <TextBlock Text="Width:"  Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
+                                                    <TextBox Margin="3" MinWidth="40" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureRectWidth, Mode=TwoWay}"/>
+                                                    <TextBlock Text="Height:" Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
+                                                    <TextBox Margin="3" MinWidth="40" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureRectHeight, Mode=TwoWay}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                            <Grid Grid.Column="1" Grid.Row="8">
+                                                <StackPanel Grid.Column="1" Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Left">
+                                                    <CheckBox Content="Resize Window During Selection" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=ForceSourceSize, Mode=TwoWay}" Foreground="White" Margin="5,2,10,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="Width:"  Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
+                                                    <TextBox IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=ForceSourceSize}" Margin="3" MinWidth="40" PreviewTextInput="NumberValidation" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ForcedSourceWidth, Mode=TwoWay}"/>
+                                                    <TextBlock Text="Height:" Foreground="White" VerticalAlignment="Center" Margin="5,2,0,5"/>
+                                                    <TextBox IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=ForceSourceSize}" Margin="3" MinWidth="40" PreviewTextInput="NumberValidation" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=ForcedSourceHeight, Mode=TwoWay}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                            <Grid Grid.Column="1" Grid.Row="9">
                                                  <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="80" />
@@ -423,7 +438,7 @@
                                                 </TextBox>
                                                 <Button Grid.Column="1" Grid.Row="0" Margin="0,3,3,3" Content="{x:Static properties:Resources.Browse}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=SelectRecordDirectory, Mode=OneWay}"/>
                                             </Grid>
-                                            <StackPanel Grid.Column="1" Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <StackPanel Grid.Column="1" Grid.Row="10" Orientation="Horizontal" HorizontalAlignment="Left">
                                                 <CheckBox Content="" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=CaptureTimeControlled, Mode=TwoWay}" Margin="3,3,3,3" Foreground="White" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 <TextBlock Text="Start:"  Foreground="White" VerticalAlignment="Center"/>
                                                 <local:TimeCtrl IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=CaptureTimeControlled}" Margin="3,3,3,3" VerticalAlignment="Center" Value="{Binding Source={x:Static local:AppConfig.Instance}, Path=CaptureStartTime, Mode=TwoWay}"/>
@@ -432,12 +447,12 @@
                                                 <CheckBox IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=CaptureTimeControlled}" Content="Exit Program" Margin="3,3,3,3" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=ExitProgram, Mode=TwoWay}" Foreground="White" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 <CheckBox IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=CaptureTimeControlled}" Content="Shut Down" Margin="3,3,3,3" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=ShutDown, Mode=TwoWay}" Foreground="White" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                             </StackPanel>
-                                            <StackPanel Grid.Column="0" Grid.Row="9" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <StackPanel Grid.Column="0" Grid.Row="11" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
                                                 <CheckBox Content="{x:Static properties:Resources.RecordMicrophone}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=RecordMicrophone, Mode=TwoWay}" Foreground="White" Margin="5,2,0,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 <CheckBox Content="{x:Static properties:Resources.CaptureCursor}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureCursorVisible, Mode=TwoWay}" Foreground="White" Margin="5,2,0,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 <CheckBox Content="{x:Static properties:Resources.AdvancedSettings}" IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=TwoWay}" Foreground="White" Margin="5,2,5,5" HorizontalAlignment="Right" />
                                             </StackPanel>
-                                            <Border Grid.Column="0" Grid.Row="10" Grid.ColumnSpan="2" Margin="3,3,3,6" HorizontalAlignment="Center" BorderBrush="Transparent" BorderThickness="0" CornerRadius="3" Background="#313131">
+                                            <Border Grid.Column="0" Grid.Row="12" Grid.ColumnSpan="2" Margin="3,3,3,6" HorizontalAlignment="Center" BorderBrush="Transparent" BorderThickness="0" CornerRadius="3" Background="#313131">
                                                 <Border.Style>
                                                     <Style TargetType="{x:Type Border}">
                                                         <Setter Property="Visibility" Value="Collapsed" />

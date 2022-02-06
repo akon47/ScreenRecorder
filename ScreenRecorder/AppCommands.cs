@@ -213,9 +213,37 @@ namespace ScreenRecorder
                     Debug.Assert(monitorInfo != null);
                     region = result.Region;
 
-                    // Ensure even numbers ?
-                    region.Width = ((int)region.Width) & (~0x01);
-                    region.Height = ((int)region.Height) & (~0x01);
+                    if (AppConfig.Instance.ForceSourceSize && result.Hwnd != IntPtr.Zero)
+                    {
+                        int cx = AppConfig.Instance.ForcedSourceWidth;
+                        int cy = AppConfig.Instance.ForcedSourceHeight;
+                        // sichern gerader Zahlen ?
+                        cx &= ~0x01;
+                        cy &= ~0x01;
+
+                        region.Width = cx;
+                        region.Height = cy;
+
+                        // rect size check with coordinates relative to according screen
+                        Rect monitorBounds = monitorInfo.Bounds;
+                        monitorBounds.Offset(-monitorInfo.Left, -monitorInfo.Top);
+                        double offsetX = (region.Right > monitorBounds.Right) ? monitorBounds.Right - region.Right : 0;
+                        double offsetY = (region.Bottom > monitorBounds.Bottom) ? monitorBounds.Bottom - region.Bottom : 0;
+                        region.Offset(offsetX, offsetY);
+                        // change window size on display with absolute coordinates
+                        region.Offset(monitorInfo.Left, monitorInfo.Top);
+                        Region.WindowRegion.SizeWindow(result.Hwnd, (int)(region.Left), (int)(region.Top), cx, cy, true);
+                        // get absolute coordinates after resizing
+                        region = Region.WindowRegion.GetWindowRectangle(result.Hwnd);
+                        // shift absolute coordinates relative to screen with 0,0 as left,top
+                        region.Offset(-monitorInfo.Left, -monitorInfo.Top);
+                    }
+                    else
+                    {
+                        // Ensure even numbers ?
+                        region.Width = ((int)region.Width) & (~0x01);
+                        region.Height = ((int)region.Height) & (~0x01);
+                    }
 
                     if (region.Width < 100 || region.Height < 100)
                     {

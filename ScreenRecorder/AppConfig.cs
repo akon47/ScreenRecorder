@@ -93,6 +93,10 @@ namespace ScreenRecorder
                 config.Add(nameof(ExitProgram), ExitProgram.ToString());
                 config.Add(nameof(ShutDown), ShutDown.ToString());
 
+                config.Add(nameof(ForceSourceSize), ForceSourceSize.ToString());
+                config.Add(nameof(ForcedSourceHeight), ForcedSourceHeight.ToString());
+                config.Add(nameof(ForcedSourceWidth), ForcedSourceWidth.ToString());
+
                 Config.Config.SaveToFile(filePath, config);
             }
         }
@@ -138,6 +142,10 @@ namespace ScreenRecorder
                     CaptureEndTime -= TimeSpan.FromMilliseconds(CaptureEndTime.Second * 1000 + CaptureEndTime.Millisecond);
                     ExitProgram = Config.Config.GetBool(config, nameof(ExitProgram), false);
                     ShutDown = Config.Config.GetBool(config, nameof(ShutDown), false);
+
+                    ForceSourceSize = Config.Config.GetBool(config, nameof(ForceSourceSize), false);
+                    ForcedSourceWidth = Config.Config.GetInt32(config, nameof(ForcedSourceWidth), 1280);
+                    ForcedSourceHeight = Config.Config.GetInt32(config, nameof(ForcedSourceHeight), 720);
                 }
                 else
                 {
@@ -166,6 +174,14 @@ namespace ScreenRecorder
             RegionSelectionMode = RegionSelectionMode.UserRegion;
 
             RecordMicrophone = false;
+
+            ForceSourceSize = false;
+            ForcedSourceWidth = 1280;   // HDREADY
+            ForcedSourceHeight = 720;   // HDREADY
+
+            CaptureTimeControlled = false;
+            CaptureStartTime = DateTime.Now;
+            CaptureEndTime = CaptureStartTime + TimeSpan.FromMinutes(60);
         }
         #endregion
 
@@ -344,6 +360,31 @@ namespace ScreenRecorder
             get => recordMicrophone;
             set => SetProperty(ref recordMicrophone, value);
         }
+        #endregion
+
+        #region Force resize of source window
+
+        private bool forceSourceSize;
+        public bool ForceSourceSize
+        {
+            get => forceSourceSize;
+            set => SetProperty(ref forceSourceSize, value);
+        }
+
+        private int forcedSourceWidth;
+        public int ForcedSourceWidth
+        {
+            get => forcedSourceWidth;
+            set => SetProperty(ref forcedSourceWidth, value);
+        }
+
+        private int forcedSourceHeight;
+        public int ForcedSourceHeight
+        {
+            get => forcedSourceHeight;
+            set => SetProperty(ref forcedSourceHeight, value);
+        }
+
         #endregion
 
         #region Time controlled capture

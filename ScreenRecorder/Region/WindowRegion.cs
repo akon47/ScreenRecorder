@@ -69,7 +69,33 @@ namespace ScreenRecorder.Region
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool EnumChildWindows(IntPtr hwnd, WindowEnumProc callback, IntPtr lParam);
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
+        public static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int wFlags);
         #endregion
+
+        public static void SizeWindow(IntPtr hwnd, int cx, int cy)
+        {
+            SizeWindow(hwnd, 0, 0, cx, cy, false);
+        }
+
+        public static void SizeWindow(IntPtr hwnd, int x, int y, int cx, int cy, bool move)
+        {
+            const short SWP_NOMOVE = 0X2;
+            //const short SWP_NOSIZE = 1;
+            const short SWP_NOZORDER = 0X4;
+            const int SWP_SHOWWINDOW = 0x0040;
+
+            int flags = SWP_NOZORDER | SWP_SHOWWINDOW;
+            if (!move)
+            {
+                flags |= SWP_NOMOVE;
+                x = 0;
+                y = 0;
+            }
+
+            SetWindowPos(hwnd, 0, x, y, cx, cy, flags);
+        }
 
         public Rect Region { get; private set; }
         public IntPtr Hwnd { get; private set; }

@@ -107,7 +107,7 @@ namespace ScreenRecorder.Region
             DialogResult = !e.IsCancelled;
             if(!e.IsCancelled)
             {
-                RegionSelectionResult = new RegionSelectionResult(e.DeviceName, Rect.Offset(e.Region, -e.DisplayBounds.X, -e.DisplayBounds.Y));
+                RegionSelectionResult = new RegionSelectionResult(e.DeviceName, Rect.Offset(e.Region, -e.DisplayBounds.X, -e.DisplayBounds.Y), e.Hwnd);
             }
             Close();
         }
