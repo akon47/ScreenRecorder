@@ -298,12 +298,17 @@ namespace ScreenRecorder
                                 // Start Record
                                 try
                                 {
+                                    DateTime? captureStart = AppConfig.Instance.CaptureTimeControlled ? AppConfig.Instance.CaptureStartTime : (DateTime?)null;
+                                    DateTime? captureEnd = AppConfig.Instance.CaptureTimeControlled ? AppConfig.Instance.CaptureEndTime : (DateTime?)null;
+
                                     AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
                                             videoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
                                             audioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
                                             monitorInfo.DeviceName, AppConfig.Instance.ScreenCaptureRect.Value,
                                             AppConfig.Instance.ScreenCaptureCursorVisible,
-                                            AppConfig.Instance.RecordMicrophone);
+                                            AppConfig.Instance.RecordMicrophone,
+                                            captureStart, captureEnd
+                                            );
                                 }
                                 catch
                                 {

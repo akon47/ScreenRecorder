@@ -87,6 +87,12 @@ namespace ScreenRecorder
                 config.Add(nameof(WindowLeft), WindowLeft.ToString(CultureInfo.InvariantCulture));
                 config.Add(nameof(WindowTop), WindowTop.ToString(CultureInfo.InvariantCulture));
 
+                config.Add(nameof(CaptureTimeControlled), CaptureTimeControlled.ToString());
+                config.Add(nameof(CaptureStartTime), CaptureStartTime.ToString(CultureInfo.InvariantCulture));
+                config.Add(nameof(CaptureEndTime), CaptureEndTime.ToString(CultureInfo.InvariantCulture));
+                config.Add(nameof(ExitProgram), ExitProgram.ToString());
+                config.Add(nameof(ShutDown), ShutDown.ToString());
+
                 Config.Config.SaveToFile(filePath, config);
             }
         }
@@ -119,6 +125,19 @@ namespace ScreenRecorder
 
                     WindowLeft = Config.Config.GetDouble(config, nameof(WindowLeft), -1.0d);
                     WindowTop = Config.Config.GetDouble(config, nameof(WindowTop), -1.0d);
+
+                    CaptureTimeControlled = Config.Config.GetBool(config, nameof(CaptureTimeControlled), false);
+                    var now = DateTime.Now;
+                    CaptureStartTime = Config.Config.GetDateTime(config, nameof(CaptureStartTime), now);
+                    if (CaptureStartTime < now)
+                        CaptureStartTime = now;
+                    CaptureStartTime -= TimeSpan.FromMilliseconds(CaptureStartTime.Second * 1000 + CaptureStartTime.Millisecond);
+                    CaptureEndTime = Config.Config.GetDateTime(config, nameof(CaptureEndTime), now + TimeSpan.FromMinutes(5));
+                    if (CaptureEndTime < CaptureStartTime)
+                        CaptureEndTime = CaptureStartTime + TimeSpan.FromMinutes(5);
+                    CaptureEndTime -= TimeSpan.FromMilliseconds(CaptureEndTime.Second * 1000 + CaptureEndTime.Millisecond);
+                    ExitProgram = Config.Config.GetBool(config, nameof(ExitProgram), false);
+                    ShutDown = Config.Config.GetBool(config, nameof(ShutDown), false);
                 }
                 else
                 {
@@ -325,6 +344,53 @@ namespace ScreenRecorder
             get => recordMicrophone;
             set => SetProperty(ref recordMicrophone, value);
         }
+        #endregion
+
+        #region Time controlled capture
+
+        private bool captureTimeControlled;
+        public bool CaptureTimeControlled
+        {
+            get => captureTimeControlled;
+            set => SetProperty(ref captureTimeControlled, value);
+        }
+
+        private DateTime captureStartTime;
+        public DateTime CaptureStartTime
+        {
+            get => captureStartTime;
+            set => SetProperty(ref captureStartTime, value);
+        }
+
+        private DateTime captureEndTime;
+        public DateTime CaptureEndTime
+        {
+            get => captureEndTime;
+            set => SetProperty(ref captureEndTime, value);
+        }
+
+        private bool exitProgram;
+        public bool ExitProgram
+        {
+            get => exitProgram;
+            set
+            {
+                if (SetProperty(ref exitProgram, value) && !value)
+                    ShutDown = false;
+            }
+        }
+
+        private bool shutDown;
+        public bool ShutDown
+        {
+            get => shutDown;
+            set
+            {
+                if (SetProperty(ref shutDown, value) && value)
+                    ExitProgram = true;
+            }
+        }
+
         #endregion
 
         private bool advancedSettings;

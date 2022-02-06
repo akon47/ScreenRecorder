@@ -161,7 +161,13 @@ namespace ScreenRecorder
 
         private void CompositionTarget_Rendering(object sender, EventArgs e)
         {
-            EncodeTime = Utils.VideoFramesCountToStringTime(screenEncoder.VideoFramesCount);
+            if (screenEncoder.TimeBeforeCapture != null)
+            {
+                var time = screenEncoder.TimeBeforeCapture.Value;
+                EncodeTime = $"{time.Hours:00}:{time.Minutes:00}:{time.Seconds:00} ...";
+            }
+            else
+                EncodeTime = Utils.VideoFramesCountToStringTime(screenEncoder.VideoFramesCount);
         }
 
         public void Dispose()

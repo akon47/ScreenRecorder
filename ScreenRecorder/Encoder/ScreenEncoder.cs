@@ -26,7 +26,8 @@ namespace ScreenRecorder.Encoder
             this.EncoderStopped += ScreenEncoder_EncoderStopped;
         }
 
-        public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, Rect region, bool drawCursor, bool recordMicrophone)
+        public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, 
+            Rect region, bool drawCursor, bool recordMicrophone, DateTime? captureStart, DateTime? captureEnd)
         {
             if (base.IsRunning)
                 return;
@@ -64,7 +65,7 @@ namespace ScreenRecorder.Encoder
                 Rect validRegion = Rect.Intersect(region, new Rect(0, 0, monitorInfo.Width, monitorInfo.Height));
                 base.Start(format, url,
                     screenVideoSource, videoCodec, videoBitrate, new VideoSize((int)validRegion.Width, (int)validRegion.Height),
-                    audioSource, audioCodec, audioBitrate);
+                    audioSource, audioCodec, audioBitrate, captureStart, captureEnd);
             }
             catch (Exception ex)
             {

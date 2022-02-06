@@ -165,6 +165,9 @@
     <Compile Include="Shortcut\ShortcutEditorWindow.xaml.cs">
       <DependentUpon>ShortcutEditorWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="TimeCtrl.xaml.cs">
+      <DependentUpon>TimeCtrl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="VideoSource\IVideoSource.cs" />
     <Compile Include="Reactive\NotifyPropertyBase.cs" />
     <Compile Include="Reactive\ReactiveExtensions.cs" />
@@ -204,6 +207,10 @@
     <Page Include="Styles\Generic.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="TimeCtrl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
