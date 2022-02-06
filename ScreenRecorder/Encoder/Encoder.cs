@@ -650,6 +650,14 @@ namespace ScreenRecorder.Encoder
                                     if (needToStop.WaitOne(1, false))
                                         break;
                                 }
+                                if (encoderArguments.EndTime != null)
+                                {
+                                    if (DateTime.Now >= encoderArguments.EndTime)
+                                    {
+                                        needToStop?.Set();
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
