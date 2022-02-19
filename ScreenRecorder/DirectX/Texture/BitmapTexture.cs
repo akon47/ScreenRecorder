@@ -1,133 +1,105 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
-
+using Buffer = SharpDX.Direct3D11.Buffer;
+using Color = SharpDX.Color;
 using Device = SharpDX.Direct3D11.Device;
+using MapFlags = SharpDX.DXGI.MapFlags;
+using Matrix = SharpDX.Matrix;
 
 namespace ScreenRecorder.DirectX.Texture
 {
     public class BitmapTexture : IDisposable
     {
-        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
-        public static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
-
-        private SharpDX.Direct3D11.Buffer verticesBuffer;
-        private VertexBufferBinding vertextBufferBinding;
-        private Texture2D bitmapTexture;
-        public Texture2D Texture
-        {
-            get { return bitmapTexture; }
-        }
         private ShaderResourceView bitmapTextureResourceView;
 
-        private int screenWidth, screenHeight;
-        private int bitmapWidth, bitmapHeight;
-        private int oldX = -1, oldY = -1;
-        private int oldWidth = -1, oldHeight = -1;
+        private readonly int screenWidth;
+        private readonly int screenHeight;
+        private VertexBufferBinding vertextBufferBinding;
 
-        public int TextureWidth
+        private Buffer verticesBuffer;
+
+        public BitmapTexture(Device device, int screenWidth, int screenHeight, int bitmapWidth, int bitmapHeight,
+            Format format = Format.B8G8R8A8_UNorm, int mipLevels = 1)
         {
-            get
-            {
-                return bitmapWidth;
-            }
+            this.screenWidth = screenWidth;
+            this.screenHeight = screenHeight;
+            TextureWidth = bitmapWidth;
+            TextureHeight = bitmapHeight;
+
+            InitializeBuffers(device);
+            InitializeTexture(device, bitmapWidth, bitmapHeight, format, mipLevels);
         }
 
-        public int TextureHeight
-        {
-            get
-            {
-                return bitmapHeight;
-            }
-        }
+        public Texture2D Texture { get; private set; }
+
+        public int TextureWidth { get; }
+
+        public int TextureHeight { get; }
 
         public Matrix CenterMatrix
         {
             get
             {
-                float left = ((float)oldX / (float)screenWidth * 2.0f) - 1.0f;
-                float top = ((float)-oldY / (float)screenHeight * 2.0f) + 1.0f;
-                float right = (2.0f * (((float)oldX + (float)oldWidth) / (float)screenWidth)) - 1.0f;
-                float bottom = (2.0f * (((float)-oldY - (float)oldHeight) / (float)screenHeight)) + 1.0f;
+                var left = (OldX / (float)screenWidth * 2.0f) - 1.0f;
+                var top = (-OldY / (float)screenHeight * 2.0f) + 1.0f;
+                var right = (2.0f * ((OldX + (float)OldWidth) / screenWidth)) - 1.0f;
+                var bottom = (2.0f * ((-OldY - (float)OldHeight) / screenHeight)) + 1.0f;
 
-                float centerX = left + ((right - left) / 2.0f);
-                float centerY = top + ((bottom - top) / 2.0f);
+                var centerX = left + ((right - left) / 2.0f);
+                var centerY = top + ((bottom - top) / 2.0f);
 
                 return Matrix.Translation(centerX, centerY, 0.0f);
             }
         }
 
-        public int OldX
-        {
-            get
-            {
-                return oldX;
-            }
-        }
+        public int OldX { get; private set; } = -1;
 
-        public int OldY
-        {
-            get
-            {
-                return oldY;
-            }
-        }
+        public int OldY { get; private set; } = -1;
 
-        public int OldWidth
-        {
-            get
-            {
-                return oldWidth;
-            }
-        }
+        public int OldWidth { get; private set; } = -1;
 
-        public int OldHeight
-        {
-            get
-            {
-                return oldHeight;
-            }
-        }
+        public int OldHeight { get; private set; } = -1;
 
-        public int Width
-        {
-            get
-            {
-                return bitmapWidth;
-            }
-        }
+        public int Width => TextureWidth;
 
-        public int Height
-        {
-            get
-            {
-                return bitmapHeight;
-            }
-        }
+        public int Height => TextureHeight;
 
         public int BufferLength
         {
             get
             {
-                int length = (bitmapTexture.Description.Width * bitmapTexture.Description.Height * 4);
+                var length = Texture.Description.Width * Texture.Description.Height * 4;
                 return length;
             }
         }
 
-        public BitmapTexture(Device device, int screenWidth, int screenHeight, int bitmapWidth, int bitmapHeight, Format format = Format.B8G8R8A8_UNorm, int mipLevels = 1)
+        public void Dispose()
         {
-            this.screenWidth = screenWidth;
-            this.screenHeight = screenHeight;
-            this.bitmapWidth = bitmapWidth;
-            this.bitmapHeight = bitmapHeight;
+            if (verticesBuffer != null)
+            {
+                verticesBuffer.Dispose();
+            }
 
-            InitializeBuffers(device);
-            InitializeTexture(device, bitmapWidth, bitmapHeight, format, mipLevels);
+            if (Texture != null)
+            {
+                Texture.Dispose();
+            }
+
+            if (bitmapTextureResourceView != null)
+            {
+                bitmapTextureResourceView.Dispose();
+            }
         }
+
+        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
+        public static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
 
         public void SetLocation(DeviceContext deviceContext, int positionX, int positionY, int width, int height)
         {
@@ -136,40 +108,44 @@ namespace ScreenRecorder.DirectX.Texture
 
         public void SetPosition(DeviceContext deviceContext, int positionX, int positionY)
         {
-            int width = oldWidth;
+            var width = OldWidth;
             if (width < 0)
             {
-                width = bitmapWidth;
+                width = TextureWidth;
             }
-            int height = oldHeight;
+
+            var height = OldHeight;
             if (height < 0)
             {
-                height = bitmapHeight;
+                height = TextureHeight;
             }
+
             UpdateBuffers(deviceContext, positionX, positionY, width, height);
         }
 
         public void Offset(DeviceContext deviceContext, int deltaX, int deltaY)
         {
-            UpdateBuffers(deviceContext, oldX + deltaX, oldY + deltaY, oldWidth, oldHeight);
+            UpdateBuffers(deviceContext, OldX + deltaX, OldY + deltaY, OldWidth, OldHeight);
         }
 
         public void SetTexture(BitmapSource bitmapSource)
         {
-            using (Surface surface = bitmapTexture.QueryInterface<Surface>())
+            using (var surface = Texture.QueryInterface<Surface>())
             {
-                DataRectangle dataRectangle = surface.Map(SharpDX.DXGI.MapFlags.Write | SharpDX.DXGI.MapFlags.Discard);
+                var dataRectangle = surface.Map(MapFlags.Write | MapFlags.Discard);
 
-                if (bitmapSource.Format == System.Windows.Media.PixelFormats.Bgra32)
+                if (bitmapSource.Format == PixelFormats.Bgra32)
                 {
-                    bitmapSource.CopyPixels(new System.Windows.Int32Rect(0, 0, bitmapSource.PixelWidth, bitmapSource.PixelHeight),
-                        dataRectangle.DataPointer, (dataRectangle.Pitch * bitmapSource.PixelHeight), dataRectangle.Pitch);
+                    bitmapSource.CopyPixels(new Int32Rect(0, 0, bitmapSource.PixelWidth, bitmapSource.PixelHeight),
+                        dataRectangle.DataPointer, dataRectangle.Pitch * bitmapSource.PixelHeight, dataRectangle.Pitch);
                 }
                 else
                 {
-                    FormatConvertedBitmap formatConvertedBitmap = new FormatConvertedBitmap(bitmapSource, System.Windows.Media.PixelFormats.Bgra32, null, 1.0d);
-                    formatConvertedBitmap.CopyPixels(new System.Windows.Int32Rect(0, 0, bitmapSource.PixelWidth, bitmapSource.PixelHeight),
-                        dataRectangle.DataPointer, (dataRectangle.Pitch * bitmapSource.PixelHeight), dataRectangle.Pitch);
+                    var formatConvertedBitmap =
+                        new FormatConvertedBitmap(bitmapSource, PixelFormats.Bgra32, null, 1.0d);
+                    formatConvertedBitmap.CopyPixels(
+                        new Int32Rect(0, 0, bitmapSource.PixelWidth, bitmapSource.PixelHeight),
+                        dataRectangle.DataPointer, dataRectangle.Pitch * bitmapSource.PixelHeight, dataRectangle.Pitch);
                 }
 
                 surface.Unmap();
@@ -178,31 +154,31 @@ namespace ScreenRecorder.DirectX.Texture
 
         public unsafe void SetMonochromeTexture(IntPtr cursorDataPointer, int width, int height, int pitch)
         {
-            using (Surface surface = bitmapTexture.QueryInterface<Surface>())
+            using (var surface = Texture.QueryInterface<Surface>())
             {
-                DataRectangle dataRectangle = surface.Map(SharpDX.DXGI.MapFlags.Write | SharpDX.DXGI.MapFlags.Discard);
+                var dataRectangle = surface.Map(MapFlags.Write | MapFlags.Discard);
 
-                int xor_offset = pitch * (height / 2);
-                byte* and_map = (byte*)cursorDataPointer.ToPointer();
-                byte* xor_map = (byte*)(cursorDataPointer + xor_offset).ToPointer();
-                byte* out_pixels = (byte*)dataRectangle.DataPointer.ToPointer(); ;
-                int width_in_bytes = (width + 7) / 8;
+                var xor_offset = pitch * (height / 2);
+                var and_map = (byte*)cursorDataPointer.ToPointer();
+                var xor_map = (byte*)(cursorDataPointer + xor_offset).ToPointer();
+                var out_pixels = (byte*)dataRectangle.DataPointer.ToPointer();
+                ;
+                var width_in_bytes = (width + 7) / 8;
 
-                int img_height = height / 2;
-                int img_width = width;
+                var img_height = height / 2;
+                var img_width = width;
 
-                for (int j = 0; j < img_height; ++j)
+                for (var j = 0; j < img_height; ++j)
                 {
                     byte bit = 0x80;
 
-                    for (int i = 0; i < width; ++i)
+                    for (var i = 0; i < width; ++i)
                     {
-
-                        byte and_byte = and_map[j * width_in_bytes + i / 8];
-                        byte xor_byte = xor_map[j * width_in_bytes + i / 8];
-                        byte and_bit = (byte)(((and_byte & bit) != 0x00) ? 1 : 0);
-                        byte xor_bit = (byte)(((xor_byte & bit) != 0x00) ? 1 : 0);
-                        int out_dx = j * width * 4 + i * 4;
+                        var and_byte = and_map[(j * width_in_bytes) + (i / 8)];
+                        var xor_byte = xor_map[(j * width_in_bytes) + (i / 8)];
+                        var and_bit = (byte)((and_byte & bit) != 0x00 ? 1 : 0);
+                        var xor_bit = (byte)((xor_byte & bit) != 0x00 ? 1 : 0);
+                        var out_dx = (j * width * 4) + (i * 4);
 
                         if (0 == and_bit)
                         {
@@ -262,17 +238,17 @@ namespace ScreenRecorder.DirectX.Texture
         {
             if (srcScan0 != IntPtr.Zero)
             {
-                using (Surface surface = bitmapTexture.QueryInterface<Surface>())
+                using (var surface = Texture.QueryInterface<Surface>())
                 {
-                    DataRectangle dataRectangle = surface.Map(SharpDX.DXGI.MapFlags.Write | SharpDX.DXGI.MapFlags.Discard);
+                    var dataRectangle = surface.Map(MapFlags.Write | MapFlags.Discard);
 
                     if (dataRectangle.Pitch != srcStride || surface.Description.Height != srcHeight)
                     {
-                        IntPtr dest = dataRectangle.DataPointer;
-                        IntPtr src = srcScan0;
-                        int height = Math.Min(srcHeight, surface.Description.Height);
-                        uint stride = (uint)Math.Min(dataRectangle.Pitch, srcStride);
-                        for (int y = 0; y < height; y++)
+                        var dest = dataRectangle.DataPointer;
+                        var src = srcScan0;
+                        var height = Math.Min(srcHeight, surface.Description.Height);
+                        var stride = (uint)Math.Min(dataRectangle.Pitch, srcStride);
+                        for (var y = 0; y < height; y++)
                         {
                             CopyMemory(dest, src, stride);
                             dest += dataRectangle.Pitch;
@@ -293,13 +269,14 @@ namespace ScreenRecorder.DirectX.Texture
         {
             if (src != IntPtr.Zero)
             {
-                using (Surface surface = bitmapTexture.QueryInterface<Surface>())
+                using (var surface = Texture.QueryInterface<Surface>())
                 {
-                    DataRectangle dataRectangle = surface.Map(SharpDX.DXGI.MapFlags.Write | SharpDX.DXGI.MapFlags.Discard);
+                    var dataRectangle = surface.Map(MapFlags.Write | MapFlags.Discard);
 
-                    uint destBufferSize = (uint)(dataRectangle.Pitch * surface.Description.Height);
-                    uint sourceBufferSize = (uint)count;
-                    CopyMemory(dataRectangle.DataPointer, src, destBufferSize < sourceBufferSize ? destBufferSize : sourceBufferSize);
+                    var destBufferSize = (uint)(dataRectangle.Pitch * surface.Description.Height);
+                    var sourceBufferSize = (uint)count;
+                    CopyMemory(dataRectangle.DataPointer, src,
+                        destBufferSize < sourceBufferSize ? destBufferSize : sourceBufferSize);
 
                     surface.Unmap();
                 }
@@ -310,13 +287,14 @@ namespace ScreenRecorder.DirectX.Texture
         {
             if (src != null)
             {
-                using (Surface surface = bitmapTexture.QueryInterface<Surface>())
+                using (var surface = Texture.QueryInterface<Surface>())
                 {
-                    DataRectangle dataRectangle = surface.Map(SharpDX.DXGI.MapFlags.Write | SharpDX.DXGI.MapFlags.Discard);
+                    var dataRectangle = surface.Map(MapFlags.Write | MapFlags.Discard);
 
-                    uint destBufferSize = (uint)(dataRectangle.Pitch * surface.Description.Height);
-                    uint sourceBufferSize = (uint)count;
-                    Marshal.Copy(src, 0, dataRectangle.DataPointer, (int)(destBufferSize < sourceBufferSize ? destBufferSize : sourceBufferSize));
+                    var destBufferSize = (uint)(dataRectangle.Pitch * surface.Description.Height);
+                    var sourceBufferSize = (uint)count;
+                    Marshal.Copy(src, 0, dataRectangle.DataPointer,
+                        (int)(destBufferSize < sourceBufferSize ? destBufferSize : sourceBufferSize));
 
                     surface.Unmap();
                 }
@@ -325,27 +303,27 @@ namespace ScreenRecorder.DirectX.Texture
 
         public void SetTexture(Color color)
         {
-            using (Surface surface = bitmapTexture.QueryInterface<Surface>())
+            using (var surface = Texture.QueryInterface<Surface>())
             {
-                DataRectangle dataRectangle = surface.Map(SharpDX.DXGI.MapFlags.Write | SharpDX.DXGI.MapFlags.Discard);
+                var dataRectangle = surface.Map(MapFlags.Write | MapFlags.Discard);
 
-                byte[] colors = new byte[4];
-                if (bitmapTexture.Description.Format == Format.R8G8_B8G8_UNorm)
+                var colors = new byte[4];
+                if (Texture.Description.Format == Format.R8G8_B8G8_UNorm)
                 {
-                    byte y = (byte)((color.R * 0.299) + (color.G * 0.587) + (color.B * 0.114));
-                    byte u = (byte)((color.R * -0.169) + (color.G * -0.332) + (color.B * 0.500) + 128);
-                    byte v = (byte)((color.R * 0.500) + (color.G * -0.419) + (color.B * -0.0813) + 128);
+                    var y = (byte)((color.R * 0.299) + (color.G * 0.587) + (color.B * 0.114));
+                    var u = (byte)((color.R * -0.169) + (color.G * -0.332) + (color.B * 0.500) + 128);
+                    var v = (byte)((color.R * 0.500) + (color.G * -0.419) + (color.B * -0.0813) + 128);
 
                     colors[0] = v;
                     colors[1] = y;
                     colors[2] = u;
                     colors[3] = y;
                 }
-                else if (bitmapTexture.Description.Format == Format.G8R8_G8B8_UNorm)
+                else if (Texture.Description.Format == Format.G8R8_G8B8_UNorm)
                 {
-                    byte y = (byte)((color.R * 0.299) + (color.G * 0.587) + (color.B * 0.114));
-                    byte u = (byte)((color.R * -0.169) + (color.G * -0.332) + (color.B * 0.500) + 128);
-                    byte v = (byte)((color.R * 0.500) + (color.G * -0.419) + (color.B * -0.0813) + 128);
+                    var y = (byte)((color.R * 0.299) + (color.G * 0.587) + (color.B * 0.114));
+                    var u = (byte)((color.R * -0.169) + (color.G * -0.332) + (color.B * 0.500) + 128);
+                    var v = (byte)((color.R * 0.500) + (color.G * -0.419) + (color.B * -0.0813) + 128);
 
                     colors[0] = y;
                     colors[1] = u;
@@ -360,7 +338,7 @@ namespace ScreenRecorder.DirectX.Texture
                     colors[3] = color.A;
                 }
 
-                for (int i = 0; i < (dataRectangle.Pitch * bitmapHeight); i += 4)
+                for (var i = 0; i < dataRectangle.Pitch * TextureHeight; i += 4)
                 {
                     Marshal.Copy(colors, 0, dataRectangle.DataPointer + i, 4);
                 }
@@ -372,20 +350,22 @@ namespace ScreenRecorder.DirectX.Texture
 
         public Surface GetTextureSurface()
         {
-            return bitmapTexture.QueryInterface<Surface>();
+            return Texture.QueryInterface<Surface>();
         }
 
         private void InitializeBuffers(Device device)
         {
-            verticesBuffer = new SharpDX.Direct3D11.Buffer(device, (Vector3.SizeInBytes + Vector2.SizeInBytes) * 6,
+            verticesBuffer = new Buffer(device, (Vector3.SizeInBytes + Vector2.SizeInBytes) * 6,
                 ResourceUsage.Dynamic, BindFlags.VertexBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
 
-            vertextBufferBinding = new VertexBufferBinding(verticesBuffer, Vector3.SizeInBytes + Vector2.SizeInBytes, 0);
+            vertextBufferBinding =
+                new VertexBufferBinding(verticesBuffer, Vector3.SizeInBytes + Vector2.SizeInBytes, 0);
         }
 
-        private void InitializeTexture(Device device, int bitmapWidth, int bitmapHeight, Format format = Format.B8G8R8A8_UNorm, int mipLevels = 1)
+        private void InitializeTexture(Device device, int bitmapWidth, int bitmapHeight,
+            Format format = Format.B8G8R8A8_UNorm, int mipLevels = 1)
         {
-            Texture2DDescription texture2DDescription = new Texture2DDescription()
+            var texture2DDescription = new Texture2DDescription
             {
                 Format = format,
                 Width = bitmapWidth,
@@ -399,8 +379,8 @@ namespace ScreenRecorder.DirectX.Texture
                 SampleDescription = new SampleDescription(1, 0)
             };
 
-            bitmapTexture = new Texture2D(device, texture2DDescription);
-            bitmapTextureResourceView = new ShaderResourceView(device, bitmapTexture);
+            Texture = new Texture2D(device, texture2DDescription);
+            bitmapTextureResourceView = new ShaderResourceView(device, Texture);
         }
 
         public void Render(DeviceContext deviceContext, int positionX, int positionY, int width, int height)
@@ -411,15 +391,16 @@ namespace ScreenRecorder.DirectX.Texture
 
         public void Render(DeviceContext deviceContext, int positionX, int positionY)
         {
-            int width = oldWidth;
+            var width = OldWidth;
             if (width < 0)
             {
-                width = bitmapWidth;
+                width = TextureWidth;
             }
-            int height = oldHeight;
+
+            var height = OldHeight;
             if (height < 0)
             {
-                height = bitmapHeight;
+                height = TextureHeight;
             }
 
             UpdateBuffers(deviceContext, positionX, positionY, width, height);
@@ -433,19 +414,19 @@ namespace ScreenRecorder.DirectX.Texture
 
         private void UpdateBuffers(DeviceContext deviceContext, int positionX, int positionY, int width, int height)
         {
-            if (positionX != oldX || positionY != oldY || width != oldWidth || height != oldHeight)
+            if (positionX != OldX || positionY != OldY || width != OldWidth || height != OldHeight)
             {
-                oldX = positionX;
-                oldY = positionY;
-                oldWidth = width;
-                oldHeight = height;
+                OldX = positionX;
+                OldY = positionY;
+                OldWidth = width;
+                OldHeight = height;
 
-                float left = ((float)positionX / (float)screenWidth * 2.0f) - 1.0f;
-                float top = ((float)-positionY / (float)screenHeight * 2.0f) + 1.0f;
-                float right = (2.0f * (((float)positionX + (float)oldWidth) / (float)screenWidth)) - 1.0f;
-                float bottom = (2.0f * (((float)-positionY - (float)oldHeight) / (float)screenHeight)) + 1.0f;
+                var left = (positionX / (float)screenWidth * 2.0f) - 1.0f;
+                var top = (-positionY / (float)screenHeight * 2.0f) + 1.0f;
+                var right = (2.0f * ((positionX + (float)OldWidth) / screenWidth)) - 1.0f;
+                var bottom = (2.0f * ((-positionY - (float)OldHeight) / screenHeight)) + 1.0f;
 
-                DataStream verticesDataStream = new DataStream((Vector3.SizeInBytes + Vector2.SizeInBytes) * 6, true, true);
+                var verticesDataStream = new DataStream((Vector3.SizeInBytes + Vector2.SizeInBytes) * 6, true, true);
                 verticesDataStream.Write(new Vector3(left, top, 0.0f));
                 verticesDataStream.Write(new Vector2(0.0f, 0.0f));
 
@@ -464,8 +445,10 @@ namespace ScreenRecorder.DirectX.Texture
                 verticesDataStream.Write(new Vector3(right, bottom, 0.0f));
                 verticesDataStream.Write(new Vector2(1.0f, 1.0f));
 
-                DataBox dataBox = deviceContext.MapSubresource(verticesBuffer, MapMode.WriteDiscard, SharpDX.Direct3D11.MapFlags.None, out DataStream stream);
-                CopyMemory(dataBox.DataPointer, verticesDataStream.DataPointer, (uint)((Vector3.SizeInBytes + Vector2.SizeInBytes) * 6));
+                var dataBox = deviceContext.MapSubresource(verticesBuffer, MapMode.WriteDiscard,
+                    SharpDX.Direct3D11.MapFlags.None, out var stream);
+                CopyMemory(dataBox.DataPointer, verticesDataStream.DataPointer,
+                    (uint)((Vector3.SizeInBytes + Vector2.SizeInBytes) * 6));
                 deviceContext.UnmapSubresource(verticesBuffer, 0);
 
                 verticesDataStream.Close();
@@ -482,22 +465,6 @@ namespace ScreenRecorder.DirectX.Texture
         public ShaderResourceView GetTexture()
         {
             return bitmapTextureResourceView;
-        }
-
-        public void Dispose()
-        {
-            if (verticesBuffer != null)
-            {
-                verticesBuffer.Dispose();
-            }
-            if (bitmapTexture != null)
-            {
-                bitmapTexture.Dispose();
-            }
-            if (bitmapTextureResourceView != null)
-            {
-                bitmapTextureResourceView.Dispose();
-            }
         }
     }
 }

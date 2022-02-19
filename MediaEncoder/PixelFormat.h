@@ -2,8 +2,8 @@
 
 #include "pch.h"
 
-namespace MediaEncoder {
-
+namespace MediaEncoder
+{
 	public enum class PixelFormat
 	{
 		None = AV_PIX_FMT_NONE,
@@ -29,5 +29,4 @@ namespace MediaEncoder {
 		D3D11VA_VLD = AV_PIX_FMT_D3D11VA_VLD,
 		D3D11 = AV_PIX_FMT_D3D11,
 	};
-
 }

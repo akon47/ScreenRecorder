@@ -1,16 +1,17 @@
 #pragma once
 
 using namespace System;
-using namespace System::Collections::Generic;
-using namespace System::Drawing;
-using namespace System::Drawing::Imaging;
-using namespace System::IO;
-using namespace System::Runtime::InteropServices;
+using namespace Collections::Generic;
+using namespace Drawing;
+using namespace Imaging;
+using namespace IO;
+using namespace Runtime::InteropServices;
 
 #include "Resampler.h"
 #include "SampleFormat.h"
 
-namespace MediaEncoder {
+namespace MediaEncoder
+{
 	public ref class Resampler : IDisposable
 	{
 	private:
@@ -27,6 +28,7 @@ namespace MediaEncoder {
 			if (m_disposed)
 				throw gcnew ObjectDisposedException("The object was already disposed.");
 		}
+
 	protected:
 		!Resampler()
 		{
@@ -44,7 +46,8 @@ namespace MediaEncoder {
 			}
 		}
 
-		void SwrContextValidation(int srcChannels, SampleFormat srcSampleFormat, int srcSampleRate, int destChannels, SampleFormat destSampleFormat, int destSampleRate);
+		void SwrContextValidation(int srcChannels, SampleFormat srcSampleFormat, int srcSampleRate, int destChannels,
+		                          SampleFormat destSampleFormat, int destSampleRate);
 
 	public:
 		Resampler();
@@ -55,8 +58,12 @@ namespace MediaEncoder {
 			m_disposed = true;
 		}
 
-		void Resampling(int srcChannels, SampleFormat srcSampleFormat, int srcSampleRate, int destChannels, SampleFormat destSampleFormat, int destSampleRate, IntPtr srcData, int srcSamples, [Runtime::InteropServices::Out] IntPtr %destData, [Runtime::InteropServices::Out] int %destSamples);
-		int MeasureResamplingOutputSamples(int srcChannels, SampleFormat srcSampleFormat, int srcSampleRate, int destChannels, SampleFormat destSampleFormat, int destSampleRate, int srcSamples);
+		void Resampling(int srcChannels, SampleFormat srcSampleFormat, int srcSampleRate, int destChannels,
+		                SampleFormat destSampleFormat, int destSampleRate, IntPtr srcData, int srcSamples,
+		                [Runtime::InteropServices::Out] IntPtr% destData,
+		                [Runtime::InteropServices::Out] int% destSamples);
+		int MeasureResamplingOutputSamples(int srcChannels, SampleFormat srcSampleFormat, int srcSampleRate,
+		                                   int destChannels, SampleFormat destSampleFormat, int destSampleRate,
+		                                   int srcSamples);
 	};
 }
-

@@ -11,12 +11,56 @@ namespace ScreenRecorder.Config
 
     public sealed class ConfigFileSaveWorker : IDisposable
     {
-        private IConfigFile configObject;
-        private string configFilePath;
-        private Object SyncObject = new object();
-        private bool requireSaveConfig = false;
-        private Thread workerThread;
+        private readonly string configFilePath;
+        private readonly IConfigFile configObject;
         private ManualResetEvent needToStop;
+        private bool requireSaveConfig;
+        private readonly Object SyncObject = new object();
+        private Thread workerThread;
+
+        public ConfigFileSaveWorker(IConfigFile configObject, string configFilePath)
+        {
+            this.configObject = configObject;
+            this.configFilePath = configFilePath;
+
+            needToStop = new ManualResetEvent(false);
+            workerThread = new Thread(SaveWorkerThreadHandler) { Name = "ConfigFileSaveWorker", IsBackground = true };
+            workerThread.Start();
+        }
+
+        public void Dispose()
+        {
+            if (needToStop != null)
+            {
+                needToStop.Set();
+            }
+
+            if (workerThread != null)
+            {
+                if (workerThread.IsAlive && !workerThread.Join(5000))
+                {
+                    workerThread.Abort();
+                }
+
+                workerThread = null;
+
+                if (needToStop != null)
+                {
+                    needToStop.Close();
+                }
+
+                needToStop = null;
+            }
+
+            lock (SyncObject)
+            {
+                if (requireSaveConfig)
+                {
+                    configObject?.Save(configFilePath);
+                    requireSaveConfig = false;
+                }
+            }
+        }
 
         public void SetModifiedConfigData()
         {
@@ -24,16 +68,6 @@ namespace ScreenRecorder.Config
             {
                 requireSaveConfig = true;
             }
-        }
-
-        public ConfigFileSaveWorker(IConfigFile configObject, string configFilePath)
-        {
-            this.configObject = configObject;
-            this.configFilePath = configFilePath;
-
-            this.needToStop = new ManualResetEvent(false);
-            this.workerThread = new Thread(new ThreadStart(SaveWorkerThreadHandler)) { Name = "ConfigFileSaveWorker", IsBackground = true };
-            this.workerThread.Start();
         }
 
         private void SaveWorkerThreadHandler()
@@ -47,33 +81,6 @@ namespace ScreenRecorder.Config
                         configObject?.Save(configFilePath);
                         requireSaveConfig = false;
                     }
-                }
-            }
-        }
-
-        public void Dispose()
-        {
-            if (needToStop != null)
-            {
-                needToStop.Set();
-            }
-            if (workerThread != null)
-            {
-                if (workerThread.IsAlive && !workerThread.Join(5000))
-                    workerThread.Abort();
-                workerThread = null;
-
-                if (needToStop != null)
-                    needToStop.Close();
-                needToStop = null;
-            }
-
-            lock (SyncObject)
-            {
-                if (requireSaveConfig)
-                {
-                    configObject?.Save(configFilePath);
-                    requireSaveConfig = false;
                 }
             }
         }

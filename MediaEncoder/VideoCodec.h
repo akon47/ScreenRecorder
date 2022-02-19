@@ -3,12 +3,12 @@
 #include "pch.h"
 
 using namespace System;
-using namespace System::Collections::Generic;
+using namespace Collections::Generic;
 
-namespace MediaEncoder {
-
+namespace MediaEncoder
+{
 	// from https://github.com/accord-net/framework/blob/development/Sources/Extras/Accord.Video.FFMPEG.GPL/VideoCodec.h
-    // GPLv2 - later
+	// GPLv2 - later
 	public enum class VideoCodec
 	{
 		/// <summary>
@@ -1103,89 +1103,83 @@ namespace MediaEncoder {
 		Ylc = AV_CODEC_ID_YLC,
 
 
-
-
-
-
-
 #pragma region backward compatibility
 		/// <summary>
 		///   Obsolete. Please use <see cref="Mpeg4"/> instead.
 		/// </summary>
 		///
 		[ObsoleteAttribute("Obsolete. Please use VideoCodec.Mpeg4 instead.")]
-	MPEG4 = Mpeg4,
+		MPEG4 = Mpeg4,
 
 		/// <summary>
 		///   Obsolete. Please use <see cref="Wmv1"/> instead.
 		/// </summary>
 		///
 		[ObsoleteAttribute("Obsolete. Please use VideoCodec.Wmv1 instead.")]
-	WMV1 = Wmv1,
+		WMV1 = Wmv1,
 
 		/// <summary>
 		///   Obsolete. Please use <see cref="Wmv2"/> instead.
 		/// </summary>
 		///
 		[ObsoleteAttribute("Obsolete. Please use VideoCodec.Wmv2 instead.")]
-	WMV2 = Wmv2,
+		WMV2 = Wmv2,
 
 		/// <summary>
 		///   Obsolete. Please use <see cref="MsMpeg4v2"/> instead.
 		/// </summary>
 		///
 		[ObsoleteAttribute("Obsolete. Please use VideoCodec.MsMpeg4v2 instead.")]
-	MSMPEG4v2 = MsMpeg4v2,
+		MSMPEG4v2 = MsMpeg4v2,
 
 		/// <summary>
 		///   Obsolete. Please use <see cref="MsMpeg4v3"/> instead.
 		/// </summary>
 		///
 		[ObsoleteAttribute("Obsolete. Please use VideoCodec.MsMpeg4v3 instead.")]
-	MSMPEG4v3 = MsMpeg4v3,
+		MSMPEG4v3 = MsMpeg4v3,
 
 		/// <summary>
 		///   Obsolete. Please use <see cref="Flv1"/> instead.
 		/// </summary>
 		///
 		[ObsoleteAttribute("Obsolete. Please use VideoCodec.Flv1 instead.")]
-	FLV1 = Flv1,
+		FLV1 = Flv1,
 
 		/// <summary>
 		///   Obsolete. Please use <see cref="Mpeg2"/> instead.
 		/// </summary>
 		///
 		[ObsoleteAttribute("Obsolete. Please use VideoCodec.Mpeg2 instead.")]
-	MPEG2 = Mpeg2,
+		MPEG2 = Mpeg2,
 
 		/// <summary>
 		///   Obsolete. Please use <see cref="Ffv1"/> instead.
 		/// </summary>
 		///
 		[ObsoleteAttribute("Obsolete. Please use VideoCodec.Ffv1 instead.")]
-	FFV1 = Ffv1,
+		FFV1 = Ffv1,
 
 		/// <summary>
 		///   Obsolete. Please use <see cref="FfvHuff"/> instead.
 		/// </summary>
 		///
 		[ObsoleteAttribute("Obsolete. Please use VideoCodec.FfvHuff instead.")]
-	FFVHUFF = FfvHuff,
+		FFVHUFF = FfvHuff,
 
 		/// <summary>
 		///   Obsolete. Please use <see cref="Vp8"/> instead.
 		/// </summary>
 		///
 		[ObsoleteAttribute("Obsolete. Please use VideoCodec.Vp8 instead.")]
-	VP8 = Vp8,
+		VP8 = Vp8,
 
 		/// <summary>
 		///   Obsolete. Please use <see cref="Vp9"/> instead.
 		/// </summary>
 		///
 		[ObsoleteAttribute("Obsolete. Please use VideoCodec.Vp9 instead.")]
-	VP9 = Vp9,
+		VP9 = Vp9,
 #pragma endregion
 	};
-
 }

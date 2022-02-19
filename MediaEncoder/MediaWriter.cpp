@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "MediaWriter.h"
 
-namespace MediaEncoder {
+namespace MediaEncoder
+{
 	ref struct WriterPrivateData
 	{
 	public:
@@ -54,7 +55,7 @@ namespace MediaEncoder {
 
 			SwsSrcWidth = 0;
 			SwsSrcHeight = 0;
-			SwsSrcFormat = AVPixelFormat::AV_PIX_FMT_NONE;
+			SwsSrcFormat = AV_PIX_FMT_NONE;
 
 			HardwareDeviceContext = nullptr;
 		}
@@ -64,18 +65,21 @@ namespace MediaEncoder {
 	{
 		int ret;
 		ret = avcodec_send_frame(c, frame);
-		if (ret < 0) {
-			throw gcnew System::IO::IOException("avcodec_send_frame");
+		if (ret < 0)
+		{
+			throw gcnew IOException("avcodec_send_frame");
 		}
 
-		while (ret >= 0) {
-			AVPacket pkt = { 0 };
+		while (ret >= 0)
+		{
+			AVPacket pkt = {nullptr};
 
 			ret = avcodec_receive_packet(c, &pkt);
 			if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
 				break;
-			else if (ret < 0) {
-				throw gcnew System::IO::IOException("avcodec_receive_packet");
+			if (ret < 0)
+			{
+				throw gcnew IOException("avcodec_receive_packet");
 			}
 
 			if (pkt.duration == 0 && frame == nullptr)
@@ -87,20 +91,23 @@ namespace MediaEncoder {
 			ret = av_interleaved_write_frame(fmt_ctx, &pkt);
 
 			av_packet_unref(&pkt);
-			if (ret < 0) {
-				throw gcnew System::IO::IOException("av_interleaved_write_frame");
+			if (ret < 0)
+			{
+				throw gcnew IOException("av_interleaved_write_frame");
 			}
 		}
 
 		return ret == AVERROR_EOF ? 1 : 0;
 	}
 
-	static int set_hwframe_ctx(AVCodecContext* ctx, AVBufferRef* hw_device_ctx, int width, int height, AVPixelFormat hw_format)
+	static int set_hwframe_ctx(AVCodecContext* ctx, AVBufferRef* hw_device_ctx, int width, int height,
+	                           AVPixelFormat hw_format)
 	{
 		AVBufferRef* hw_frames_ref;
-		AVHWFramesContext* frames_ctx = NULL;
+		AVHWFramesContext* frames_ctx = nullptr;
 		int err = 0;
-		if (!(hw_frames_ref = av_hwframe_ctx_alloc(hw_device_ctx))) {
+		if (!(hw_frames_ref = av_hwframe_ctx_alloc(hw_device_ctx)))
+		{
 			fprintf(stderr, "Failed av_hwframe_ctx_alloc.\n");
 			return -1;
 		}
@@ -109,11 +116,13 @@ namespace MediaEncoder {
 		frames_ctx->sw_format = AV_PIX_FMT_NV12;
 		frames_ctx->width = width;
 		frames_ctx->height = height;
-		if (hw_format == AV_PIX_FMT_QSV) {
+		if (hw_format == AV_PIX_FMT_QSV)
+		{
 			frames_ctx->initial_pool_size = 32;
 		}
 
-		if ((err = av_hwframe_ctx_init(hw_frames_ref)) < 0) {
+		if ((err = av_hwframe_ctx_init(hw_frames_ref)) < 0)
+		{
 			av_buffer_unref(&hw_frames_ref);
 			return err;
 		}
@@ -128,8 +137,10 @@ namespace MediaEncoder {
 		int width, int height, int video_numerator, int video_denominator,
 		VideoCodec video_codec, int video_bitrate,
 		AudioCodec audio_codec, int audio_bitrate)
-		: m_data(nullptr), m_disposed(false), m_width(width), m_height(height), m_videoNumerator(video_numerator), m_videoDenominator(video_denominator),
-		m_videoCodec((AVCodecID)video_codec), m_audioCodec((AVCodecID)audio_codec), m_videoBitrate(video_bitrate), m_audioBitrate(audio_bitrate)
+		: m_width(width), m_height(height), m_videoNumerator(video_numerator), m_videoDenominator(video_denominator),
+		  m_videoBitrate(video_bitrate), m_videoCodec(static_cast<AVCodecID>(video_codec)),
+		  m_audioBitrate(audio_bitrate), m_audioCodec(static_cast<AVCodecID>(audio_codec)), m_data(nullptr),
+		  m_disposed(false)
 	{
 		avformat_network_init();
 	}
@@ -147,11 +158,11 @@ namespace MediaEncoder {
 		m_videoFramesCount = 0;
 		m_audioSamplesCount = 0;
 
-		IntPtr urlStringPointer = System::Runtime::InteropServices::Marshal::StringToHGlobalUni(url);
-		wchar_t* nativeUrlUnicode = (wchar_t*)urlStringPointer.ToPointer();
-		int utf8UrlStringSize = WideCharToMultiByte(CP_UTF8, 0, nativeUrlUnicode, -1, NULL, 0, NULL, NULL);
-		char* nativeUrl = new char[utf8UrlStringSize];
-		WideCharToMultiByte(CP_UTF8, 0, nativeUrlUnicode, -1, nativeUrl, utf8UrlStringSize, NULL, NULL);
+		IntPtr urlStringPointer = Marshal::StringToHGlobalUni(url);
+		auto nativeUrlUnicode = static_cast<wchar_t*>(urlStringPointer.ToPointer());
+		int utf8UrlStringSize = WideCharToMultiByte(CP_UTF8, 0, nativeUrlUnicode, -1, nullptr, 0, nullptr, nullptr);
+		auto nativeUrl = new char[utf8UrlStringSize];
+		WideCharToMultiByte(CP_UTF8, 0, nativeUrlUnicode, -1, nativeUrl, utf8UrlStringSize, nullptr, nullptr);
 
 		char* nativeFormat = nullptr;
 
@@ -160,11 +171,13 @@ namespace MediaEncoder {
 		{
 			m_format = gcnew String(format);
 
-			IntPtr formatStringPointer = System::Runtime::InteropServices::Marshal::StringToHGlobalUni(format);
-			wchar_t* nativeFormatUnicode = (wchar_t*)formatStringPointer.ToPointer();
-			int utf8FormatStringSize = WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, NULL, 0, NULL, NULL);
+			IntPtr formatStringPointer = Marshal::StringToHGlobalUni(format);
+			auto nativeFormatUnicode = static_cast<wchar_t*>(formatStringPointer.ToPointer());
+			int utf8FormatStringSize = WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, nullptr, 0, nullptr,
+			                                               nullptr);
 			nativeFormat = new char[utf8FormatStringSize];
-			WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, nativeFormat, utf8FormatStringSize, NULL, NULL);
+			WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, nativeFormat, utf8FormatStringSize, nullptr,
+			                    nullptr);
 		}
 		else
 			format = nullptr;
@@ -177,19 +190,21 @@ namespace MediaEncoder {
 
 		if (m_data->FormatContext == nullptr)
 		{
-			throw gcnew System::IO::IOException("Cannot open the file");
+			throw gcnew IOException("Cannot open the file");
 		}
 
 		// Create Video Codec
-		if (m_videoCodec != AVCodecID::AV_CODEC_ID_NONE)
+		if (m_videoCodec != AV_CODEC_ID_NONE)
 		{
 		VIDEO_CODEC_INITIAL:
 			AVCodecContext* videoCodecContext;
-			AVCodecID videoCodecId = m_videoCodec == AVCodecID::AV_CODEC_ID_PROBE && formatContext->oformat != nullptr ? formatContext->oformat->video_codec : m_videoCodec;
+			AVCodecID videoCodecId = m_videoCodec == AV_CODEC_ID_PROBE && formatContext->oformat != nullptr
+				                         ? formatContext->oformat->video_codec
+				                         : m_videoCodec;
 			const AVCodec* videoCodec = nullptr;
 			if (!forceSoftwareEncoder && m_width >= 100 && m_height >= 100)
 			{
-				if (videoCodecId == AVCodecID::AV_CODEC_ID_H264)
+				if (videoCodecId == AV_CODEC_ID_H264)
 				{
 					if (h264_nvenc)
 					{
@@ -225,7 +240,8 @@ namespace MediaEncoder {
 				videoCodecContext->pix_fmt = videoCodec->pix_fmts[0];
 
 				AVPixelFormat targetPixelFormat = AV_PIX_FMT_YUV420P;
-				if ((videoCodecId == AVCodecID::AV_CODEC_ID_H264 || videoCodecId == AVCodecID::AV_CODEC_ID_H265) && strncmp(videoCodec->name, "libx", 4) != 0)
+				if ((videoCodecId == AV_CODEC_ID_H264 || videoCodecId == AVCodecID::AV_CODEC_ID_H265) && strncmp(
+					videoCodec->name, "libx", 4) != 0)
 				{
 					if (h264_nvenc || hevc_nvenc)
 					{
@@ -250,27 +266,27 @@ namespace MediaEncoder {
 
 			if (videoCodecContext->pix_fmt == AV_PIX_FMT_D3D11)
 			{
-				AVBufferRef* hw_device_ctx = NULL;
-				if (av_hwdevice_ctx_create(&hw_device_ctx, AV_HWDEVICE_TYPE_D3D11VA, NULL, NULL, 0) < 0)
+				AVBufferRef* hw_device_ctx = nullptr;
+				if (av_hwdevice_ctx_create(&hw_device_ctx, AV_HWDEVICE_TYPE_D3D11VA, nullptr, nullptr, 0) < 0)
 				{
-					throw gcnew System::IO::IOException("av_hwdevice_ctx_create error");
+					throw gcnew IOException("av_hwdevice_ctx_create error");
 				}
 				if (set_hwframe_ctx(videoCodecContext, hw_device_ctx, m_width, m_height, AV_PIX_FMT_D3D11) < 0)
 				{
-					throw gcnew System::IO::IOException("set_hwframe_ctx error");
+					throw gcnew IOException("set_hwframe_ctx error");
 				}
 				m_data->HardwareDeviceContext = hw_device_ctx;
 			}
 			else if (videoCodecContext->pix_fmt == AV_PIX_FMT_QSV)
 			{
-				AVBufferRef* hw_device_ctx = NULL;
-				if (av_hwdevice_ctx_create(&hw_device_ctx, AV_HWDEVICE_TYPE_QSV, NULL, NULL, 0) < 0)
+				AVBufferRef* hw_device_ctx = nullptr;
+				if (av_hwdevice_ctx_create(&hw_device_ctx, AV_HWDEVICE_TYPE_QSV, nullptr, nullptr, 0) < 0)
 				{
-					throw gcnew System::IO::IOException("av_hwdevice_ctx_create error");
+					throw gcnew IOException("av_hwdevice_ctx_create error");
 				}
 				if (set_hwframe_ctx(videoCodecContext, hw_device_ctx, m_width, m_height, AV_PIX_FMT_QSV) < 0)
 				{
-					throw gcnew System::IO::IOException("set_hwframe_ctx error");
+					throw gcnew IOException("set_hwframe_ctx error");
 				}
 				m_data->HardwareDeviceContext = hw_device_ctx;
 			}
@@ -279,7 +295,7 @@ namespace MediaEncoder {
 			videoCodecContext->framerate = av_make_q(m_videoNumerator, m_videoDenominator);
 
 			videoCodecContext->bit_rate = m_videoBitrate > 0 ? m_videoBitrate : 10000000;
-			if (videoCodec->id == AVCodecID::AV_CODEC_ID_H264 || videoCodec->id == AVCodecID::AV_CODEC_ID_H265)
+			if (videoCodec->id == AV_CODEC_ID_H264 || videoCodec->id == AVCodecID::AV_CODEC_ID_H265)
 			{
 				if (strncmp(videoCodec->name, "libx", 4) == 0)
 				{
@@ -295,10 +311,7 @@ namespace MediaEncoder {
 					avcodec_close(videoCodecContext);
 					goto VIDEO_CODEC_INITIAL;
 				}
-				else
-				{
-					throw gcnew System::IO::IOException("Cannot open video codec.");
-				}
+				throw gcnew IOException("Cannot open video codec.");
 			}
 
 			AVStream* videoStream = avformat_new_stream(m_data->FormatContext, videoCodec);
@@ -324,26 +337,33 @@ namespace MediaEncoder {
 		}
 
 		// Create Audio Codec
-		if (m_audioCodec != AVCodecID::AV_CODEC_ID_NONE)
+		if (m_audioCodec != AV_CODEC_ID_NONE)
 		{
 			AVCodecContext* audioCodecContext;
-			const AVCodec* audioCodec = avcodec_find_encoder(m_audioCodec == AVCodecID::AV_CODEC_ID_PROBE && formatContext->oformat != nullptr ? formatContext->oformat->audio_codec : m_audioCodec);
+			const AVCodec* audioCodec = avcodec_find_encoder(
+				m_audioCodec == AV_CODEC_ID_PROBE && formatContext->oformat != nullptr
+					? formatContext->oformat->audio_codec
+					: m_audioCodec);
 			AVStream* audioStream = avformat_new_stream(m_data->FormatContext, audioCodec);
 			audioCodecContext = avcodec_alloc_context3(audioCodec);
 			audioCodecContext->sample_fmt = audioCodec->sample_fmts ? audioCodec->sample_fmts[0] : AV_SAMPLE_FMT_FLTP;
 			audioCodecContext->bit_rate = m_audioBitrate > 0 ? m_audioBitrate : 128000;
 			audioCodecContext->sample_rate = 48000;
-			if (audioCodec->supported_samplerates) {
+			if (audioCodec->supported_samplerates)
+			{
 				audioCodecContext->sample_rate = audioCodec->supported_samplerates[0];
-				for (int i = 0; audioCodec->supported_samplerates[i]; i++) {
+				for (int i = 0; audioCodec->supported_samplerates[i]; i++)
+				{
 					if (audioCodec->supported_samplerates[i] == targetSamplerate)
 						audioCodecContext->sample_rate = audioCodec->supported_samplerates[i];
 				}
 			}
 			audioCodecContext->channel_layout = AV_CH_LAYOUT_STEREO;
-			if (audioCodec->channel_layouts) {
+			if (audioCodec->channel_layouts)
+			{
 				audioCodecContext->channel_layout = audioCodec->channel_layouts[0];
-				for (int i = 0; audioCodec->channel_layouts[i]; i++) {
+				for (int i = 0; audioCodec->channel_layouts[i]; i++)
+				{
 					if (audioCodec->channel_layouts[i] == AV_CH_LAYOUT_STEREO)
 						audioCodecContext->channel_layout = AV_CH_LAYOUT_STEREO;
 				}
@@ -355,7 +375,7 @@ namespace MediaEncoder {
 				audioCodecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
 			if (avcodec_open2(audioCodecContext, audioCodec, nullptr) < 0)
-				throw gcnew System::IO::IOException("Cannot open audio codec.");
+				throw gcnew IOException("Cannot open audio codec.");
 			avcodec_parameters_from_context(audioStream->codecpar, audioCodecContext);
 			audioStream->time_base = av_make_q(1, audioCodecContext->sample_rate);
 
@@ -367,26 +387,28 @@ namespace MediaEncoder {
 		}
 		//
 
-		if (!(m_data->FormatContext->oformat->flags & AVFMT_NOFILE)) {
+		if (!(m_data->FormatContext->oformat->flags & AVFMT_NOFILE))
+		{
 			if (avio_open(&m_data->FormatContext->pb, nativeUrl, AVIO_FLAG_WRITE) < 0)
 			{
-				throw gcnew System::IO::IOException("avio_open error");
+				throw gcnew IOException("avio_open error");
 			}
 		}
 
 		if (avformat_write_header(m_data->FormatContext, nullptr) < 0)
 		{
-			throw gcnew System::IO::IOException("avformat_write_header error");
+			throw gcnew IOException("avformat_write_header error");
 		}
 
 		if (m_data->VideoCodecContext != nullptr)
 		{
 			m_data->VideoFrame = av_frame_alloc();
-			if (m_data->VideoCodecContext->pix_fmt == AV_PIX_FMT_D3D11 || m_data->VideoCodecContext->pix_fmt == AV_PIX_FMT_QSV)
+			if (m_data->VideoCodecContext->pix_fmt == AV_PIX_FMT_D3D11 || m_data->VideoCodecContext->pix_fmt ==
+				AV_PIX_FMT_QSV)
 			{
 				if (av_hwframe_get_buffer(m_data->VideoCodecContext->hw_frames_ctx, m_data->VideoFrame, 0) < 0)
 				{
-					throw gcnew System::IO::IOException("av_hwframe_get_buffer error");
+					throw gcnew IOException("av_hwframe_get_buffer error");
 				}
 
 				m_data->SoftwareVideoFrame = av_frame_alloc();
@@ -395,11 +417,11 @@ namespace MediaEncoder {
 				m_data->SoftwareVideoFrame->format = AV_PIX_FMT_NV12;
 				if (av_frame_get_buffer(m_data->SoftwareVideoFrame, 32) < 0)
 				{
-					throw gcnew System::IO::IOException("av_frame_get_buffer error (SoftwareVideoFrame)");
+					throw gcnew IOException("av_frame_get_buffer error (SoftwareVideoFrame)");
 				}
 				m_data->SwsSrcWidth = m_data->SoftwareVideoFrame->width;
 				m_data->SwsSrcHeight = m_data->SoftwareVideoFrame->height;
-				m_data->SwsSrcFormat = (AVPixelFormat)m_data->SoftwareVideoFrame->format;
+				m_data->SwsSrcFormat = static_cast<AVPixelFormat>(m_data->SoftwareVideoFrame->format);
 			}
 			else
 			{
@@ -408,11 +430,11 @@ namespace MediaEncoder {
 				m_data->VideoFrame->format = m_data->VideoCodecContext->pix_fmt;
 				if (av_frame_get_buffer(m_data->VideoFrame, 32) < 0)
 				{
-					throw gcnew System::IO::IOException("av_frame_get_buffer error (VideoFrame)");
+					throw gcnew IOException("av_frame_get_buffer error (VideoFrame)");
 				}
 				m_data->SwsSrcWidth = m_data->VideoFrame->width;
 				m_data->SwsSrcHeight = m_data->VideoFrame->height;
-				m_data->SwsSrcFormat = (AVPixelFormat)m_data->VideoFrame->format;
+				m_data->SwsSrcFormat = static_cast<AVPixelFormat>(m_data->VideoFrame->format);
 			}
 		}
 
@@ -480,12 +502,14 @@ namespace MediaEncoder {
 
 	void MediaWriter::EncodeVideoFrame(VideoFrame^ videoFrame)
 	{
-		if (m_data == nullptr || videoFrame == nullptr || videoFrame->NativePointer == IntPtr::Zero || m_data->VideoCodecContext == nullptr)
+		if (m_data == nullptr || videoFrame == nullptr || videoFrame->NativePointer == IntPtr::Zero || m_data->
+			VideoCodecContext == nullptr)
 			return;
 
-		AVFrame* avFrame = (AVFrame*)videoFrame->NativePointer.ToPointer();
+		auto avFrame = static_cast<AVFrame*>(videoFrame->NativePointer.ToPointer());
 
-		if (avFrame->width != m_data->SwsSrcWidth || avFrame->height != m_data->SwsSrcHeight || avFrame->format != m_data->SwsSrcFormat)
+		if (avFrame->width != m_data->SwsSrcWidth || avFrame->height != m_data->SwsSrcHeight || avFrame->format !=
+			m_data->SwsSrcFormat)
 		{
 			if (m_data->SwsContext != nullptr)
 			{
@@ -495,33 +519,39 @@ namespace MediaEncoder {
 
 			if (m_data->VideoCodecContext->hw_frames_ctx != nullptr)
 			{
-				if (avFrame->width != m_data->VideoCodecContext->width || avFrame->height != m_data->VideoCodecContext->height || avFrame->format != AV_PIX_FMT_NV12)
+				if (avFrame->width != m_data->VideoCodecContext->width || avFrame->height != m_data->VideoCodecContext->
+					height || avFrame->format != AV_PIX_FMT_NV12)
 				{
-					m_data->SwsContext = sws_getContext(avFrame->width, avFrame->height, (AVPixelFormat)avFrame->format,
-						m_data->VideoCodecContext->width, m_data->VideoCodecContext->height, AV_PIX_FMT_NV12,
-						SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
+					m_data->SwsContext = sws_getContext(avFrame->width, avFrame->height,
+					                                    static_cast<AVPixelFormat>(avFrame->format),
+					                                    m_data->VideoCodecContext->width,
+					                                    m_data->VideoCodecContext->height, AV_PIX_FMT_NV12,
+					                                    SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
 				}
 				m_data->SwsSrcWidth = avFrame->width;
 				m_data->SwsSrcHeight = avFrame->height;
-				m_data->SwsSrcFormat = (AVPixelFormat)avFrame->format;
+				m_data->SwsSrcFormat = static_cast<AVPixelFormat>(avFrame->format);
 			}
 			else
 			{
-				m_data->SwsContext = sws_getContext(avFrame->width, avFrame->height, (AVPixelFormat)avFrame->format,
-					m_data->VideoCodecContext->width, m_data->VideoCodecContext->height, m_data->VideoCodecContext->pix_fmt,
-					SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
+				m_data->SwsContext = sws_getContext(avFrame->width, avFrame->height,
+				                                    static_cast<AVPixelFormat>(avFrame->format),
+				                                    m_data->VideoCodecContext->width, m_data->VideoCodecContext->height,
+				                                    m_data->VideoCodecContext->pix_fmt,
+				                                    SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
 				m_data->SwsSrcWidth = avFrame->width;
 				m_data->SwsSrcHeight = avFrame->height;
-				m_data->SwsSrcFormat = (AVPixelFormat)avFrame->format;
+				m_data->SwsSrcFormat = static_cast<AVPixelFormat>(avFrame->format);
 			}
 		}
 
 		if (m_data->VideoCodecContext->hw_frames_ctx != nullptr)
 		{
-			if (m_data->SwsContext != nullptr && (avFrame->width != m_data->VideoCodecContext->width || avFrame->height != m_data->VideoCodecContext->height || avFrame->format != AV_PIX_FMT_NV12))
+			if (m_data->SwsContext != nullptr && (avFrame->width != m_data->VideoCodecContext->width || avFrame->height
+				!= m_data->VideoCodecContext->height || avFrame->format != AV_PIX_FMT_NV12))
 			{
 				sws_scale(m_data->SwsContext, avFrame->data, avFrame->linesize, 0, avFrame->height,
-					m_data->SoftwareVideoFrame->data, m_data->SoftwareVideoFrame->linesize);
+				          m_data->SoftwareVideoFrame->data, m_data->SoftwareVideoFrame->linesize);
 				av_hwframe_transfer_data(m_data->VideoFrame, m_data->SoftwareVideoFrame, 0);
 			}
 			else
@@ -531,10 +561,11 @@ namespace MediaEncoder {
 		}
 		else
 		{
-			if (m_data->SwsContext != nullptr && (avFrame->width != m_data->VideoCodecContext->width || avFrame->height != m_data->VideoCodecContext->height || avFrame->format != m_data->VideoCodecContext->pix_fmt))
+			if (m_data->SwsContext != nullptr && (avFrame->width != m_data->VideoCodecContext->width || avFrame->height
+				!= m_data->VideoCodecContext->height || avFrame->format != m_data->VideoCodecContext->pix_fmt))
 			{
 				sws_scale(m_data->SwsContext, avFrame->data, avFrame->linesize, 0, avFrame->height,
-					m_data->VideoFrame->data, m_data->VideoFrame->linesize);
+				          m_data->VideoFrame->data, m_data->VideoFrame->linesize);
 			}
 			else
 			{
@@ -552,10 +583,11 @@ namespace MediaEncoder {
 
 	void MediaWriter::EncodeAudioFrame(AudioFrame^ audioFrame)
 	{
-		if (m_data == nullptr || audioFrame == nullptr || audioFrame->NativePointer == IntPtr::Zero || m_data->AudioCodecContext == nullptr)
+		if (m_data == nullptr || audioFrame == nullptr || audioFrame->NativePointer == IntPtr::Zero || m_data->
+			AudioCodecContext == nullptr)
 			return;
 
-		AVFrame* avFrame = (AVFrame*)audioFrame->NativePointer.ToPointer();
+		auto avFrame = static_cast<AVFrame*>(audioFrame->NativePointer.ToPointer());
 
 		do
 		{
@@ -567,8 +599,8 @@ namespace MediaEncoder {
 			write_frame(m_data->FormatContext, m_data->AudioCodecContext, m_data->AudioStream, m_data->AudioFrame);
 			m_audioSamplesCount += m_data->AudioFrame->nb_samples;
 			avFrame = nullptr;
-		} while (swr_get_delay(m_data->SwrContext, m_data->AudioFrame->sample_rate) >= (m_data->AudioFrame->nb_samples + 32));
-
+		}
+		while (swr_get_delay(m_data->SwrContext, m_data->AudioFrame->sample_rate) >= (m_data->AudioFrame->nb_samples +
+			32));
 	}
-
 }

@@ -11,8 +11,8 @@
 
 #include <windows.h>
 #include <stdint.h>
-extern "C"
-{
+
+extern "C" {
 #include <libavutil/opt.h>
 #include <libavutil/mathematics.h>
 #include <libavutil/imgutils.h>
@@ -27,6 +27,7 @@ extern "C"
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
 }
+
 #include "PixelFormat.h"
 #include "VideoCodec.h"
 #include "AudioCodec.h"
