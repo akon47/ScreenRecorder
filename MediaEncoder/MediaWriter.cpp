@@ -167,7 +167,7 @@ namespace MediaEncoder {
 			WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, nativeFormat, utf8FormatStringSize, NULL, NULL);
 		}
 		else
-			format = nullptr;
+			m_format = nullptr;
 
 		AVFormatContext* formatContext = avformat_alloc_context();
 		if (avformat_alloc_output_context2(&formatContext, nullptr, nativeFormat, nativeUrl) == 0)
@@ -277,6 +277,9 @@ namespace MediaEncoder {
 
 			videoCodecContext->time_base = av_make_q(m_videoDenominator, m_videoNumerator);
 			videoCodecContext->framerate = av_make_q(m_videoNumerator, m_videoDenominator);
+
+			// reduce maximum gop size to 1 second for smoother handling in video editors and players
+			videoCodecContext->gop_size = min(videoCodecContext->gop_size, av_q2d(videoCodecContext->framerate));
 
 			videoCodecContext->bit_rate = m_videoBitrate > 0 ? m_videoBitrate : 10000000;
 			if (videoCodec->id == AVCodecID::AV_CODEC_ID_H264 || videoCodec->id == AVCodecID::AV_CODEC_ID_H265)
