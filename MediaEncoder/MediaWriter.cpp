@@ -282,6 +282,9 @@ namespace MediaEncoder {
 			videoCodecContext->gop_size = min(videoCodecContext->gop_size, av_q2d(videoCodecContext->framerate));
 
 			videoCodecContext->bit_rate = m_videoBitrate > 0 ? m_videoBitrate : 10000000;
+			// reduce bitrate tolerance to 50% of average
+			videoCodecContext->bit_rate_tolerance = min(videoCodecContext->bit_rate_tolerance, videoCodecContext->bit_rate / 2);
+
 			if (videoCodec->id == AVCodecID::AV_CODEC_ID_H264 || videoCodec->id == AVCodecID::AV_CODEC_ID_H265)
 			{
 				if (strncmp(videoCodec->name, "libx", 4) == 0)
