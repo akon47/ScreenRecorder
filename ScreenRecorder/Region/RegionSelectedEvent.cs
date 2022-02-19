@@ -12,23 +12,23 @@ namespace ScreenRecorder.Region
         /// <summary>
         /// Region Selection Mode
         /// </summary>
-        public RegionSelectionMode RegionSelectionMode { get; private set; }
+        public RegionSelectionMode RegionSelectionMode { get; }
         /// <summary>
         /// Selected display device name
         /// </summary>
-        public string DeviceName { get; private set; }
+        public string DeviceName { get; }
         /// <summary>
         /// selected display bounds
         /// </summary>
-        public Rect DisplayBounds { get; private set; }
+        public Rect DisplayBounds { get; }
         /// <summary>
         /// selected region
         /// </summary>
-        public Rect Region { get; private set; }
+        public Rect Region { get; }
         /// <summary>
         /// is operation cancelled
         /// </summary>
-        public bool IsCancelled { get; private set; }
+        public bool IsCancelled { get; }
 
         public RegionSelectedEventArgs(RegionSelectionMode regionSelectionMode, string deviceName, Rect displayBounds, Rect region, bool isCancelled)
         {

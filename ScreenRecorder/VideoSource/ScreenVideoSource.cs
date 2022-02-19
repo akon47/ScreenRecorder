@@ -46,7 +46,7 @@ namespace ScreenRecorder.VideoSource
                 region = screenVideoSourceArguments.Region;
             }
 
-            using (SystemClockEvent systemClockEvent = new SystemClockEvent())
+            using (VideoClockEvent videoClockEvent = new VideoClockEvent())
             {
                 while (!needToStop.WaitOne(0, false))
                 {
@@ -56,7 +56,7 @@ namespace ScreenRecorder.VideoSource
                         {
                             while (!needToStop.WaitOne(0, false))
                             {
-                                if (systemClockEvent.WaitOne(1))
+                                if (videoClockEvent.WaitOne(1))
                                 {
                                     try
                                     {

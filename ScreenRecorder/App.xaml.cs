@@ -28,11 +28,11 @@ namespace ScreenRecorder
                         Environment.Exit(-2);
                     }
 
-                    SystemClockEvent.Start();
+                    VideoClockEvent.Start();
                     AppManager.Instance.Initialize();
                     AppConfig.Instance.WhenChanged(() =>
                     {
-                        SystemClockEvent.Framerate = AppConfig.Instance.AdvancedSettings ? 
+                        VideoClockEvent.Framerate = AppConfig.Instance.AdvancedSettings ? 
                             AppConfig.Instance.SelectedRecordFrameRate : 60;
                     },
                     nameof(AppConfig.SelectedRecordFrameRate),
@@ -58,7 +58,7 @@ namespace ScreenRecorder
             AppCommands.Instance.Dispose();
             AppConfig.Instance.Dispose();
             AppManager.Instance.Dispose();
-            SystemClockEvent.Stop();
+            VideoClockEvent.Stop();
 
             base.OnExit(e);
         }

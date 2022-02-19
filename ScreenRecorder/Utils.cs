@@ -25,18 +25,18 @@ namespace ScreenRecorder
 
         static public TimeSpan VideoFramesCountToTimeSpan(ulong videoFramesCount)
         {
-            return TimeSpan.FromSeconds(videoFramesCount / (double)SystemClockEvent.Framerate);
+            return TimeSpan.FromSeconds(videoFramesCount / (double)VideoClockEvent.Framerate);
         }
 
         static public string VideoFramesCountToStringTime(ulong videoFramesCount)
         {
-            ulong totalSecond = (ulong)(videoFramesCount / (double)SystemClockEvent.Framerate);
+            ulong totalSecond = (ulong)(videoFramesCount / (double)VideoClockEvent.Framerate);
             ulong hour = totalSecond / 3600;
             ulong minute = totalSecond % 3600 / 60;
             ulong second = totalSecond % 3600 % 60;
-            ulong frames = videoFramesCount % (ulong)SystemClockEvent.Framerate;
+            ulong frames = videoFramesCount % (ulong)VideoClockEvent.Framerate;
 
-            if(SystemClockEvent.Framerate >= 100)
+            if(VideoClockEvent.Framerate >= 100)
             {
                 return string.Format("{0:00}:{1:00}:{2:00}.{3:000}", hour, minute, second, frames);
             }
@@ -48,7 +48,7 @@ namespace ScreenRecorder
 
         static public ulong VideoFramesCountToSeconds(ulong videoFramesCount)
         {
-            return (ulong)(videoFramesCount / (double)SystemClockEvent.Framerate);
+            return (ulong)(videoFramesCount / (double)VideoClockEvent.Framerate);
         }
 
         [DllImport("user32.dll")]

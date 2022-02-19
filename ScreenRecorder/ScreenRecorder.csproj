@@ -143,7 +143,7 @@
     <Compile Include="Encoder\EncoderAudioCodec.cs" />
     <Compile Include="Encoder\EncoderVideoCodec.cs" />
     <Compile Include="Encoder\ScreenEncoder.cs" />
-    <Compile Include="Extensions\Extensions.cs" />
+    <Compile Include="Extensions\PopupExtensions.cs" />
     <Compile Include="Properties\Resources.ko-KR.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -169,7 +169,7 @@
     <Compile Include="Reactive\NotifyPropertyBase.cs" />
     <Compile Include="Reactive\ReactiveExtensions.cs" />
     <Compile Include="VideoSource\ScreenVideoSource.cs" />
-    <Compile Include="SystemClockEvent.cs" />
+    <Compile Include="VideoClockEvent.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="VideoSource\VideoSize.cs" />
     <Compile Include="PopupAttachedProperty.cs" />

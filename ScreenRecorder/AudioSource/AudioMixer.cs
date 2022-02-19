@@ -18,7 +18,7 @@ namespace ScreenRecorder.AudioSource
         public AudioMixer(params IAudioSource[] audioSources)
         {
             this.audioSources = audioSources;
-            var framePerBytes = (int)(48000.0d / SystemClockEvent.Framerate * 4);
+            var framePerBytes = (int)(48000.0d / VideoClockEvent.Framerate * 4);
             circularMixerBuffer = new CircularBuffer(framePerBytes * 6);
 
             needToStop = new ManualResetEvent(false);
@@ -72,7 +72,7 @@ namespace ScreenRecorder.AudioSource
 
         private void MixerThreadHandler()
         {
-            var framePerBytes = (int)(48000.0d / SystemClockEvent.Framerate * 4);
+            var framePerBytes = (int)(48000.0d / VideoClockEvent.Framerate * 4);
 
             var sources = audioSources.Select(source => new AudioSourceResampler(source, 2, SampleFormat.S16, 48000))
                 .ToArray();
@@ -80,7 +80,7 @@ namespace ScreenRecorder.AudioSource
             var sample = Marshal.AllocHGlobal(framePerBytes);
             var mixSample = Marshal.AllocHGlobal(framePerBytes);
 
-            using (var systemClockEvent = new SystemClockEvent())
+            using (var systemClockEvent = new VideoClockEvent())
             {
                 while (!needToStop.WaitOne(0, false))
                 {
@@ -151,10 +151,10 @@ namespace ScreenRecorder.AudioSource
 
         private void RenderThreadHandler()
         {
-            var samples = (int)(48000.0d / SystemClockEvent.Framerate);
+            var samples = (int)(48000.0d / VideoClockEvent.Framerate);
 
             var mixerAudioBuffer = Marshal.AllocHGlobal(samples * 2 * 2); // 16bit 2channels
-            using (var systemClockEvent = new SystemClockEvent())
+            using (var systemClockEvent = new VideoClockEvent())
             {
                 while (!needToStop.WaitOne(0, false))
                 {

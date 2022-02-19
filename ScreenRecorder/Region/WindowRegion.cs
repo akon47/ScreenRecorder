@@ -79,7 +79,7 @@ namespace ScreenRecorder.Region
         /// Get the windows you see on the screen from the front.
         /// </summary>
         /// <returns></returns>
-        static public WindowRegion[] GetWindowRegions()
+        public static WindowRegion[] GetWindowRegions()
         {
             List<WindowRegion> windowRegions = new List<WindowRegion>();
 

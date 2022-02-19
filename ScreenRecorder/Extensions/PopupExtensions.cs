@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ScreenRecorder.Extensions
 {
-    public static class PopupExtension
+    public static class PopupExtensions
     {
         /// <summary>
         /// Obtain the handle of the window used by the pop-up control
