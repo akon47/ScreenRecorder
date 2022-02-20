@@ -263,7 +263,7 @@
                 </Grid.RowDefinitions>
                 <Button Grid.Column="0" Grid.Row="0" Margin="3" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_Close}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.Exit}" ToolTipOpening="Button_ToolTipOpening" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=WindowCloseCommand}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
                 <Grid Grid.Column="0" Grid.Row="1">
-                    <ToggleButton Name="recordSetting" Focusable="False" Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{StaticResource Icon_Settings}" ToolTip="{x:Static properties:Resources.EncoderSettings}" Foreground="DarkGray" Margin="3" IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Converter={StaticResource invertBooleanConverter}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" />
+                    <ToggleButton Name="recordSetting" Focusable="False" IsChecked="{Binding Source={x:Static local:AppManager.Instance}, Path=RecordSettingChecked}" Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{StaticResource Icon_Settings}" ToolTip="{x:Static properties:Resources.EncoderSettings}" Foreground="DarkGray" Margin="3" IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Converter={StaticResource invertBooleanConverter}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" />
                     <Popup StaysOpen="False" IsOpen="{Binding Path=IsChecked, ElementName=recordSetting, Mode=TwoWay}" Placement="Bottom" local:PopupAttachedProperty.DisplayedOnlyMonitor="True">
                         <Border MinWidth="400" BorderThickness="1" BorderBrush="Black" Background="#434343" SnapsToDevicePixels="True">
                             <Grid>
@@ -405,8 +405,9 @@
                                             </ComboBox>
                                             <Grid Grid.Column="1" Grid.Row="6">
                                               <StackPanel Grid.Column="1" Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Left">
-                                                <TextBox IsReadOnly="true" Margin="3" MinWidth="200" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppManager.Instance}, Path=ScreenCaptureMonitorDescription, Mode=OneWay}"/>
-                                              </StackPanel>
+                                                    <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_CursorClick}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.CaptureRegionByUserSelection}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=SelectRegionCommand}" CommandParameter="{x:Static local:CaptureTarget.ByUserChoiceTargetDeviceName}" Width="20" Height="20" Margin="3" IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Converter={StaticResource invertBooleanConverter}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" />
+                                                    <TextBox IsReadOnly="true" Margin="3" MinWidth="200" VerticalAlignment="Center" Text="{Binding Source={x:Static local:AppManager.Instance}, Path=ScreenCaptureMonitorDescription, Mode=OneWay}"/>
+                                                </StackPanel>
                                            </Grid>
                                             <Grid Grid.Column="1" Grid.Row="7">
                                                 <StackPanel Grid.Column="1" Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Left">

@@ -106,6 +106,13 @@ namespace ScreenRecorder
             set => SetProperty(ref screenCaptureMonitorDescription, value);
         }
 
+        private bool recordSettingChecked = false;
+        public bool RecordSettingChecked
+        {
+            get => recordSettingChecked;
+            set => SetProperty(ref recordSettingChecked, value);
+        }
+
         public void Initialize()
         {
             if (IsInitialized)

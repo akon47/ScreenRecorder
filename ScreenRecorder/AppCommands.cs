@@ -383,6 +383,7 @@ namespace ScreenRecorder
                 if (AppManager.Instance.ScreenEncoder.Status != Encoder.EncoderStatus.Stop)
                     return;
 
+                AppManager.Instance.RecordSettingChecked = false;
                 SelectDisplayAndRect(o);
             }));
 
