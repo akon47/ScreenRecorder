@@ -105,51 +105,49 @@ namespace ScreenRecorder
         {
             lock (this)
             {
-                Dictionary<string, string> config = Config.Config.LoadFromFile(filePath, true);
+                SetDefault();
 
+                Dictionary<string, string> config = Config.Config.LoadFromFile(filePath, true);
                 if (config != null)
                 {
-                    ScreenCaptureMonitor = Config.Config.GetString(config, nameof(ScreenCaptureMonitor), CaptureTarget.PrimaryCaptureTargetDeviceName);
-                    ScreenCaptureCursorVisible = Config.Config.GetBool(config, nameof(ScreenCaptureCursorVisible), true);
-                    ScreenCaptureRect = Config.Config.GetRect(config, nameof(ScreenCaptureRect), null);
+                    ScreenCaptureMonitor = Config.Config.GetString(config, nameof(ScreenCaptureMonitor), ScreenCaptureMonitor);
+                    ScreenCaptureCursorVisible = Config.Config.GetBool(config, nameof(ScreenCaptureCursorVisible), ScreenCaptureCursorVisible);
+                    ScreenCaptureRect = Config.Config.GetRect(config, nameof(ScreenCaptureRect), ScreenCaptureRect);
                     AppManager.Instance.ScreenCaptureMonitorDescription = MonitorInfo.GetMonitorInfo(ScreenCaptureMonitor)?.Description ?? "";
 
-                    AdvancedSettings = Config.Config.GetBool(config, nameof(AdvancedSettings), false);
+                    AdvancedSettings = Config.Config.GetBool(config, nameof(AdvancedSettings), AdvancedSettings);
 
-                    SelectedRecordFormat = Config.Config.GetString(config, nameof(SelectedRecordFormat), "mp4");
-                    SelectedRecordVideoCodec = Config.Config.GetEnum<VideoCodec>(config, nameof(SelectedRecordVideoCodec), VideoCodec.H264);
-                    SelectedRecordAudioCodec = Config.Config.GetEnum<AudioCodec>(config, nameof(SelectedRecordAudioCodec), AudioCodec.Aac);
-                    SelectedRecordVideoBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordVideoBitrate), 5000000);
-                    SelectedRecordAudioBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordAudioBitrate), 160000);
-                    SelectedRecordFrameRate = Config.Config.GetInt32(config, nameof(SelectedRecordFrameRate), 60);
-                    RecordDirectory = Config.Config.GetString(config, nameof(RecordDirectory), Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
-                    RegionSelectionMode = Config.Config.GetEnum<RegionSelectionMode>(config, nameof(RegionSelectionMode), RegionSelectionMode.UserRegion);
+                    SelectedRecordFormat = Config.Config.GetString(config, nameof(SelectedRecordFormat), SelectedRecordFormat);
+                    SelectedRecordVideoCodec = Config.Config.GetEnum<VideoCodec>(config, nameof(SelectedRecordVideoCodec), SelectedRecordVideoCodec);
+                    SelectedRecordAudioCodec = Config.Config.GetEnum<AudioCodec>(config, nameof(SelectedRecordAudioCodec), SelectedRecordAudioCodec);
+                    SelectedRecordVideoBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordVideoBitrate), SelectedRecordVideoBitrate);
+                    SelectedRecordAudioBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordAudioBitrate), SelectedRecordAudioBitrate);
+                    SelectedRecordFrameRate = Config.Config.GetInt32(config, nameof(SelectedRecordFrameRate), SelectedRecordFrameRate);
+                    RecordDirectory = Config.Config.GetString(config, nameof(RecordDirectory), RecordDirectory);
+                    RegionSelectionMode = Config.Config.GetEnum<RegionSelectionMode>(config, nameof(RegionSelectionMode), RegionSelectionMode);
 
-                    RecordMicrophone = Config.Config.GetBool(config, nameof(RecordMicrophone), false);
+                    RecordMicrophone = Config.Config.GetBool(config, nameof(RecordMicrophone), RecordMicrophone);
 
-                    WindowLeft = Config.Config.GetDouble(config, nameof(WindowLeft), -1.0d);
-                    WindowTop = Config.Config.GetDouble(config, nameof(WindowTop), -1.0d);
+                    WindowLeft = Config.Config.GetDouble(config, nameof(WindowLeft), WindowLeft);
+                    WindowTop = Config.Config.GetDouble(config, nameof(WindowTop), WindowTop);
 
-                    CaptureTimeControlled = Config.Config.GetBool(config, nameof(CaptureTimeControlled), false);
+                    CaptureTimeControlled = Config.Config.GetBool(config, nameof(CaptureTimeControlled), CaptureTimeControlled);
                     var now = DateTime.Now;
+                    now -= TimeSpan.FromMilliseconds(now.Second * 1000 + now.Millisecond);
                     CaptureStartTime = Config.Config.GetDateTime(config, nameof(CaptureStartTime), now);
+                    CaptureStartTime -= TimeSpan.FromMilliseconds(CaptureStartTime.Second * 1000 + CaptureStartTime.Millisecond);
                     if (CaptureStartTime < now)
                         CaptureStartTime = now;
-                    CaptureStartTime -= TimeSpan.FromMilliseconds(CaptureStartTime.Second * 1000 + CaptureStartTime.Millisecond);
-                    CaptureEndTime = Config.Config.GetDateTime(config, nameof(CaptureEndTime), now + TimeSpan.FromMinutes(5));
-                    if (CaptureEndTime < CaptureStartTime)
-                        CaptureEndTime = CaptureStartTime + TimeSpan.FromMinutes(5);
+                    CaptureEndTime = Config.Config.GetDateTime(config, nameof(CaptureEndTime), now + TimeSpan.FromMinutes(10));
                     CaptureEndTime -= TimeSpan.FromMilliseconds(CaptureEndTime.Second * 1000 + CaptureEndTime.Millisecond);
-                    ExitProgram = Config.Config.GetBool(config, nameof(ExitProgram), false);
-                    ShutDown = Config.Config.GetBool(config, nameof(ShutDown), false);
+                    if (CaptureEndTime <= CaptureStartTime)
+                        CaptureEndTime = CaptureStartTime + TimeSpan.FromMinutes(10);
+                    ExitProgram = Config.Config.GetBool(config, nameof(ExitProgram), ExitProgram);
+                    ShutDown = Config.Config.GetBool(config, nameof(ShutDown), ShutDown);
 
-                    ForceSourceSize = Config.Config.GetBool(config, nameof(ForceSourceSize), false);
-                    ForcedSourceWidth = Config.Config.GetInt32(config, nameof(ForcedSourceWidth), 1280);
-                    ForcedSourceHeight = Config.Config.GetInt32(config, nameof(ForcedSourceHeight), 720);
-                }
-                else
-                {
-                    SetDefault();
+                    ForceSourceSize = Config.Config.GetBool(config, nameof(ForceSourceSize), ForceSourceSize);
+                    ForcedSourceWidth = Config.Config.GetInt32(config, nameof(ForcedSourceWidth), ForcedSourceWidth);
+                    ForcedSourceHeight = Config.Config.GetInt32(config, nameof(ForcedSourceHeight), ForcedSourceHeight);
                 }
             }
         }
@@ -159,7 +157,12 @@ namespace ScreenRecorder
             WindowLeft = -1.0d;
             WindowTop = -1.0d;
 
-            ScreenCaptureMonitor = CaptureTarget.PrimaryCaptureTargetDeviceName;
+            // default is full primary monitor
+            ScreenCaptureMonitor = MonitorInfo.GetPrimaryMonitorInfo()?.DeviceName;
+            var monitorInfo = MonitorInfo.GetMonitorInfo(ScreenCaptureMonitor);
+            ScreenCaptureRect = monitorInfo == null ? (Rect?)null : new Rect(monitorInfo.Left, monitorInfo.Top, monitorInfo.Width, monitorInfo.Height);
+            AppManager.Instance.ScreenCaptureMonitorDescription = monitorInfo?.Description ?? "";
+
             ScreenCaptureCursorVisible = true;
 
             AdvancedSettings = false;
@@ -181,7 +184,8 @@ namespace ScreenRecorder
 
             CaptureTimeControlled = false;
             CaptureStartTime = DateTime.Now;
-            CaptureEndTime = CaptureStartTime + TimeSpan.FromMinutes(60);
+            CaptureStartTime -= TimeSpan.FromMilliseconds(CaptureStartTime.Second * 1000 + CaptureStartTime.Millisecond);
+            CaptureEndTime = CaptureStartTime + TimeSpan.FromMinutes(10);
         }
         #endregion
 
