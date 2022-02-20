@@ -532,23 +532,22 @@ namespace ScreenRecorder.Encoder
 
         public void Stop()
         {
-            if (!IsRunning)
-                return;
+            needToStop?.Set();
+            _captureCanBegin?.Set();
 
-            if (needToStop != null)
-            {
-                needToStop.Set();
-            }
             if (workerThread != null)
             {
                 if (workerThread.IsAlive && !workerThread.Join(3000))
                     workerThread.Abort();
-                workerThread = null;
-
-                if (needToStop != null)
-                    needToStop.Close();
-                needToStop = null;
             }
+            workerThread = null;
+
+            needToStop?.Close();
+            needToStop = null;
+            _captureCanBegin?.Close();
+            _captureCanBegin = null;
+            _waitTimer?.Dispose();
+            _waitTimer = null;
 
             VideoFramesCount = 0;
             AudioSamplesCount = 0;

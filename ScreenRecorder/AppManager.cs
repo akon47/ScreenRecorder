@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -111,6 +112,7 @@ namespace ScreenRecorder
                 return;
 
             ScreenEncoder = new ScreenEncoder();
+            ScreenEncoder.PropertyChanged += ScreenEncoder_PropertyChanged;
             EncoderFormats = new EncoderFormat[]
             {
                 // recording
@@ -147,6 +149,11 @@ namespace ScreenRecorder
             CompositionTarget.Rendering += CompositionTarget_Rendering;
 
             IsInitialized = true;
+        }
+
+        private void ScreenEncoder_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            NotifyPropertyChanged(new[] { e.PropertyName });
         }
 
         private async void CheckHardwareCodec()

@@ -191,6 +191,7 @@ namespace ScreenRecorder
         private DelegateCommand openShortcutSettingsCommand;
 
         private DelegateCommand windowCloseCommand;
+        private DelegateCommand windowMinimizeCommand;
         #endregion
 
         private Rect? SelectDisplayAndRect (object o)
@@ -357,7 +358,11 @@ namespace ScreenRecorder
         public DelegateCommand PauseScreenRecordCommand => pauseScreenRecordCommand ??
             (pauseScreenRecordCommand = new DelegateCommand(o =>
             {
-                if (AppManager.Instance.ScreenEncoder.Status == Encoder.EncoderStatus.Start)
+                if (AppManager.Instance.ScreenEncoder.Status == Encoder.EncoderStatus.Wait)
+                {
+                    AppManager.Instance.ScreenEncoder.Stop();
+                }
+                else if (AppManager.Instance.ScreenEncoder.Status == Encoder.EncoderStatus.Start)
                 {
                     AppManager.Instance.ScreenEncoder.Pause();
                 }
@@ -456,6 +461,7 @@ namespace ScreenRecorder
         #endregion
 
         #region Window Commands
+
         public DelegateCommand WindowCloseCommand => windowCloseCommand ??
             (windowCloseCommand = new DelegateCommand(o =>
             {
@@ -467,6 +473,20 @@ namespace ScreenRecorder
             {
                 return o is Window;
             }));
+
+        public DelegateCommand WindowMinimizeCommand => windowMinimizeCommand ??
+            (windowMinimizeCommand = new DelegateCommand(o =>
+            {
+                var mainWnd = Application.Current.MainWindow;
+                if (Application.Current is App myApp)
+                {
+                    myApp.NotifyIcon.Visible = true;
+                    mainWnd.Hide();
+                }
+                else
+                    SystemCommands.MinimizeWindow(mainWnd);
+            }));
+
         #endregion
     }
 }

@@ -12,7 +12,7 @@
         Icon="pack://application:,,,/icon.ico" SnapsToDevicePixels="True"
         Left="{Binding Source={x:Static local:AppConfig.Instance}, Path=WindowLeft, Mode=TwoWay}"
         Top="{Binding Source={x:Static local:AppConfig.Instance}, Path=WindowTop, Mode=TwoWay}"
-        WindowStyle="None" ResizeMode="NoResize" Background="Transparent" AllowsTransparency="False" Topmost="True" WindowStartupLocation="Manual"
+        WindowStyle="None" ResizeMode="CanMinimize" Background="Transparent" AllowsTransparency="False" Topmost="True" WindowStartupLocation="Manual"
         Title="" Height="72" MinWidth="240" SizeToContent="Width">
     <Window.Resources>
         <ResourceDictionary>
@@ -52,6 +52,10 @@
                                     <Setter Property="Foreground" Value="White" />
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" Value="True">
+                                            <Setter Property="Text" Value="Timer ..." />
+                                            <Setter Property="Foreground" Value="Red" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=ScreenEncoder.IsStartedWithEncode, Mode=OneWay}" Value="True">
                                             <Setter Property="Text" Value="{x:Static properties:Resources.EncoderStatusStartMessage}" />
                                             <Setter Property="Foreground" Value="Red" />
                                         </DataTrigger>
@@ -67,6 +71,7 @@
                         <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Margin="0,0,2,0">
                             <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_CursorClick}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.CaptureRegionByUserSelection}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=SelectRegionCommand}" CommandParameter="{x:Static local:CaptureTarget.ByUserChoiceTargetDeviceName}" Width="20" Height="20" Margin="1,0,1,0" IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Converter={StaticResource invertBooleanConverter}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" />
                             <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_FolderOpen}" Foreground="DarkGray" Focusable="False" ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenRecordDirecotryCommand}" Width="20" Height="20" Margin="1,0,1,0" IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Converter={StaticResource invertBooleanConverter}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" />
+                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Content="{StaticResource Icon_WindowMinimize}" Foreground="DarkGray" Focusable="False" ToolTip="Minimize to system tray" Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=WindowMinimizeCommand}" Width="20" Height="20" Margin="1,0,1,0" ToolTipOpening="Button_ToolTipOpening"/>
                         </StackPanel>
                     </Grid>
                     
