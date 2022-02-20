@@ -1,14 +1,15 @@
 #pragma once
 
 using namespace System;
-using namespace System::Collections::Generic;
-using namespace System::IO;
-using namespace System::Runtime::InteropServices;
+using namespace Collections::Generic;
+using namespace IO;
+using namespace Runtime::InteropServices;
 
 #include "VideoFrame.h"
 #include "AudioFrame.h"
 
-namespace MediaEncoder {
+namespace MediaEncoder
+{
 	ref struct WriterPrivateData;
 
 	public ref class MediaWriter : IDisposable
@@ -63,6 +64,7 @@ namespace MediaEncoder {
 			}
 			return false;
 		}
+
 	public:
 		static void CheckHardwareCodec()
 		{
@@ -217,7 +219,8 @@ namespace MediaEncoder {
 		}
 
 		MediaWriter(
-			int width, int height, int video_numerator, int video_denominator, VideoCodec video_codec, int video_bitrate,
+			int width, int height, int video_numerator, int video_denominator, VideoCodec video_codec,
+			int video_bitrate,
 			AudioCodec audio_codec, int audio_bitrate);
 
 		~MediaWriter()
@@ -227,6 +230,7 @@ namespace MediaEncoder {
 		}
 
 		void Open(String^ url, String^ format, bool forceSoftwareEncoder);
+
 		void Open(String^ url, String^ format)
 		{
 			Open(url, format, false);
@@ -238,4 +242,3 @@ namespace MediaEncoder {
 		void EncodeAudioFrame(AudioFrame^ audioFrame);
 	};
 }
-

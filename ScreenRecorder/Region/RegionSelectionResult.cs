@@ -9,9 +9,9 @@ namespace ScreenRecorder.Region
 {
     public class RegionSelectionResult
     {
-        public string DeviceName { get; private set; }
-        public Rect Region { get; private set; }
-        public IntPtr Hwnd { get; private set; }
+        public string DeviceName { get; }
+        public Rect Region { get; }
+        public IntPtr Hwnd { get; }
 
         public RegionSelectionResult(string deviceName, Rect region, IntPtr hwnd)
         {

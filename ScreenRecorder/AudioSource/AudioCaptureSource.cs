@@ -1,51 +1,50 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Threading;
+using MediaEncoder;
 using NAudio.CoreAudioApi;
+using NAudio.CoreAudioApi.Interfaces;
 using NAudio.Wave;
 
 namespace ScreenRecorder.AudioSource
 {
     public sealed class AudioCaptureSource : IAudioSource, IDisposable
     {
-        private class NotificationClient : NAudio.CoreAudioApi.Interfaces.IMMNotificationClient
-        {
-            private AutoResetEvent needToReset;
-            public NotificationClient(ref AutoResetEvent _needToReset)
-            {
-                needToReset = _needToReset;
-            }
-
-            void NAudio.CoreAudioApi.Interfaces.IMMNotificationClient.OnDeviceStateChanged(string deviceId, DeviceState newState)
-            {
-            }
-
-            void NAudio.CoreAudioApi.Interfaces.IMMNotificationClient.OnDeviceAdded(string pwstrDeviceId) { }
-            void NAudio.CoreAudioApi.Interfaces.IMMNotificationClient.OnDeviceRemoved(string deviceId)
-            {
-
-            }
-
-            void NAudio.CoreAudioApi.Interfaces.IMMNotificationClient.OnDefaultDeviceChanged(DataFlow flow, Role role, string defaultDeviceId)
-            {
-                if (flow == DataFlow.Capture && role == Role.Console)
-                {
-                    needToReset?.Set();
-                }
-            }
-            void NAudio.CoreAudioApi.Interfaces.IMMNotificationClient.OnPropertyValueChanged(string pwstrDeviceId, PropertyKey key) { }
-        }
-
-        public event NewAudioPacketEventHandler NewAudioPacket;
+        private ManualResetEvent needToStop;
 
         private Thread workerThread;
-        private ManualResetEvent needToStop;
 
         public AudioCaptureSource()
         {
             needToStop = new ManualResetEvent(false);
-            workerThread = new Thread(new ThreadStart(WorkerThreadHandler)) { Name = "AudioCaptureSource", IsBackground = true };
+            workerThread = new Thread(WorkerThreadHandler) { Name = "AudioCaptureSource", IsBackground = true };
             workerThread.Start();
+        }
+
+        public event NewAudioPacketEventHandler NewAudioPacket;
+
+        public void Dispose()
+        {
+            if (needToStop != null)
+            {
+                needToStop.Set();
+            }
+
+            if (workerThread != null)
+            {
+                if (workerThread.IsAlive && !workerThread.Join(1000))
+                {
+                    workerThread.Abort();
+                }
+
+                workerThread = null;
+
+                if (needToStop != null)
+                {
+                    needToStop.Close();
+                }
+
+                needToStop = null;
+            }
         }
 
         private void WorkerThreadHandler()
@@ -55,10 +54,10 @@ namespace ScreenRecorder.AudioSource
 
             while (!needToStop.WaitOne(0, false))
             {
-                using (NAudio.CoreAudioApi.MMDeviceEnumerator enumerator = new MMDeviceEnumerator())
+                using (var enumerator = new MMDeviceEnumerator())
                 {
-                    AutoResetEvent needToReset = new AutoResetEvent(false);
-                    NotificationClient notificationClient = new NotificationClient(ref needToReset);
+                    var needToReset = new AutoResetEvent(false);
+                    var notificationClient = new NotificationClient(ref needToReset);
                     enumerator.RegisterEndpointNotificationCallback(notificationClient);
 
                     while (!needToStop.WaitOne(100, false))
@@ -78,7 +77,9 @@ namespace ScreenRecorder.AudioSource
                             else
                             {
                                 if (needToStop.WaitOne(100))
+                                {
                                     break;
+                                }
                             }
                         }
                         catch
@@ -88,7 +89,9 @@ namespace ScreenRecorder.AudioSource
                         }
 
                         if (needToReset.WaitOne(0, false) || needToStop.WaitOne(1))
+                        {
                             break;
+                        }
                     }
 
                     if (audioCaptureDevice != null)
@@ -100,6 +103,7 @@ namespace ScreenRecorder.AudioSource
                             sourceStream.Dispose();
                             sourceStream = null;
                         }
+
                         audioCaptureDevice.Dispose();
                         audioCaptureDevice = null;
                     }
@@ -114,34 +118,47 @@ namespace ScreenRecorder.AudioSource
         {
             if ((e?.BytesRecorded ?? 0) > 0)
             {
-                int samples = e.BytesRecorded / 4;
+                var samples = e.BytesRecorded / 4;
                 unsafe
                 {
                     fixed (void* pBuffer = e.Buffer)
                     {
-                        NewAudioPacketEventArgs eventArgs = new NewAudioPacketEventArgs(48000, 2, MediaEncoder.SampleFormat.S16, samples, new IntPtr(pBuffer));
+                        var eventArgs =
+                            new NewAudioPacketEventArgs(48000, 2, SampleFormat.S16, samples, new IntPtr(pBuffer));
                         NewAudioPacket?.Invoke(this, eventArgs);
                     }
                 }
             }
         }
 
-        public void Dispose()
+        private class NotificationClient : IMMNotificationClient
         {
-            if (needToStop != null)
-            {
-                needToStop.Set();
-            }
-            if (workerThread != null)
-            {
-                if (workerThread.IsAlive && !workerThread.Join(1000))
-                    workerThread.Abort();
-                workerThread = null;
+            private readonly AutoResetEvent needToReset;
 
-                if (needToStop != null)
-                    needToStop.Close();
-                needToStop = null;
+            public NotificationClient(ref AutoResetEvent _needToReset)
+            {
+                needToReset = _needToReset;
             }
+
+            void IMMNotificationClient.OnDeviceStateChanged(string deviceId, DeviceState newState)
+            {
+            }
+
+            void IMMNotificationClient.OnDeviceAdded(string pwstrDeviceId) { }
+
+            void IMMNotificationClient.OnDeviceRemoved(string deviceId)
+            {
+            }
+
+            void IMMNotificationClient.OnDefaultDeviceChanged(DataFlow flow, Role role, string defaultDeviceId)
+            {
+                if (flow == DataFlow.Capture && role == Role.Console)
+                {
+                    needToReset?.Set();
+                }
+            }
+
+            void IMMNotificationClient.OnPropertyValueChanged(string pwstrDeviceId, PropertyKey key) { }
         }
     }
 }

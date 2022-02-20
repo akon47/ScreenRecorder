@@ -4,24 +4,24 @@ using System.Threading;
 
 namespace ScreenRecorder
 {
-    public class SystemClockEvent : IDisposable
+    public class VideoClockEvent : IDisposable
     {
-        private const int MAX_EVENT_COUNT = 8;
+        private const int MaxEventCount = 8;
 
-        private static readonly object syncObject = new object();
+        private static readonly object SyncObject = new object();
         private static int referenceCount = -1;
-        private static readonly AutoResetEvent[] events = new AutoResetEvent[MAX_EVENT_COUNT];
+        private static readonly AutoResetEvent[] Events = new AutoResetEvent[MaxEventCount];
         private static Thread workerThread;
         private static ManualResetEvent needToStop;
         private static int frameRate = 60;
         private static long interval;
         private static long sleepLimit;
 
-        static SystemClockEvent()
+        static VideoClockEvent()
         {
-            for (int i = 0; i < events.Length; i++)
+            for (int i = 0; i < Events.Length; i++)
             {
-                events[i] = new AutoResetEvent(false);
+                Events[i] = new AutoResetEvent(false);
             }
         }
 
@@ -30,7 +30,7 @@ namespace ScreenRecorder
             get => frameRate;
             set
             {
-                lock (syncObject)
+                lock (SyncObject)
                 {
                     if (frameRate != value)
                     {
@@ -49,7 +49,7 @@ namespace ScreenRecorder
 
         public static void Start()
         {
-            lock (syncObject)
+            lock (SyncObject)
             {
                 needToStop = new ManualResetEvent(false);
 
@@ -62,17 +62,15 @@ namespace ScreenRecorder
         {
             try
             {
-                lock (syncObject)
+                lock (SyncObject)
                 {
-                    if (needToStop != null)
-                        needToStop.Set();
+                    needToStop?.Set();
                     if (workerThread != null)
                     {
                         if (workerThread.IsAlive && !workerThread.Join(100))
                             workerThread.Abort();
                         workerThread = null;
-                        if (needToStop != null)
-                            needToStop.Close();
+                        needToStop?.Close();
                         needToStop = null;
                     }
                 }
@@ -90,8 +88,8 @@ namespace ScreenRecorder
                 long currentTick = Stopwatch.GetTimestamp();
                 if (currentTick - prevTick >= interval)
                 {
-                    for (int i = 0; i < events.Length; i++)
-                        events[i].Set();
+                    foreach (var @event in Events)
+                        @event.Set();
 
                     prevTick += interval;
                 }
@@ -105,10 +103,10 @@ namespace ScreenRecorder
 
         private readonly int currentReferenceIndex;
 
-        public SystemClockEvent()
+        public VideoClockEvent()
         {
             currentReferenceIndex = Interlocked.Increment(ref referenceCount);
-            if (currentReferenceIndex >= MAX_EVENT_COUNT)
+            if (currentReferenceIndex >= MaxEventCount)
             {
                 throw new OutOfMemoryException();
             }
@@ -116,12 +114,12 @@ namespace ScreenRecorder
 
         public bool WaitOne(int millisecondsTimeout = Timeout.Infinite)
         {
-            return events[currentReferenceIndex].WaitOne(millisecondsTimeout);
+            return Events[currentReferenceIndex].WaitOne(millisecondsTimeout);
         }
 
         public bool WaitOne(int millisecondsTimeout, bool exitContext)
         {
-            return events[currentReferenceIndex].WaitOne(millisecondsTimeout, exitContext);
+            return Events[currentReferenceIndex].WaitOne(millisecondsTimeout, exitContext);
         }
 
         public void Dispose()

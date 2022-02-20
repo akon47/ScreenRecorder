@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "MediaEncoder.h"
 
-namespace MediaEncoder {
-
+namespace MediaEncoder
+{
 	array<String^>^ MediaFormat::GetAllFormatLongNames()
 	{
-		List<String^>^ ret = gcnew List<String^>();
-		const AVOutputFormat* fmt = NULL;
-		void* i = 0;
+		auto ret = gcnew List<String^>();
+		const AVOutputFormat* fmt = nullptr;
+		void* i = nullptr;
 		while ((fmt = av_muxer_iterate(&i)))
 		{
 			ret->Add(gcnew String(fmt->long_name));
@@ -18,40 +18,42 @@ namespace MediaEncoder {
 
 	String^ MediaFormat::GetFormatExtensions(String^ format)
 	{
-		IntPtr formatStringPointer = System::Runtime::InteropServices::Marshal::StringToHGlobalUni(format);
-		wchar_t* nativeFormatUnicode = (wchar_t*)formatStringPointer.ToPointer();
-		int utf8FormatStringSize = WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, NULL, 0, NULL, NULL);
-		char* nativeFormat = new char[utf8FormatStringSize];
-		WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, nativeFormat, utf8FormatStringSize, NULL, NULL);
+		IntPtr formatStringPointer = Runtime::InteropServices::Marshal::StringToHGlobalUni(format);
+		auto nativeFormatUnicode = static_cast<wchar_t*>(formatStringPointer.ToPointer());
+		int utf8FormatStringSize = WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, nullptr, 0, nullptr,
+		                                               nullptr);
+		auto nativeFormat = new char[utf8FormatStringSize];
+		WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, nativeFormat, utf8FormatStringSize, nullptr, nullptr);
 
 		const AVOutputFormat* fmt = av_guess_format(nativeFormat, nullptr, nullptr);
 		if (fmt != nullptr)
 			return gcnew String(fmt->extensions);
-		else
-			return nullptr;
+		return nullptr;
 	}
 
 	String^ MediaFormat::GetFormatLongName(String^ format)
 	{
-		IntPtr formatStringPointer = System::Runtime::InteropServices::Marshal::StringToHGlobalUni(format);
-		wchar_t* nativeFormatUnicode = (wchar_t*)formatStringPointer.ToPointer();
-		int utf8FormatStringSize = WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, NULL, 0, NULL, NULL);
-		char* nativeFormat = new char[utf8FormatStringSize];
-		WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, nativeFormat, utf8FormatStringSize, NULL, NULL);
+		IntPtr formatStringPointer = Runtime::InteropServices::Marshal::StringToHGlobalUni(format);
+		auto nativeFormatUnicode = static_cast<wchar_t*>(formatStringPointer.ToPointer());
+		int utf8FormatStringSize = WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, nullptr, 0, nullptr,
+		                                               nullptr);
+		auto nativeFormat = new char[utf8FormatStringSize];
+		WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, nativeFormat, utf8FormatStringSize, nullptr, nullptr);
 		const AVOutputFormat* fmt = av_guess_format(nativeFormat, nullptr, nullptr);
 		if (fmt != nullptr)
 			return gcnew String(fmt->long_name);
-		else
-			return nullptr;
+		return nullptr;
 	}
 
-	void MediaFormat::GetFormatInfo(String^ format, [Runtime::InteropServices::Out] String^% longName, [Runtime::InteropServices::Out] String^% extensions)
+	void MediaFormat::GetFormatInfo(String^ format, [Runtime::InteropServices::Out] String^% longName,
+	                                [Runtime::InteropServices::Out] String^% extensions)
 	{
-		IntPtr formatStringPointer = System::Runtime::InteropServices::Marshal::StringToHGlobalUni(format);
-		wchar_t* nativeFormatUnicode = (wchar_t*)formatStringPointer.ToPointer();
-		int utf8FormatStringSize = WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, NULL, 0, NULL, NULL);
-		char* nativeFormat = new char[utf8FormatStringSize];
-		WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, nativeFormat, utf8FormatStringSize, NULL, NULL);
+		IntPtr formatStringPointer = Runtime::InteropServices::Marshal::StringToHGlobalUni(format);
+		auto nativeFormatUnicode = static_cast<wchar_t*>(formatStringPointer.ToPointer());
+		int utf8FormatStringSize = WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, nullptr, 0, nullptr,
+		                                               nullptr);
+		auto nativeFormat = new char[utf8FormatStringSize];
+		WideCharToMultiByte(CP_UTF8, 0, nativeFormatUnicode, -1, nativeFormat, utf8FormatStringSize, nullptr, nullptr);
 		const AVOutputFormat* fmt = av_guess_format(nativeFormat, nullptr, nullptr);
 		if (fmt != nullptr)
 		{
@@ -64,5 +66,4 @@ namespace MediaEncoder {
 			extensions = nullptr;
 		}
 	}
-
 }

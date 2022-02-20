@@ -4,6 +4,7 @@ using MediaEncoder;
 namespace ScreenRecorder.AudioSource
 {
     public delegate void NewAudioPacketEventHandler(object sender, NewAudioPacketEventArgs eventArgs);
+
     public interface IAudioSource
     {
         event NewAudioPacketEventHandler NewAudioPacket;
@@ -11,19 +12,20 @@ namespace ScreenRecorder.AudioSource
 
     public class NewAudioPacketEventArgs : EventArgs
     {
-        public IntPtr DataPointer { get; private set; }
-        public int Samples { get; private set; }
-        public int SampleRate { get; private set; }
-        public int Channels { get; private set; }
-        public SampleFormat SampleFormat { get; private set; }
-
-        public NewAudioPacketEventArgs(int sampleRate, int channels, SampleFormat sampleFormat, int samples, IntPtr dataPointer)
+        public NewAudioPacketEventArgs(int sampleRate, int channels, SampleFormat sampleFormat, int samples,
+            IntPtr dataPointer)
         {
-            this.SampleRate = sampleRate;
-            this.Channels = channels;
-            this.SampleFormat = sampleFormat;
-            this.Samples = samples;
-            this.DataPointer = dataPointer;
+            SampleRate = sampleRate;
+            Channels = channels;
+            SampleFormat = sampleFormat;
+            Samples = samples;
+            DataPointer = dataPointer;
         }
+
+        public IntPtr DataPointer { get; }
+        public int Samples { get; }
+        public int SampleRate { get; }
+        public int Channels { get; }
+        public SampleFormat SampleFormat { get; }
     }
 }

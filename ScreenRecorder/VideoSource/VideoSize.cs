@@ -4,12 +4,12 @@ namespace ScreenRecorder.VideoSource
 {
     public class VideoSize
     {
-        static public VideoSize Parse(string s, VideoSize defaultVideoSize)
+        public static VideoSize Parse(string s, VideoSize defaultVideoSize)
         {
             if (!string.IsNullOrWhiteSpace(s))
             {
                 string[] values = s.Split(new char[] { 'x' }, StringSplitOptions.RemoveEmptyEntries);
-                if (values != null && values.Length >= 2 && int.TryParse(values[0], out int width) && int.TryParse(values[1], out int height))
+                if (values.Length >= 2 && int.TryParse(values[0], out int width) && int.TryParse(values[1], out int height))
                 {
                     return new VideoSize(width, height);
                 }
@@ -17,8 +17,8 @@ namespace ScreenRecorder.VideoSource
             return defaultVideoSize;
         }
 
-        public int Width { get; private set; }
-        public int Height { get; private set; }
+        public int Width { get; }
+        public int Height { get; }
 
         public VideoSize(int width, int height)
         {
@@ -43,7 +43,7 @@ namespace ScreenRecorder.VideoSource
 
         public override string ToString()
         {
-            return string.Format("{0} x {1}", Width, Height);
+            return $"{Width} x {Height}";
         }
     }
 }

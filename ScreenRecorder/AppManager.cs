@@ -128,15 +128,11 @@ namespace ScreenRecorder
                 EncoderFormat.CreateEncoderFormatByFormatString("matroska"),
                 EncoderFormat.CreateEncoderFormatByFormatString("mpegts"),
                 EncoderFormat.CreateEncoderFormatByFormatString("mov"),
-
-                // streaming
-                //EncoderFormat.CreateEncoderFormatByFormatString("flv", "RTMP Streaming"),
             };
             EncoderVideoCodecs = new EncoderVideoCodec[]
             {
                 new EncoderVideoCodec(MediaEncoder.VideoCodec.H264, "H.264"),
                 new EncoderVideoCodec(MediaEncoder.VideoCodec.H265, "H.265 (HEVC)"),
-                //new EncoderVideoCodec(MediaEncoder.VideoCodec.Mpeg4, "MPEG-4 part 2 Video"),
             };
             EncoderAudioCodecs = new EncoderAudioCodec[]
             {

@@ -1,37 +1,50 @@
-﻿<Window x:Class="ScreenRecorder.Region.RegionSelectorWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ScreenRecorder.Region"
-        xmlns:screenRecorder="clr-namespace:ScreenRecorder"
-        xmlns:cc="clr-namespace:CustomConverter"
-        xmlns:properties="clr-namespace:ScreenRecorder.Properties"
-        mc:Ignorable="d" Loaded="Window_Loaded" Name="root" ResizeMode="NoResize" RenderOptions.BitmapScalingMode="NearestNeighbor"
-        WindowStyle="None" AllowsTransparency="True" Topmost="True" ShowInTaskbar="False" WindowStartupLocation="Manual"
-        Title="">
+﻿<Window
+    x:Class="ScreenRecorder.Region.RegionSelectorWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:ScreenRecorder.Region"
+    xmlns:screenRecorder="clr-namespace:ScreenRecorder"
+    xmlns:cc="clr-namespace:CustomConverter"
+    xmlns:properties="clr-namespace:ScreenRecorder.Properties"
+    mc:Ignorable="d"
+    Loaded="Window_Loaded"
+    Name="root"
+    ResizeMode="NoResize"
+    RenderOptions.BitmapScalingMode="NearestNeighbor"
+    WindowStyle="None"
+    AllowsTransparency="True"
+    Topmost="True"
+    ShowInTaskbar="False"
+    WindowStartupLocation="Manual"
+    Title=""
+    >
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Icons.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/Icons.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <cc:EnumBooleanConverter x:Key="enumBooleanConverter" />
         </ResourceDictionary>
     </Window.Resources>
-    <!--<Window.Triggers>
-        <EventTrigger RoutedEvent="Window.Loaded">
-            <BeginStoryboard>
-                <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="regionSelector" Duration="00:00:00.400" Storyboard.TargetProperty="Opacity" From="0" To="1"/>
-                </Storyboard>
-            </BeginStoryboard>
-        </EventTrigger>
-    </Window.Triggers>-->
     <Grid ClipToBounds="True">
-        <local:RegionSelector x:Name="regionSelector" RegionSelected="regionSelector_RegionSelected" RegionSelectionMode="{Binding Path=RegionSelectionMode, ElementName=root, Mode=OneWay}" />
+        <local:RegionSelector
+            x:Name="regionSelector"
+            RegionSelected="regionSelector_RegionSelected"
+            RegionSelectionMode="{Binding Path=RegionSelectionMode, ElementName=root, Mode=OneWay}"
+            />
         <Canvas>
-            <Grid Name="regionMenuRoot" Width="162" Height="43" ClipToBounds="True">
-                <Border Background="#212121" CornerRadius="0,0,5,5">
+            <Grid
+                Name="regionMenuRoot"
+                Width="162"
+                Height="43"
+                ClipToBounds="True"
+                >
+                <Border
+                    Background="#212121"
+                    CornerRadius="0,0,5,5"
+                    >
                     <Border.RenderTransform>
                         <TranslateTransform Y="-50" />
                     </Border.RenderTransform>
@@ -39,12 +52,18 @@
                         <EventTrigger RoutedEvent="Border.Loaded">
                             <BeginStoryboard>
                                 <Storyboard>
-                                    <DoubleAnimation BeginTime="00:00:00.300" Duration="00:00:00.300" Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)" From="-50" To="0" />
+                                    <DoubleAnimation
+                                        BeginTime="00:00:00.300"
+                                        Duration="00:00:00.300"
+                                        Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)"
+                                        From="-50"
+                                        To="0"
+                                        />
                                 </Storyboard>
                             </BeginStoryboard>
                         </EventTrigger>
                     </Border.Triggers>
-                    <Grid Margin="3,1,3,3">
+                    <Grid Margin="3 1 3 3">
                         <Grid.Resources>
                             <Style TargetType="{x:Type RadioButton}" BasedOn="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}">
                                 <Setter Property="Focusable" Value="False" />
@@ -66,11 +85,37 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <RadioButton Grid.Column="0" Content="{StaticResource Icon_SquarePlus}" IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource enumBooleanConverter}, ConverterParameter=UserRegion}" ToolTip="{x:Static properties:Resources.CaptureRegion}"/>
-                        <RadioButton Grid.Column="1" Content="{StaticResource Icon_WindowMaximize}" IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource enumBooleanConverter}, ConverterParameter=WindowRegion}" ToolTip="{x:Static properties:Resources.CaptureWindow}"/>
-                        <RadioButton Grid.Column="2" Content="{StaticResource Icon_MonitorScreenshot}" IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource enumBooleanConverter}, ConverterParameter=DisplayRegion}" ToolTip="{x:Static properties:Resources.CaptureDisplay}"/>
-                        <Rectangle Grid.Column="3" VerticalAlignment="Stretch" Width="1" Margin="2,5" Stroke="DarkGray" />
-                        <Button Grid.Column="4" Content="{StaticResource Icon_Close}" Click="Close_Click" ToolTip="{x:Static properties:Resources.CaptureCancel}"/>
+                        <RadioButton
+                            Grid.Column="0"
+                            Content="{StaticResource Icon_SquarePlus}"
+                            IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource enumBooleanConverter}, ConverterParameter=UserRegion}"
+                            ToolTip="{x:Static properties:Resources.CaptureRegion}"
+                            />
+                        <RadioButton
+                            Grid.Column="1"
+                            Content="{StaticResource Icon_WindowMaximize}"
+                            IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource enumBooleanConverter}, ConverterParameter=WindowRegion}"
+                            ToolTip="{x:Static properties:Resources.CaptureWindow}"
+                            />
+                        <RadioButton
+                            Grid.Column="2"
+                            Content="{StaticResource Icon_MonitorScreenshot}"
+                            IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource enumBooleanConverter}, ConverterParameter=DisplayRegion}"
+                            ToolTip="{x:Static properties:Resources.CaptureDisplay}"
+                            />
+                        <Rectangle
+                            Grid.Column="3"
+                            VerticalAlignment="Stretch"
+                            Width="1"
+                            Margin="2 5"
+                            Stroke="DarkGray"
+                            />
+                        <Button
+                            Grid.Column="4"
+                            Content="{StaticResource Icon_Close}"
+                            Click="Close_Click"
+                            ToolTip="{x:Static properties:Resources.CaptureCancel}"
+                            />
                     </Grid>
                 </Border>
             </Grid>

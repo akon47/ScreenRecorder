@@ -1,26 +1,58 @@
-﻿<Window x:Class="ScreenRecorder.Shortcut.ShortcutEditorWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:screenRecorder="clr-namespace:ScreenRecorder"
-        xmlns:local="clr-namespace:ScreenRecorder.Shortcut"
-        xmlns:properties="clr-namespace:ScreenRecorder.Properties"
-        mc:Ignorable="d" Background="#454545" Topmost="True" WindowStyle="ToolWindow" WindowStartupLocation="CenterOwner"
-        Title="{x:Static properties:Resources.ShortcutSettings}" MaxHeight="200" MinWidth="250" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
+﻿<Window
+    x:Class="ScreenRecorder.Shortcut.ShortcutEditorWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:screenRecorder="clr-namespace:ScreenRecorder"
+    xmlns:local="clr-namespace:ScreenRecorder.Shortcut"
+    xmlns:properties="clr-namespace:ScreenRecorder.Properties"
+    mc:Ignorable="d"
+    Background="#454545"
+    Topmost="True"
+    WindowStyle="ToolWindow"
+    WindowStartupLocation="CenterOwner"
+    Title="{x:Static properties:Resources.ShortcutSettings}"
+    MaxHeight="200"
+    MinWidth="250"
+    ResizeMode="NoResize"
+    SizeToContent="WidthAndHeight"
+    >
     <Grid>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <Border Margin="5" CornerRadius="2" Background="#212121" BorderBrush="Black" BorderThickness="1">
-                <UniformGrid Columns="1" VerticalAlignment="Top" Grid.IsSharedSizeScope="True">
+        <ScrollViewer
+            VerticalScrollBarVisibility="Auto"
+            HorizontalScrollBarVisibility="Disabled"
+            >
+            <Border
+                Margin="5"
+                CornerRadius="2"
+                Background="#212121"
+                BorderBrush="Black"
+                BorderThickness="1"
+                >
+                <UniformGrid
+                    Columns="1"
+                    VerticalAlignment="Top"
+                    Grid.IsSharedSizeScope="True"
+                    >
                     <UniformGrid.Resources>
                         <Style TargetType="{x:Type local:ShortcutEditor}">
                             <Setter Property="Margin" Value="3" />
                         </Style>
                     </UniformGrid.Resources>
 
-                    <local:ShortcutEditor Title="{x:Static properties:Resources.StartRecording}" Shortcut="{Binding Source={x:Static screenRecorder:AppCommands.Instance}, Path=StartScreenRecordCommand}" />
-                    <local:ShortcutEditor Title="{x:Static properties:Resources.PauseRecording}" Shortcut="{Binding Source={x:Static screenRecorder:AppCommands.Instance}, Path=PauseScreenRecordCommand}" />
-                    <local:ShortcutEditor Title="{x:Static properties:Resources.StopRecording}" Shortcut="{Binding Source={x:Static screenRecorder:AppCommands.Instance}, Path=StopScreenRecordCommand}" />
+                    <local:ShortcutEditor
+                        Title="{x:Static properties:Resources.StartRecording}"
+                        Shortcut="{Binding Source={x:Static screenRecorder:AppCommands.Instance}, Path=StartScreenRecordCommand}"
+                        />
+                    <local:ShortcutEditor
+                        Title="{x:Static properties:Resources.PauseRecording}"
+                        Shortcut="{Binding Source={x:Static screenRecorder:AppCommands.Instance}, Path=PauseScreenRecordCommand}"
+                        />
+                    <local:ShortcutEditor
+                        Title="{x:Static properties:Resources.StopRecording}"
+                        Shortcut="{Binding Source={x:Static screenRecorder:AppCommands.Instance}, Path=StopScreenRecordCommand}"
+                        />
                 </UniformGrid>
             </Border>
         </ScrollViewer>

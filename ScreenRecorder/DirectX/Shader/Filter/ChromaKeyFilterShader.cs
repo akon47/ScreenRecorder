@@ -2,18 +2,24 @@
 using SharpDX;
 using SharpDX.D3DCompiler;
 using SharpDX.Direct3D11;
+using SharpDX.DXGI;
+using SharpDX.Mathematics.Interop;
+using Buffer = SharpDX.Direct3D11.Buffer;
+using Device = SharpDX.Direct3D11.Device;
+using MapFlags = SharpDX.Direct3D11.MapFlags;
 
 namespace ScreenRecorder.DirectX.Shader.Filter
 {
     /// <summary>
-    /// ChromaKeyFilterShader
-    /// I used the following code -> https://github.com/obsproject/obs-studio/blob/master/plugins/obs-filters/data/chroma_key_filter_v2.effect
-    /// I wrote the HLSL referring to the code above.
+    ///     ChromaKeyFilterShader
+    ///     I used the following code ->
+    ///     https://github.com/obsproject/obs-studio/blob/master/plugins/obs-filters/data/chroma_key_filter_v2.effect
+    ///     I wrote the HLSL referring to the code above.
     /// </summary>
     public class ChromaKeyFilterShader : IDisposable
     {
         private readonly string shaderCode =
-@"
+            @"
 Texture2D Texture : register(t0);
 SamplerState TextureSampler;
 cbuffer Args
@@ -92,87 +98,138 @@ float4 PShader(PSInput input) : SV_Target
 	return ProcessChromaKey(rgba, input);
 }
 ";
+
+        private Buffer argsBuffer;
         private InputLayout inputLayout;
         private ShaderSignature inputSignature;
-        private VertexShader vertexShader;
+        private int oldKeyRed = -1, oldKeyGreen = -1, oldKeyBlue = -1;
+
+        private float oldOpacity = -1,
+            oldContrast = -1,
+            oldBrightness = -1,
+            oldGamma = -1,
+            oldSimilarity = -1,
+            oldSmoothness = -1,
+            oldSpill = -1;
+
         private PixelShader pixelShader;
         private SamplerState samplerState;
-        private SharpDX.Direct3D11.Buffer argsBuffer;
+        private VertexShader vertexShader;
 
-        public void Initialize(SharpDX.Direct3D11.Device device)
+        public void Dispose()
+        {
+            if (inputLayout != null)
+            {
+                inputLayout.Dispose();
+            }
+
+            if (inputSignature != null)
+            {
+                inputSignature.Dispose();
+            }
+
+            if (vertexShader != null)
+            {
+                vertexShader.Dispose();
+            }
+
+            if (pixelShader != null)
+            {
+                pixelShader.Dispose();
+            }
+
+            if (samplerState != null)
+            {
+                samplerState.Dispose();
+            }
+
+            if (argsBuffer != null)
+            {
+                argsBuffer.Dispose();
+            }
+        }
+
+        public void Initialize(Device device)
         {
             InitializeShader(device);
         }
 
-        private void InitializeShader(SharpDX.Direct3D11.Device device)
+        private void InitializeShader(Device device)
         {
-            using (var bytecode = ShaderBytecode.Compile(shaderCode, "VShader", "vs_4_0", ShaderFlags.None, EffectFlags.None))
+            using (var bytecode = ShaderBytecode.Compile(shaderCode, "VShader", "vs_4_0"))
             {
                 inputSignature = ShaderSignature.GetInputSignature(bytecode);
                 vertexShader = new VertexShader(device, bytecode);
             }
 
-            using (var bytecode = ShaderBytecode.Compile(shaderCode, "PShader", "ps_4_0", ShaderFlags.None, EffectFlags.None))
+            using (var bytecode = ShaderBytecode.Compile(shaderCode, "PShader", "ps_4_0"))
             {
                 pixelShader = new PixelShader(device, bytecode);
             }
 
             var elements = new[]
             {
-                new InputElement("POSITION", 0, SharpDX.DXGI.Format.R32G32B32_Float, 0, 0, InputClassification.PerVertexData, 0),
-                new InputElement("TEXCOORD", 0, SharpDX.DXGI.Format.R32G32_Float, InputElement.AppendAligned, 0, InputClassification.PerVertexData, 0)
+                new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0, InputClassification.PerVertexData, 0),
+                new InputElement("TEXCOORD", 0, Format.R32G32_Float, InputElement.AppendAligned, 0,
+                    InputClassification.PerVertexData, 0)
             };
 
             inputLayout = new InputLayout(device, inputSignature, elements);
 
-            argsBuffer = new SharpDX.Direct3D11.Buffer(device, 64, ResourceUsage.Dynamic, BindFlags.ConstantBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
+            argsBuffer = new Buffer(device, 64, ResourceUsage.Dynamic, BindFlags.ConstantBuffer, CpuAccessFlags.Write,
+                ResourceOptionFlags.None, 0);
 
-            samplerState = new SamplerState(device, new SamplerStateDescription()
-            {
-                Filter = SharpDX.Direct3D11.Filter.MinMagMipLinear,
-                AddressU = TextureAddressMode.Clamp,
-                AddressV = TextureAddressMode.Clamp,
-                AddressW = TextureAddressMode.Wrap,
-                MipLodBias = 0.0f,
-                MaximumAnisotropy = 2,
-                ComparisonFunction = Comparison.Always,
-                BorderColor = new SharpDX.Mathematics.Interop.RawColor4(0, 0, 0, 0),
-                MinimumLod = 0,
-                MaximumLod = float.MaxValue
-            });
+            samplerState = new SamplerState(device,
+                new SamplerStateDescription
+                {
+                    Filter = SharpDX.Direct3D11.Filter.MinMagMipLinear,
+                    AddressU = TextureAddressMode.Clamp,
+                    AddressV = TextureAddressMode.Clamp,
+                    AddressW = TextureAddressMode.Wrap,
+                    MipLodBias = 0.0f,
+                    MaximumAnisotropy = 2,
+                    ComparisonFunction = Comparison.Always,
+                    BorderColor = new RawColor4(0, 0, 0, 0),
+                    MinimumLod = 0,
+                    MaximumLod = float.MaxValue
+                });
         }
 
-        public void Render(DeviceContext deviceContext, ShaderResourceView shaderResourceView, float textureWidth, float textureHeight,
-            float opacity, float contrast, float brightness, float gamma, int key_red, int key_green, int key_blue, float similarity, float smoothness, float spill)
+        public void Render(DeviceContext deviceContext, ShaderResourceView shaderResourceView, float textureWidth,
+            float textureHeight,
+            float opacity, float contrast, float brightness, float gamma, int key_red, int key_green, int key_blue,
+            float similarity, float smoothness, float spill)
         {
-            SetShaderParameters(deviceContext, shaderResourceView, textureWidth, textureHeight, opacity, contrast, brightness, gamma, key_red, key_green, key_blue, similarity, smoothness, spill);
+            SetShaderParameters(deviceContext, shaderResourceView, textureWidth, textureHeight, opacity, contrast,
+                brightness, gamma, key_red, key_green, key_blue, similarity, smoothness, spill);
             RenderShader(deviceContext);
         }
 
-        static float srgb_nonlinear_to_linear(float u)
+        private static float srgb_nonlinear_to_linear(float u)
         {
-            return (float)((u <= 0.04045d) ? (u / 12.92d) : Math.Pow((u + 0.055d) / 1.055d, 2.4d));
+            return (float)(u <= 0.04045d ? u / 12.92d : Math.Pow((u + 0.055d) / 1.055d, 2.4d));
         }
 
-        static void vec4_from_rgba_srgb(out Vector4 dst, uint rgba)
+        private static void vec4_from_rgba_srgb(out Vector4 dst, uint rgba)
         {
             dst = new Vector4();
-            dst.X = srgb_nonlinear_to_linear((float)(rgba & 0xFF) / 255.0f);
+            dst.X = srgb_nonlinear_to_linear((rgba & 0xFF) / 255.0f);
             rgba >>= 8;
-            dst.Y = srgb_nonlinear_to_linear((float)(rgba & 0xFF) / 255.0f);
+            dst.Y = srgb_nonlinear_to_linear((rgba & 0xFF) / 255.0f);
             rgba >>= 8;
-            dst.Z = srgb_nonlinear_to_linear((float)(rgba & 0xFF) / 255.0f);
+            dst.Z = srgb_nonlinear_to_linear((rgba & 0xFF) / 255.0f);
             rgba >>= 8;
-            dst.W = (float)(rgba & 0xFF) / 255.0f;
+            dst.W = (rgba & 0xFF) / 255.0f;
         }
 
-        private float oldOpacity = -1, oldContrast = -1, oldBrightness = -1, oldGamma = -1, oldSimilarity = -1, oldSmoothness = -1, oldSpill = -1;
-        private int oldKeyRed = -1, oldKeyGreen = -1, oldKeyBlue = -1;
-        private void SetShaderParameters(DeviceContext deviceContext, ShaderResourceView shaderResourceView, float textureWidth, float textureHeight,
-            float opacity, float contrast, float brightness, float gamma, int key_red, int key_green, int key_blue, float similarity, float smoothness, float spill)
+        private void SetShaderParameters(DeviceContext deviceContext, ShaderResourceView shaderResourceView,
+            float textureWidth, float textureHeight,
+            float opacity, float contrast, float brightness, float gamma, int key_red, int key_green, int key_blue,
+            float similarity, float smoothness, float spill)
         {
             if (opacity != oldOpacity || contrast != oldContrast || brightness != oldBrightness || gamma != oldGamma ||
-                key_red != oldKeyRed || key_green != oldKeyGreen || key_blue != oldKeyBlue || similarity != oldSimilarity || smoothness != oldSmoothness || spill != oldSpill)
+                key_red != oldKeyRed || key_green != oldKeyGreen || key_blue != oldKeyBlue ||
+                similarity != oldSimilarity || smoothness != oldSmoothness || spill != oldSpill)
             {
                 oldOpacity = opacity;
                 oldContrast = contrast;
@@ -183,38 +240,50 @@ float4 PShader(PSInput input) : SV_Target
                 oldSpill = spill;
 
                 if (key_red < 0)
+                {
                     key_red = 0;
+                }
                 else if (key_red > 255)
+                {
                     key_red = 255;
+                }
 
                 if (key_green < 0)
+                {
                     key_green = 0;
+                }
                 else if (key_green > 255)
+                {
                     key_green = 255;
+                }
 
                 if (key_blue < 0)
+                {
                     key_blue = 0;
+                }
                 else if (key_blue > 255)
+                {
                     key_blue = 255;
+                }
 
                 oldKeyRed = key_red;
                 oldKeyGreen = key_green;
                 oldKeyBlue = key_blue;
 
-                uint key_color = ((uint)key_red << 16) | ((uint)key_green << 8) | ((uint)key_blue << 0);
-                vec4_from_rgba_srgb(out Vector4 key_rgb, (uint)(key_color | (uint)0xFF000000));
-                Vector4 cb = new Vector4(-0.100644f, -0.338572f, 0.439216f, 0.501961f);
-                Vector4 cr = new Vector4(0.439216f, -0.398942f, -0.040274f, 0.501961f);
-                deviceContext.MapSubresource(argsBuffer, MapMode.WriteDiscard, SharpDX.Direct3D11.MapFlags.None, out DataStream stream);
-                stream.Write<float>(opacity);
-                stream.Write<float>(contrast);
-                stream.Write<float>(brightness);
-                stream.Write<float>(gamma);
-                stream.Write<Vector2>(new Vector2(Vector4.Dot(key_rgb, cb), Vector4.Dot(key_rgb, cr)));
-                stream.Write<Vector2>(new Vector2(1.0f / textureWidth, 1.0f / textureHeight));
-                stream.Write<float>(similarity);
-                stream.Write<float>(smoothness);
-                stream.Write<float>(spill);
+                var key_color = ((uint)key_red << 16) | ((uint)key_green << 8) | ((uint)key_blue << 0);
+                vec4_from_rgba_srgb(out var key_rgb, key_color | 0xFF000000);
+                var cb = new Vector4(-0.100644f, -0.338572f, 0.439216f, 0.501961f);
+                var cr = new Vector4(0.439216f, -0.398942f, -0.040274f, 0.501961f);
+                deviceContext.MapSubresource(argsBuffer, MapMode.WriteDiscard, MapFlags.None, out var stream);
+                stream.Write(opacity);
+                stream.Write(contrast);
+                stream.Write(brightness);
+                stream.Write(gamma);
+                stream.Write(new Vector2(Vector4.Dot(key_rgb, cb), Vector4.Dot(key_rgb, cr)));
+                stream.Write(new Vector2(1.0f / textureWidth, 1.0f / textureHeight));
+                stream.Write(similarity);
+                stream.Write(smoothness);
+                stream.Write(spill);
                 deviceContext.UnmapSubresource(argsBuffer, 0);
             }
 
@@ -230,34 +299,6 @@ float4 PShader(PSInput input) : SV_Target
             deviceContext.PixelShader.Set(pixelShader);
             deviceContext.PixelShader.SetSampler(0, samplerState);
             deviceContext.Draw(6, 0);
-        }
-
-        public void Dispose()
-        {
-            if (inputLayout != null)
-            {
-                inputLayout.Dispose();
-            }
-            if (inputSignature != null)
-            {
-                inputSignature.Dispose();
-            }
-            if (vertexShader != null)
-            {
-                vertexShader.Dispose();
-            }
-            if (pixelShader != null)
-            {
-                pixelShader.Dispose();
-            }
-            if (samplerState != null)
-            {
-                samplerState.Dispose();
-            }
-            if (argsBuffer != null)
-            {
-                argsBuffer.Dispose();
-            }
         }
     }
 }

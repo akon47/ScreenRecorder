@@ -1,9 +1,8 @@
 #pragma once
 
 
-
-namespace MediaEncoder {
-
+namespace MediaEncoder
+{
 	public ref class VideoFrame : IDisposable
 	{
 	private:
@@ -15,6 +14,7 @@ namespace MediaEncoder {
 			if (m_disposed)
 				throw gcnew ObjectDisposedException("The object was already disposed.");
 		}
+
 	protected:
 		!VideoFrame()
 		{
@@ -25,16 +25,19 @@ namespace MediaEncoder {
 				m_avFrame = nullptr;
 			}
 		}
+
 	public:
 		VideoFrame(VideoFrame^ videoFrame);
 
-		VideoFrame(int width, int height, MediaEncoder::PixelFormat pixelFormat);
-		VideoFrame(System::Windows::Media::Imaging::BitmapSource^ bitmapSource);
+		VideoFrame(int width, int height, PixelFormat pixelFormat);
+		VideoFrame(Windows::Media::Imaging::BitmapSource^ bitmapSource);
+
 		~VideoFrame()
 		{
 			this->!VideoFrame();
 			m_disposed = true;
 		}
+
 		void FillFrame(IntPtr src, int srcStride);
 		void FillFrame(array<IntPtr>^ src, array<int>^ srcStride);
 	public:
@@ -70,7 +73,7 @@ namespace MediaEncoder {
 			array<int>^ get()
 			{
 				CheckIfDisposed();
-				array<int>^ result = gcnew array<int>(8);
+				auto result = gcnew array<int>(8);
 				for (int i = 0; i < 8; i++)
 				{
 					result[i] = m_avFrame->linesize[0];
@@ -84,7 +87,7 @@ namespace MediaEncoder {
 			array<IntPtr>^ get()
 			{
 				CheckIfDisposed();
-				array<IntPtr>^ result = gcnew array<IntPtr>(8);
+				auto result = gcnew array<IntPtr>(8);
 				for (int i = 0; i < 8; i++)
 				{
 					result[i] = IntPtr(m_avFrame->data[i]);
@@ -93,15 +96,13 @@ namespace MediaEncoder {
 			}
 		}
 
-		property MediaEncoder::PixelFormat PixelFormat
+		property PixelFormat PixelFormat
 		{
 			MediaEncoder::PixelFormat get()
 			{
 				CheckIfDisposed();
-				return (MediaEncoder::PixelFormat)m_avFrame->format;
+				return static_cast<MediaEncoder::PixelFormat>(m_avFrame->format);
 			}
 		}
 	};
-
 }
-

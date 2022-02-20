@@ -13,6 +13,8 @@ namespace ScreenRecorder.Command
 {
     public class DelegateCommand : NotifyPropertyBase, ICommand, IShortcut, IConfig
     {
+        private GlobalHotKey globalHotKey;
+
         #region Property backing fields
 
         private readonly object SyncLock = new object();
@@ -21,6 +23,7 @@ namespace ScreenRecorder.Command
         private bool m_IsExecuting;
 
         #region 생성자
+
         public DelegateCommand(Action<object> execute, Func<object, bool> canExecute, KeyGesture keyGesture = null)
         {
             var callback = execute ?? throw new ArgumentNullException(nameof(execute));
@@ -33,7 +36,9 @@ namespace ScreenRecorder.Command
                     var canExecuteAction = m_CanExecute?.Invoke(parameter) ?? true;
 
                     if (canExecuteAction)
+                    {
                         callback(parameter);
+                    }
                 }
                 catch { }
             };
@@ -42,7 +47,9 @@ namespace ScreenRecorder.Command
         }
 
         public DelegateCommand(Action<object> execute)
-            : this(execute, null) { }
+            : this(execute, null)
+        {
+        }
 
         #endregion
 
@@ -58,16 +65,28 @@ namespace ScreenRecorder.Command
 
         #endregion
 
-        private GlobalHotKey globalHotKey;
-
         #region ICommand Members
+
         public bool IsExecuting
         {
-            get { lock (SyncLock) return m_IsExecuting; }
-            private set { lock (SyncLock) m_IsExecuting = value; }
+            get
+            {
+                lock (SyncLock)
+                {
+                    return m_IsExecuting;
+                }
+            }
+            private set
+            {
+                lock (SyncLock)
+                {
+                    m_IsExecuting = value;
+                }
+            }
         }
 
-        private KeyGesture keyGesture = null;
+        private KeyGesture keyGesture;
+
         public KeyGesture KeyGesture
         {
             get => keyGesture;
@@ -75,9 +94,9 @@ namespace ScreenRecorder.Command
             {
                 if (SetProperty(ref keyGesture, value))
                 {
-                    base.NotifyPropertyChanged(nameof(KeyGestureString), nameof(Key), nameof(Modifiers));
+                    NotifyPropertyChanged(nameof(KeyGestureString), nameof(Key), nameof(Modifiers));
 
-                    if(keyGesture != null)
+                    if (keyGesture != null)
                     {
                         globalHotKey?.Dispose();
                         globalHotKey = new GlobalHotKey(this);
@@ -98,15 +117,13 @@ namespace ScreenRecorder.Command
                 if (keyGesture != null)
                 {
                     return string.Format("{0}{1}{2}{3}",
-                                keyGesture.Modifiers.HasFlag(ModifierKeys.Control) ? "Ctrl+" : string.Empty,
-                                keyGesture.Modifiers.HasFlag(ModifierKeys.Shift) ? "Shift+" : string.Empty,
-                                keyGesture.Modifiers.HasFlag(ModifierKeys.Alt) ? "Alt+" : string.Empty,
-                                KeyToString(keyGesture.Key));
+                        keyGesture.Modifiers.HasFlag(ModifierKeys.Control) ? "Ctrl+" : string.Empty,
+                        keyGesture.Modifiers.HasFlag(ModifierKeys.Shift) ? "Shift+" : string.Empty,
+                        keyGesture.Modifiers.HasFlag(ModifierKeys.Alt) ? "Alt+" : string.Empty,
+                        KeyToString(keyGesture.Key));
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             }
         }
 
@@ -118,10 +135,8 @@ namespace ScreenRecorder.Command
                 {
                     return keyGesture.Key;
                 }
-                else
-                {
-                    return Key.None;
-                }
+
+                return Key.None;
             }
         }
 
@@ -133,19 +148,16 @@ namespace ScreenRecorder.Command
                 {
                     return keyGesture.Modifiers;
                 }
-                else
-                {
-                    return ModifierKeys.None;
-                }
+
+                return ModifierKeys.None;
             }
         }
 
-        private KeyGesture defaultKeyGesture = null;
-        public KeyGesture DefaultKeyGesture => defaultKeyGesture;
+        public KeyGesture DefaultKeyGesture { get; } = null;
 
         private string KeyToString(Key key)
         {
-            string ret = key.ToString();
+            var ret = key.ToString();
 
             switch (key)
             {
@@ -260,7 +272,10 @@ namespace ScreenRecorder.Command
         [DebuggerStepThrough]
         public bool CanExecute(object parameter)
         {
-            if (IsExecuting) return false;
+            if (IsExecuting)
+            {
+                return false;
+            }
 
             try
             {
@@ -272,21 +287,34 @@ namespace ScreenRecorder.Command
             }
         }
 
-        public bool CanExecute() => CanExecute(null);
+        public bool CanExecute()
+        {
+            return CanExecute(null);
+        }
 
-        public void Execute(object parameter) => ExecuteAsync(parameter);
+        public void Execute(object parameter)
+        {
+            ExecuteAsync(parameter);
+        }
 
-        public void Execute() => ExecuteAsync(null);
+        public void Execute()
+        {
+            ExecuteAsync(null);
+        }
 
         public bool TryExecute(object parameter = null)
         {
             if (CanExecute(parameter))
             {
                 if (IsExecuting)
+                {
                     return false;
+                }
+
                 ExecuteAsync(parameter);
                 return true;
             }
+
             return false;
         }
 
@@ -295,16 +323,19 @@ namespace ScreenRecorder.Command
             return Task.Run(async () =>
             {
                 if (IsExecuting)
+                {
                     return;
+                }
 
                 try
                 {
                     IsExecuting = true;
-                    await Application.Current.Dispatcher.BeginInvoke(ExecuteAction, DispatcherPriority.Normal, parameter);
+                    await Application.Current.Dispatcher.BeginInvoke(ExecuteAction, DispatcherPriority.Normal,
+                        parameter);
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Could not execute command. {ex.Message}");
+                    Debug.WriteLine($"Could not execute command. {ex.Message}");
                     throw;
                 }
                 finally
@@ -315,11 +346,14 @@ namespace ScreenRecorder.Command
             }).ConfigureAwait(true);
         }
 
-        public ConfiguredTaskAwaitable ExecuteAsync() => ExecuteAsync(null);
+        public ConfiguredTaskAwaitable ExecuteAsync()
+        {
+            return ExecuteAsync(null);
+        }
 
         public virtual Dictionary<string, string> SaveConfig()
         {
-            Dictionary<string, string> dicConfig = new Dictionary<string, string>();
+            var dicConfig = new Dictionary<string, string>();
             if (KeyGesture != null)
             {
                 dicConfig.Add("Key", Enum.GetName(typeof(Key), Key));
@@ -327,8 +361,8 @@ namespace ScreenRecorder.Command
                 dicConfig.Add("Alt", Modifiers.HasFlag(ModifierKeys.Alt).ToString());
                 dicConfig.Add("Shift", Modifiers.HasFlag(ModifierKeys.Shift).ToString());
                 dicConfig.Add("Windows", Modifiers.HasFlag(ModifierKeys.Windows).ToString());
-
             }
+
             return dicConfig;
         }
 
@@ -338,15 +372,16 @@ namespace ScreenRecorder.Command
             {
                 if (config.ContainsKey("Key"))
                 {
-                    Key key = (Key)Enum.Parse(typeof(Key), Config.Config.LoadConfigItem(config, "Key", Enum.GetName(typeof(Key), Key.None)));
+                    var key = (Key)Enum.Parse(typeof(Key),
+                        Config.Config.LoadConfigItem(config, "Key", Enum.GetName(typeof(Key), Key.None)));
                     if (key != Key.None)
                     {
-                        bool control = bool.Parse(Config.Config.LoadConfigItem(config, "Control", "false"));
-                        bool alt = bool.Parse(Config.Config.LoadConfigItem(config, "Alt", "false"));
-                        bool shift = bool.Parse(Config.Config.LoadConfigItem(config, "Shift", "false"));
-                        bool windows = bool.Parse(Config.Config.LoadConfigItem(config, "Windows", "false"));
+                        var control = bool.Parse(Config.Config.LoadConfigItem(config, "Control", "false"));
+                        var alt = bool.Parse(Config.Config.LoadConfigItem(config, "Alt", "false"));
+                        var shift = bool.Parse(Config.Config.LoadConfigItem(config, "Shift", "false"));
+                        var windows = bool.Parse(Config.Config.LoadConfigItem(config, "Windows", "false"));
 
-                        ModifierKeys modifiers =
+                        var modifiers =
                             (control ? ModifierKeys.Control : ModifierKeys.None) |
                             (alt ? ModifierKeys.Alt : ModifierKeys.None) |
                             (shift ? ModifierKeys.Shift : ModifierKeys.None) |
