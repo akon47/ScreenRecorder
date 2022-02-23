@@ -21,6 +21,8 @@ namespace ScreenRecorder.Encoder
         private AudioCaptureSource audioCaptureSource;
         private Utils.ThreadExecutionState? oldSleepState;
 
+        public bool StopByAutomatic { get; set; }
+
         public ScreenEncoder()
         {
             this.EncoderStopped += ScreenEncoder_EncoderStopped;
@@ -31,6 +33,8 @@ namespace ScreenRecorder.Encoder
         {
             if (base.IsRunning)
                 return;
+
+            StopByAutomatic = AppConfig.Instance.CaptureTimeControlled;
 
             // to be on the safe side
             Debug.Assert(screenVideoSource == null);
@@ -94,9 +98,10 @@ namespace ScreenRecorder.Encoder
                 if (oldSleepState.HasValue)
                 {
                     Utils.SetThreadExecutionState(oldSleepState.Value);
-                    oldSleepState = null; ;
+                    oldSleepState = null;
                 }
-                if (AppConfig.Instance.CaptureTimeControlled && AppConfig.Instance.ExitProgram)
+                // prevent closing of program for manual stop of time controlled capture
+                if (AppConfig.Instance.CaptureTimeControlled && StopByAutomatic && AppConfig.Instance.ExitProgram)
                 {
                     Utils.ExitProgram(AppConfig.Instance.ShutDown);
                 }

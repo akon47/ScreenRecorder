@@ -360,6 +360,8 @@ namespace ScreenRecorder
             {
                 if (AppManager.Instance.ScreenEncoder.Status == Encoder.EncoderStatus.Wait)
                 {
+                    // prevent closing of program for manual stop of time controlled capture
+                    AppManager.Instance.ScreenEncoder.StopByAutomatic = false;
                     AppManager.Instance.ScreenEncoder.Stop();
                 }
                 else if (AppManager.Instance.ScreenEncoder.Status == Encoder.EncoderStatus.Start)
@@ -373,6 +375,8 @@ namespace ScreenRecorder
             {
                 if (AppManager.Instance.ScreenEncoder.Status != Encoder.EncoderStatus.Stop)
                 {
+                    // prevent closing of program for manual stop of time controlled capture
+                    AppManager.Instance.ScreenEncoder.StopByAutomatic = false;
                     AppManager.Instance.ScreenEncoder.Stop();
                 }
             }));
