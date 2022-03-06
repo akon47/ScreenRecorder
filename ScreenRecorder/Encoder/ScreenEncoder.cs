@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
+using System.Diagnostics;
 using MediaEncoder;
 using ScreenRecorder.AudioSource;
 using ScreenRecorder.DirectX;
@@ -18,11 +19,33 @@ namespace ScreenRecorder.Encoder
         private AudioMixer audioMixer;
         private LoopbackAudioSource loopbackAudioSource;
         private AudioCaptureSource audioCaptureSource;
+        private Utils.ThreadExecutionState? oldSleepState;
 
-        public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, Rect region, bool drawCursor, bool recordMicrophone)
+        public bool StopByAutomatic { get; set; }
+
+        public ScreenEncoder()
+        {
+            this.EncoderStopped += ScreenEncoder_EncoderStopped;
+        }
+
+        public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, 
+            Rect region, bool drawCursor, bool recordMicrophone, DateTime? captureStart, DateTime? captureEnd)
         {
             if (base.IsRunning)
                 return;
+
+            StopByAutomatic = AppConfig.Instance.CaptureTimeControlled;
+
+            // to be on the safe side
+            Debug.Assert(screenVideoSource == null);
+            Debug.Assert(loopbackAudioSource == null);
+            Debug.Assert(audioCaptureSource == null);
+            Debug.Assert(audioMixer == null);
+            ScreenEncoder_EncoderStopped(this, null);
+
+            // prevent power saving during capture
+            if (!oldSleepState.HasValue)
+                oldSleepState = Utils.DisableSleep();
 
             MonitorInfo monitorInfo = MonitorInfo.GetActiveMonitorInfos()?.FirstOrDefault(x => x.DeviceName.Equals(deviceName));
             if (monitorInfo == null)
@@ -46,28 +69,17 @@ namespace ScreenRecorder.Encoder
                 Rect validRegion = Rect.Intersect(region, new Rect(0, 0, monitorInfo.Width, monitorInfo.Height));
                 base.Start(format, url,
                     screenVideoSource, videoCodec, videoBitrate, new VideoSize((int)validRegion.Width, (int)validRegion.Height),
-                    audioSource, audioCodec, audioBitrate);
+                    audioSource, audioCodec, audioBitrate, captureStart, captureEnd);
             }
             catch (Exception ex)
             {
                 base.Stop();
-
-                screenVideoSource?.Dispose();
-                screenVideoSource = null;
-
-                audioMixer?.Dispose();
-                audioMixer = null;
-
-                loopbackAudioSource?.Dispose();
-                loopbackAudioSource = null;
-
-                audioCaptureSource?.Dispose();
-                audioCaptureSource = null;
+                ScreenEncoder_EncoderStopped(this, null);
                 throw ex;
             }
         }
 
-        protected override void OnEncoderStopped(EncoderStoppedEventArgs args)
+        private void ScreenEncoder_EncoderStopped(object sender, EncoderStoppedEventArgs eventArgs)
         {
             screenVideoSource?.Dispose();
             screenVideoSource = null;
@@ -80,6 +92,34 @@ namespace ScreenRecorder.Encoder
 
             audioCaptureSource?.Dispose();
             audioCaptureSource = null;
+
+            if (eventArgs != null)
+            {
+                if (oldSleepState.HasValue)
+                {
+                    Utils.SetThreadExecutionState(oldSleepState.Value);
+                    oldSleepState = null;
+                }
+                // prevent closing of program for manual stop of time controlled capture
+                if (AppConfig.Instance.CaptureTimeControlled && StopByAutomatic && AppConfig.Instance.ExitProgram)
+                {
+                    Utils.ExitProgram(AppConfig.Instance.ShutDown);
+                }
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                base.Dispose(disposing);
+                this.EncoderStopped -= ScreenEncoder_EncoderStopped;
+                if (oldSleepState.HasValue)
+                {
+                    Utils.SetThreadExecutionState(oldSleepState.Value);
+                    oldSleepState = null;
+                }
+            }
         }
     }
 }

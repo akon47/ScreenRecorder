@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -98,12 +99,27 @@ namespace ScreenRecorder
             private set => SetProperty(ref notSupportedHwHevc, value);
         }
 
+        private string screenCaptureMonitorDescription;
+        public string ScreenCaptureMonitorDescription
+        {
+            get => screenCaptureMonitorDescription;
+            set => SetProperty(ref screenCaptureMonitorDescription, value);
+        }
+
+        private bool recordSettingChecked = false;
+        public bool RecordSettingChecked
+        {
+            get => recordSettingChecked;
+            set => SetProperty(ref recordSettingChecked, value);
+        }
+
         public void Initialize()
         {
             if (IsInitialized)
                 return;
 
             ScreenEncoder = new ScreenEncoder();
+            ScreenEncoder.PropertyChanged += ScreenEncoder_PropertyChanged;
             EncoderFormats = new EncoderFormat[]
             {
                 // recording
@@ -138,6 +154,11 @@ namespace ScreenRecorder
             IsInitialized = true;
         }
 
+        private void ScreenEncoder_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            NotifyPropertyChanged(new[] { e.PropertyName });
+        }
+
         private async void CheckHardwareCodec()
         {
             await Task.Run(() =>
@@ -150,7 +171,13 @@ namespace ScreenRecorder
 
         private void CompositionTarget_Rendering(object sender, EventArgs e)
         {
-            EncodeTime = Utils.VideoFramesCountToStringTime(screenEncoder.VideoFramesCount);
+            if (screenEncoder.TimeBeforeCapture != null)
+            {
+                var time = screenEncoder.TimeBeforeCapture.Value;
+                EncodeTime = $"{time.Hours:00}:{time.Minutes:00}:{time.Seconds:00} ...";
+            }
+            else
+                EncodeTime = Utils.VideoFramesCountToStringTime(screenEncoder.VideoFramesCount);
         }
 
         public void Dispose()

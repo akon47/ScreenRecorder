@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
+using System.Diagnostics;
 
 namespace ScreenRecorder
 {
@@ -11,6 +12,28 @@ namespace ScreenRecorder
     public partial class App : Application
     {
         public volatile static Mutex Mutex = null;
+        public System.Windows.Forms.NotifyIcon NotifyIcon { get; private set; }
+
+        public App()
+        {
+            NotifyIcon = new System.Windows.Forms.NotifyIcon();
+            NotifyIcon.Visible = false;
+            NotifyIcon.Click += OnNotifyIconClick;
+            NotifyIcon.Text = AppConstants.AppName;
+            var iconUri = new Uri("/icon.ico", UriKind.Relative);
+            using (var iconStream = Application.GetResourceStream(iconUri).Stream)
+            {
+                NotifyIcon.Icon = new System.Drawing.Icon(iconStream);
+            }
+        }
+
+        void OnNotifyIconClick(object sender, EventArgs e)
+        {
+            // restore program from system tray to desktop
+            MainWindow.Visibility = Visibility.Visible;
+            MainWindow.WindowState = WindowState.Normal;
+            NotifyIcon.Visible = false;
+        }
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -30,6 +53,7 @@ namespace ScreenRecorder
 
                     VideoClockEvent.Start();
                     AppManager.Instance.Initialize();
+                    AppManager.Instance.PropertyChanged += Instance_PropertyChanged;
                     AppConfig.Instance.WhenChanged(() =>
                     {
                         VideoClockEvent.Framerate = AppConfig.Instance.AdvancedSettings ? 
@@ -53,12 +77,38 @@ namespace ScreenRecorder
             }
         }
 
+        private void Instance_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals("IsStarted")
+                || e.PropertyName.Equals("IsStartedWithEncode")
+                || e.PropertyName.Equals("IsPaused")
+                || e.PropertyName.Equals("IsStopped")
+                )
+            {
+                Debug.WriteLine($"{e.PropertyName}: isStart: {AppManager.Instance.ScreenEncoder.IsStarted}, isEncode:{AppManager.Instance.ScreenEncoder.IsStartedWithEncode}");
+                NotifyIcon.Text = AppConstants.AppName;
+                if (AppManager.Instance.ScreenEncoder.IsStarted && !AppManager.Instance.ScreenEncoder.IsStartedWithEncode)
+                    NotifyIcon.Text += " waiting for start ...";
+                else if (AppManager.Instance.ScreenEncoder.IsStarted && AppManager.Instance.ScreenEncoder.IsStartedWithEncode)
+                    NotifyIcon.Text += " recording ...";
+                else if (AppManager.Instance.ScreenEncoder.IsPaused)
+                    NotifyIcon.Text += " paused ...";
+                else if (AppManager.Instance.ScreenEncoder.IsStopped)
+                    NotifyIcon.Text += " stopped ...";
+            }
+        }
+
         protected override void OnExit(ExitEventArgs e)
         {
             AppCommands.Instance.Dispose();
             AppConfig.Instance.Dispose();
             AppManager.Instance.Dispose();
             VideoClockEvent.Stop();
+            
+            // maybe not neccessary
+            NotifyIcon.Click -= OnNotifyIconClick;
+            NotifyIcon.Visible = false;
+            NotifyIcon.Dispose();
 
             base.OnExit(e);
         }

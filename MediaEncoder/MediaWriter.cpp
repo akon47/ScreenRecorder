@@ -180,7 +180,7 @@ namespace MediaEncoder
 			                    nullptr);
 		}
 		else
-			format = nullptr;
+			m_format = nullptr;
 
 		AVFormatContext* formatContext = avformat_alloc_context();
 		if (avformat_alloc_output_context2(&formatContext, nullptr, nativeFormat, nativeUrl) == 0)
@@ -294,8 +294,14 @@ namespace MediaEncoder
 			videoCodecContext->time_base = av_make_q(m_videoDenominator, m_videoNumerator);
 			videoCodecContext->framerate = av_make_q(m_videoNumerator, m_videoDenominator);
 
+			// reduce maximum gop size to 1 second for smoother handling in video editors and players
+			videoCodecContext->gop_size = min(videoCodecContext->gop_size, av_q2d(videoCodecContext->framerate));
+
 			videoCodecContext->bit_rate = m_videoBitrate > 0 ? m_videoBitrate : 10000000;
-			if (videoCodec->id == AV_CODEC_ID_H264 || videoCodec->id == AVCodecID::AV_CODEC_ID_H265)
+			// reduce bitrate tolerance to 50% of average
+			videoCodecContext->bit_rate_tolerance = min(videoCodecContext->bit_rate_tolerance, videoCodecContext->bit_rate / 2);
+
+			if (videoCodec->id == AVCodecID::AV_CODEC_ID_H264 || videoCodec->id == AVCodecID::AV_CODEC_ID_H265)
 			{
 				if (strncmp(videoCodec->name, "libx", 4) == 0)
 				{
@@ -467,11 +473,12 @@ namespace MediaEncoder
 
 		AVFormatContext* formatContext = m_data->FormatContext;
 
-		if (m_data->VideoCodecContext != nullptr)
+		if (m_data->VideoCodecContext != nullptr && m_data->VideoFrame != nullptr)
 			write_frame(formatContext, m_data->VideoCodecContext, m_data->VideoStream, nullptr);
-		if (m_data->AudioCodecContext != nullptr)
+		if (m_data->AudioCodecContext != nullptr && m_data->AudioFrame != nullptr)
 			write_frame(formatContext, m_data->AudioCodecContext, m_data->AudioStream, nullptr);
-		av_write_trailer(formatContext);
+		if (m_data->AudioFrame != nullptr || m_data->VideoFrame != nullptr)
+			av_write_trailer(formatContext);
 		avformat_close_input(&formatContext);
 
 		if (formatContext && !(formatContext->oformat->flags & AVFMT_NOFILE))

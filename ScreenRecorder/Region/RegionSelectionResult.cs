@@ -11,11 +11,13 @@ namespace ScreenRecorder.Region
     {
         public string DeviceName { get; }
         public Rect Region { get; }
+        public IntPtr Hwnd { get; }
 
-        public RegionSelectionResult(string deviceName, Rect region)
+        public RegionSelectionResult(string deviceName, Rect region, IntPtr hwnd)
         {
             DeviceName = deviceName;
             Region = region;
+            Hwnd = hwnd;
         }
     }
 }

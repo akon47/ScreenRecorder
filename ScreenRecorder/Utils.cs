@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Threading;
 
 namespace ScreenRecorder
 {
@@ -143,6 +145,73 @@ namespace ScreenRecorder
             }
 
             return new Size(scaleX, scaleY);
+        }
+
+        [Flags]
+        public enum ThreadExecutionState : uint
+        {
+            /// <summary>
+            /// Enables away mode. This value must be specified with <see cref="ES_CONTINUOUS"/>.
+            /// Away mode should be used only by media-recording and media-distribution applications that must perform critical background 
+            /// processing on desktop computers while the computer appears to be sleeping.
+            /// </summary>
+            ES_AWAYMODE_REQUIRED = 0x00000040,
+
+            /// <summary>
+            /// Informs the system that the state being set should remain in effect until the next call that uses <see cref="ES_CONTINUOUS"/> 
+            /// and one of the other state flags is cleared.
+            /// </summary>
+            ES_CONTINUOUS = 0x80000000,
+
+            /// <summary>
+            /// Forces the display to be on by resetting the display idle timer.
+            /// </summary>
+            ES_DISPLAY_REQUIRED = 0x00000002,
+
+            /// <summary>
+            /// Forces the system to be in the working state by resetting the system idle timer.
+            /// </summary>
+            ES_SYSTEM_REQUIRED = 0x00000001,
+
+            /// <summary>
+            /// This value is not supported. If <see cref="ES_USER_PRESENT"/> is combined with other values, the call will fail and none of the 
+            /// specified states will be set.
+            /// </summary>
+            ES_USER_PRESENT = 0x00000004
+        }
+
+        [DllImport("kernel32.dll", EntryPoint = "SetThreadExecutionState", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern ThreadExecutionState SetThreadExecutionStateInternal(ThreadExecutionState esFlags);
+
+        public static ThreadExecutionState SetThreadExecutionState(ThreadExecutionState state)
+        {
+            return SetThreadExecutionStateInternal(state);
+        }
+
+        public static ThreadExecutionState DisableSleep()
+        {
+            return SetThreadExecutionStateInternal(ThreadExecutionState.ES_CONTINUOUS | ThreadExecutionState.ES_SYSTEM_REQUIRED | ThreadExecutionState.ES_DISPLAY_REQUIRED);
+        }
+
+        public static void ExitProgram(bool shutDown)
+        {
+            ThreadStart ts = delegate ()
+            {
+                Application.Current.Dispatcher.BeginInvoke((Action)delegate ()
+                {
+                    Application.Current.Shutdown();
+                });
+            };
+            Thread t = new Thread(ts);
+            t.Start();
+            if (shutDown)
+            {
+                // https://www.codeproject.com/tips/480049/shut-down-restart-log-off-lock-hibernate-or-sleep
+                // starts the shutdown application 
+                // the argument /s is to shut down the computer
+                // the argument /t 0 is to tell the process that the specified operation needs to be completed after 0 seconds
+                Process.Start("shutdown", "/s /f /t 120");
+            }
         }
     }
 }

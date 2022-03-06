@@ -12,17 +12,15 @@ namespace ScreenRecorder.DirectX
 {
     public class MonitorInfo : ICaptureTarget
     {
-        #region Satic Methods
+        #region Static Methods
         static public MonitorInfo GetPrimaryMonitorInfo()
         {
-            foreach (MonitorInfo monitorInfo in GetActiveMonitorInfos())
-            {
-                if (monitorInfo.IsPrimary)
-                {
-                    return monitorInfo;
-                }
-            }
-            return null;
+            return GetActiveMonitorInfos().FirstOrDefault(x => x.IsPrimary);
+        }
+
+        static public MonitorInfo GetMonitorInfo(string deviceName)
+        {
+            return GetActiveMonitorInfos().FirstOrDefault(x => x.DeviceName.Equals(deviceName));
         }
 
         static public MonitorInfo[] GetActiveMonitorInfos()

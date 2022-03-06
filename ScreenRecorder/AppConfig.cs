@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
+using System.Globalization;
 using MediaEncoder;
 using ScreenRecorder.Config;
 using ScreenRecorder.Region;
+using ScreenRecorder.DirectX;
 
 namespace ScreenRecorder
 {
@@ -64,6 +67,7 @@ namespace ScreenRecorder
                 Dictionary<string, string> config = new Dictionary<string, string>();
                 config.Add(nameof(ScreenCaptureMonitor), ScreenCaptureMonitor);
                 config.Add(nameof(ScreenCaptureCursorVisible), ScreenCaptureCursorVisible.ToString());
+                config.Add(nameof(ScreenCaptureRect), ScreenCaptureRect?.ToString(CultureInfo.InvariantCulture)??"");
 
                 config.Add(nameof(AdvancedSettings), AdvancedSettings.ToString());
 
@@ -80,8 +84,18 @@ namespace ScreenRecorder
 
                 config.Add(nameof(RecordMicrophone), RecordMicrophone.ToString());
 
-                config.Add(nameof(WindowLeft), WindowLeft.ToString());
-                config.Add(nameof(WindowTop), WindowTop.ToString());
+                config.Add(nameof(WindowLeft), WindowLeft.ToString(CultureInfo.InvariantCulture));
+                config.Add(nameof(WindowTop), WindowTop.ToString(CultureInfo.InvariantCulture));
+
+                config.Add(nameof(CaptureTimeControlled), CaptureTimeControlled.ToString());
+                config.Add(nameof(CaptureStartTime), CaptureStartTime.ToString(CultureInfo.InvariantCulture));
+                config.Add(nameof(CaptureEndTime), CaptureEndTime.ToString(CultureInfo.InvariantCulture));
+                config.Add(nameof(ExitProgram), ExitProgram.ToString());
+                config.Add(nameof(ShutDown), ShutDown.ToString());
+
+                config.Add(nameof(ForceSourceSize), ForceSourceSize.ToString());
+                config.Add(nameof(ForcedSourceHeight), ForcedSourceHeight.ToString());
+                config.Add(nameof(ForcedSourceWidth), ForcedSourceWidth.ToString());
 
                 Config.Config.SaveToFile(filePath, config);
             }
@@ -91,32 +105,49 @@ namespace ScreenRecorder
         {
             lock (this)
             {
-                Dictionary<string, string> config = Config.Config.LoadFromFile(filePath, true);
+                SetDefault();
 
+                Dictionary<string, string> config = Config.Config.LoadFromFile(filePath, true);
                 if (config != null)
                 {
-                    ScreenCaptureMonitor = Config.Config.GetString(config, nameof(ScreenCaptureMonitor), CaptureTarget.PrimaryCaptureTargetDeviceName);
-                    ScreenCaptureCursorVisible = Config.Config.GetBool(config, nameof(ScreenCaptureCursorVisible), true);
+                    ScreenCaptureMonitor = Config.Config.GetString(config, nameof(ScreenCaptureMonitor), ScreenCaptureMonitor);
+                    ScreenCaptureCursorVisible = Config.Config.GetBool(config, nameof(ScreenCaptureCursorVisible), ScreenCaptureCursorVisible);
+                    ScreenCaptureRect = Config.Config.GetRect(config, nameof(ScreenCaptureRect), ScreenCaptureRect);
+                    AppManager.Instance.ScreenCaptureMonitorDescription = MonitorInfo.GetMonitorInfo(ScreenCaptureMonitor)?.Description ?? "";
 
-                    AdvancedSettings = Config.Config.GetBool(config, nameof(AdvancedSettings), false);
+                    AdvancedSettings = Config.Config.GetBool(config, nameof(AdvancedSettings), AdvancedSettings);
 
-                    SelectedRecordFormat = Config.Config.GetString(config, nameof(SelectedRecordFormat), "mp4");
-                    SelectedRecordVideoCodec = Config.Config.GetEnum<VideoCodec>(config, nameof(SelectedRecordVideoCodec), VideoCodec.H264);
-                    SelectedRecordAudioCodec = Config.Config.GetEnum<AudioCodec>(config, nameof(SelectedRecordAudioCodec), AudioCodec.Aac);
-                    SelectedRecordVideoBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordVideoBitrate), 5000000);
-                    SelectedRecordAudioBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordAudioBitrate), 160000);
-                    SelectedRecordFrameRate = Config.Config.GetInt32(config, nameof(SelectedRecordFrameRate), 60);
-                    RecordDirectory = Config.Config.GetString(config, nameof(RecordDirectory), Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
-                    RegionSelectionMode = Config.Config.GetEnum<RegionSelectionMode>(config, nameof(RegionSelectionMode), RegionSelectionMode.UserRegion);
+                    SelectedRecordFormat = Config.Config.GetString(config, nameof(SelectedRecordFormat), SelectedRecordFormat);
+                    SelectedRecordVideoCodec = Config.Config.GetEnum<VideoCodec>(config, nameof(SelectedRecordVideoCodec), SelectedRecordVideoCodec);
+                    SelectedRecordAudioCodec = Config.Config.GetEnum<AudioCodec>(config, nameof(SelectedRecordAudioCodec), SelectedRecordAudioCodec);
+                    SelectedRecordVideoBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordVideoBitrate), SelectedRecordVideoBitrate);
+                    SelectedRecordAudioBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordAudioBitrate), SelectedRecordAudioBitrate);
+                    SelectedRecordFrameRate = Config.Config.GetInt32(config, nameof(SelectedRecordFrameRate), SelectedRecordFrameRate);
+                    RecordDirectory = Config.Config.GetString(config, nameof(RecordDirectory), RecordDirectory);
+                    RegionSelectionMode = Config.Config.GetEnum<RegionSelectionMode>(config, nameof(RegionSelectionMode), RegionSelectionMode);
 
-                    RecordMicrophone = Config.Config.GetBool(config, nameof(RecordMicrophone), false);
+                    RecordMicrophone = Config.Config.GetBool(config, nameof(RecordMicrophone), RecordMicrophone);
 
-                    WindowLeft = Config.Config.GetDouble(config, nameof(WindowLeft), -1.0d);
-                    WindowTop = Config.Config.GetDouble(config, nameof(WindowTop), -1.0d);
-                }
-                else
-                {
-                    SetDefault();
+                    WindowLeft = Config.Config.GetDouble(config, nameof(WindowLeft), WindowLeft);
+                    WindowTop = Config.Config.GetDouble(config, nameof(WindowTop), WindowTop);
+
+                    CaptureTimeControlled = Config.Config.GetBool(config, nameof(CaptureTimeControlled), CaptureTimeControlled);
+                    var now = DateTime.Now;
+                    now -= TimeSpan.FromMilliseconds(now.Second * 1000 + now.Millisecond);
+                    CaptureStartTime = Config.Config.GetDateTime(config, nameof(CaptureStartTime), now);
+                    CaptureStartTime -= TimeSpan.FromMilliseconds(CaptureStartTime.Second * 1000 + CaptureStartTime.Millisecond);
+                    if (CaptureStartTime < now)
+                        CaptureStartTime = now;
+                    CaptureEndTime = Config.Config.GetDateTime(config, nameof(CaptureEndTime), now + TimeSpan.FromMinutes(10));
+                    CaptureEndTime -= TimeSpan.FromMilliseconds(CaptureEndTime.Second * 1000 + CaptureEndTime.Millisecond);
+                    if (CaptureEndTime <= CaptureStartTime)
+                        CaptureEndTime = CaptureStartTime + TimeSpan.FromMinutes(10);
+                    ExitProgram = Config.Config.GetBool(config, nameof(ExitProgram), ExitProgram);
+                    ShutDown = Config.Config.GetBool(config, nameof(ShutDown), ShutDown);
+
+                    ForceSourceSize = Config.Config.GetBool(config, nameof(ForceSourceSize), ForceSourceSize);
+                    ForcedSourceWidth = Config.Config.GetInt32(config, nameof(ForcedSourceWidth), ForcedSourceWidth);
+                    ForcedSourceHeight = Config.Config.GetInt32(config, nameof(ForcedSourceHeight), ForcedSourceHeight);
                 }
             }
         }
@@ -126,7 +157,12 @@ namespace ScreenRecorder
             WindowLeft = -1.0d;
             WindowTop = -1.0d;
 
-            ScreenCaptureMonitor = CaptureTarget.PrimaryCaptureTargetDeviceName;
+            // default is full primary monitor
+            ScreenCaptureMonitor = MonitorInfo.GetPrimaryMonitorInfo()?.DeviceName;
+            var monitorInfo = MonitorInfo.GetMonitorInfo(ScreenCaptureMonitor);
+            ScreenCaptureRect = monitorInfo == null ? (Rect?)null : new Rect(monitorInfo.Left, monitorInfo.Top, monitorInfo.Width, monitorInfo.Height);
+            AppManager.Instance.ScreenCaptureMonitorDescription = monitorInfo?.Description ?? "";
+
             ScreenCaptureCursorVisible = true;
 
             AdvancedSettings = false;
@@ -141,6 +177,15 @@ namespace ScreenRecorder
             RegionSelectionMode = RegionSelectionMode.UserRegion;
 
             RecordMicrophone = false;
+
+            ForceSourceSize = false;
+            ForcedSourceWidth = 1280;   // HDREADY
+            ForcedSourceHeight = 720;   // HDREADY
+
+            CaptureTimeControlled = false;
+            CaptureStartTime = DateTime.Now;
+            CaptureStartTime -= TimeSpan.FromMilliseconds(CaptureStartTime.Second * 1000 + CaptureStartTime.Millisecond);
+            CaptureEndTime = CaptureStartTime + TimeSpan.FromMinutes(10);
         }
         #endregion
 
@@ -260,6 +305,56 @@ namespace ScreenRecorder
             get => screenCaptureCursorVisible;
             set => SetProperty(ref screenCaptureCursorVisible, value);
         }
+
+        public Rect? ScreenCaptureRect
+        {
+            get => new Rect(ScreenCaptureRectLeft, ScreenCaptureRectTop, ScreenCaptureRectWidth, screenCaptureRectHeight);
+            set
+            {
+                if (value.HasValue)
+                {
+                    ScreenCaptureRectTop = value.Value.Top;
+                    ScreenCaptureRectLeft = value.Value.Left;
+                    ScreenCaptureRectWidth = value.Value.Width;
+                    ScreenCaptureRectHeight = value.Value.Height;
+                }
+                else
+                {
+                    ScreenCaptureRectTop = 0;
+                    ScreenCaptureRectLeft = 0;
+                    ScreenCaptureRectWidth = 0;
+                    ScreenCaptureRectHeight = 0;
+                }
+            }
+        }
+
+        private double screenCaptureRectLeft;
+        public double ScreenCaptureRectLeft
+        {
+            get => Math.Max(0, screenCaptureRectLeft);
+            set => SetProperty(ref screenCaptureRectLeft, value);
+        }
+
+        private double screenCaptureRectTop;
+        public double ScreenCaptureRectTop
+        {
+            get => Math.Max(0, screenCaptureRectTop);
+            set => SetProperty(ref screenCaptureRectTop, value);
+        }
+
+        private double screenCaptureRectWidth;
+        public double ScreenCaptureRectWidth
+        {
+            get => Math.Max(0, screenCaptureRectWidth);
+            set => SetProperty(ref screenCaptureRectWidth, value);
+        }
+
+        private double screenCaptureRectHeight;
+        public double ScreenCaptureRectHeight
+        {
+            get => Math.Max(0, screenCaptureRectHeight);
+            set => SetProperty(ref screenCaptureRectHeight, value);
+        }
         #endregion
 
         #region Audio
@@ -269,6 +364,78 @@ namespace ScreenRecorder
             get => recordMicrophone;
             set => SetProperty(ref recordMicrophone, value);
         }
+        #endregion
+
+        #region Force resize of source window
+
+        private bool forceSourceSize;
+        public bool ForceSourceSize
+        {
+            get => forceSourceSize;
+            set => SetProperty(ref forceSourceSize, value);
+        }
+
+        private int forcedSourceWidth;
+        public int ForcedSourceWidth
+        {
+            get => forcedSourceWidth;
+            set => SetProperty(ref forcedSourceWidth, value);
+        }
+
+        private int forcedSourceHeight;
+        public int ForcedSourceHeight
+        {
+            get => forcedSourceHeight;
+            set => SetProperty(ref forcedSourceHeight, value);
+        }
+
+        #endregion
+
+        #region Time controlled capture
+
+        private bool captureTimeControlled;
+        public bool CaptureTimeControlled
+        {
+            get => captureTimeControlled;
+            set => SetProperty(ref captureTimeControlled, value);
+        }
+
+        private DateTime captureStartTime;
+        public DateTime CaptureStartTime
+        {
+            get => captureStartTime;
+            set => SetProperty(ref captureStartTime, value);
+        }
+
+        private DateTime captureEndTime;
+        public DateTime CaptureEndTime
+        {
+            get => captureEndTime;
+            set => SetProperty(ref captureEndTime, value);
+        }
+
+        private bool exitProgram;
+        public bool ExitProgram
+        {
+            get => exitProgram;
+            set
+            {
+                if (SetProperty(ref exitProgram, value) && !value)
+                    ShutDown = false;
+            }
+        }
+
+        private bool shutDown;
+        public bool ShutDown
+        {
+            get => shutDown;
+            set
+            {
+                if (SetProperty(ref shutDown, value) && value)
+                    ExitProgram = true;
+            }
+        }
+
         #endregion
 
         private bool advancedSettings;

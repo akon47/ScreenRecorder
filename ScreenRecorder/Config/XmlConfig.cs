@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Xml;
+using System.Windows;
+using System.Globalization;
 
 namespace ScreenRecorder.Config
 {
@@ -83,76 +85,41 @@ namespace ScreenRecorder.Config
 
         public static float GetFloat(Dictionary<string, string> dicConfig, string key, float defaultValue)
         {
-            var value = LoadConfigItem(dicConfig, key, null);
-            if (!string.IsNullOrEmpty(value))
-            {
-                return float.Parse(value);
-            }
-
+            string value = Config.LoadConfigItem(dicConfig, key, null);
+            if (float.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out float result))
+                return result;
             return defaultValue;
         }
 
         public static int GetInt32(Dictionary<string, string> dicConfig, string key, int defaultValue)
         {
-            var value = LoadConfigItem(dicConfig, key, null);
-            if (!string.IsNullOrEmpty(value))
-            {
-                if (int.TryParse(value, out var result))
-                {
-                    return result;
-                }
-
-                return defaultValue;
-            }
-
+            string value = Config.LoadConfigItem(dicConfig, key, null);
+            if (int.TryParse(value, out int result))
+                return result;
             return defaultValue;
         }
 
         public static uint GetUInt32(Dictionary<string, string> dicConfig, string key, uint defaultValue)
         {
-            var value = LoadConfigItem(dicConfig, key, null);
-            if (!string.IsNullOrEmpty(value))
-            {
-                if (uint.TryParse(value, out var result))
-                {
-                    return result;
-                }
-
-                return defaultValue;
-            }
-
+            string value = Config.LoadConfigItem(dicConfig, key, null);
+            if (uint.TryParse(value, out uint result))
+                return result;
             return defaultValue;
         }
 
         public static long GetLong(Dictionary<string, string> dicConfig, string key, long defaultValue)
         {
-            var value = LoadConfigItem(dicConfig, key, null);
-            if (!string.IsNullOrEmpty(value))
-            {
-                if (long.TryParse(value, out var result))
-                {
-                    return result;
-                }
-
-                return defaultValue;
-            }
-
+            string value = Config.LoadConfigItem(dicConfig, key, null);
+            if (long.TryParse(value, out long result))
+                return result;
             return defaultValue;
         }
 
         public static double GetDouble(Dictionary<string, string> dicConfig, string key, double defaultValue)
         {
-            var value = LoadConfigItem(dicConfig, key, null);
-            if (!string.IsNullOrEmpty(value))
-            {
-                if (double.TryParse(value, out var result))
-                {
-                    return result;
-                }
-
-                return defaultValue;
-            }
-
+            string value = Config.LoadConfigItem(dicConfig, key, null);
+            if (double.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out double result))
+                return result;
             return defaultValue;
         }
 
@@ -169,28 +136,17 @@ namespace ScreenRecorder.Config
 
         public static bool GetBool(Dictionary<string, string> dicConfig, string key, bool defaultValue)
         {
-            var value = LoadConfigItem(dicConfig, key, null);
-            if (!string.IsNullOrEmpty(value))
-            {
-                if (bool.TryParse(value, out var result))
-                {
-                    return result;
-                }
-
-                return defaultValue;
-            }
-
+            string value = Config.LoadConfigItem(dicConfig, key, null);
+            if (bool.TryParse(value, out bool result))
+                return result;
             return defaultValue;
         }
 
         public static Guid GetGuid(Dictionary<string, string> dicConfig, string key, Guid defaultValue)
         {
-            var value = LoadConfigItem(dicConfig, key, null);
-            if (Guid.TryParse(value, out var result))
-            {
+            string value = Config.LoadConfigItem(dicConfig, key, null);
+            if (Guid.TryParse(value, out Guid result))
                 return result;
-            }
-
             return defaultValue;
         }
 
@@ -209,7 +165,29 @@ namespace ScreenRecorder.Config
             }
         }
 
-        public static Dictionary<string, string> GetConfig(Dictionary<string, string> dicConfig, string key)
+        static public DateTime GetDateTime(Dictionary<string, string> dicConfig, string key, DateTime defaultValue)
+        {
+            string value = Config.LoadConfigItem(dicConfig, key, null);
+            if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime result))
+                return result;
+            return defaultValue;
+        }
+
+        static public Rect? GetRect(Dictionary<string, string> dicConfig, string key, Rect? defaultValue)
+        {
+            string value = Config.LoadConfigItem(dicConfig, key, null);
+            try
+            {
+                var ret = Rect.Parse(value);
+                return !ret.IsEmpty ? ret : defaultValue;
+            }
+            catch (Exception)
+            {
+                return defaultValue;
+            }
+        }
+
+        static public Dictionary<string, string> GetConfig(Dictionary<string, string> dicConfig, string key)
         {
             try
             {
