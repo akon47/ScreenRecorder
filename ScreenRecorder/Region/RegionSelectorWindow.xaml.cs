@@ -57,7 +57,7 @@ namespace ScreenRecorder.Region
                 {
                     using(var g = System.Drawing.Graphics.FromImage(bitmap))
                     {
-                        g.CopyFromScreen((int)Left, (int)Top, 0, 0, bounds.Size, System.Drawing.CopyPixelOperation.SourceCopy);
+                        g.CopyFromScreen(0, 0, 0, 0, bounds.Size, System.Drawing.CopyPixelOperation.SourceCopy);
                     }
                     ImageBrush imageBrush = new ImageBrush(Utils.ImageSourceFromBitmap(bitmap));
                     imageBrush.Freeze();
@@ -107,7 +107,7 @@ namespace ScreenRecorder.Region
             DialogResult = !e.IsCancelled;
             if(!e.IsCancelled)
             {
-                RegionSelectionResult = new RegionSelectionResult(e.DeviceName, Rect.Offset(e.Region, -e.DisplayBounds.X, -e.DisplayBounds.Y), e.Hwnd);
+                RegionSelectionResult = new RegionSelectionResult(e.DeviceName, Rect.Offset(e.Region, -e.DisplayBounds.X, -e.DisplayBounds.Y));
             }
             Close();
         }

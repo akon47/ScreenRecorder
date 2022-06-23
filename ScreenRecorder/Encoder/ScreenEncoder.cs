@@ -21,20 +21,15 @@ namespace ScreenRecorder.Encoder
         private AudioCaptureSource audioCaptureSource;
         private Utils.ThreadExecutionState? oldSleepState;
 
-        public bool StopByAutomatic { get; set; }
-
         public ScreenEncoder()
         {
             this.EncoderStopped += ScreenEncoder_EncoderStopped;
         }
 
-        public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, 
-            Rect region, bool drawCursor, bool recordMicrophone, DateTime? captureStart, DateTime? captureEnd)
+        public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, Rect region, bool drawCursor, bool recordMicrophone)
         {
             if (base.IsRunning)
                 return;
-
-            StopByAutomatic = AppConfig.Instance.CaptureTimeControlled;
 
             // to be on the safe side
             Debug.Assert(screenVideoSource == null);
@@ -69,7 +64,7 @@ namespace ScreenRecorder.Encoder
                 Rect validRegion = Rect.Intersect(region, new Rect(0, 0, monitorInfo.Width, monitorInfo.Height));
                 base.Start(format, url,
                     screenVideoSource, videoCodec, videoBitrate, new VideoSize((int)validRegion.Width, (int)validRegion.Height),
-                    audioSource, audioCodec, audioBitrate, captureStart, captureEnd);
+                    audioSource, audioCodec, audioBitrate);
             }
             catch (Exception ex)
             {
@@ -98,12 +93,7 @@ namespace ScreenRecorder.Encoder
                 if (oldSleepState.HasValue)
                 {
                     Utils.SetThreadExecutionState(oldSleepState.Value);
-                    oldSleepState = null;
-                }
-                // prevent closing of program for manual stop of time controlled capture
-                if (AppConfig.Instance.CaptureTimeControlled && StopByAutomatic && AppConfig.Instance.ExitProgram)
-                {
-                    Utils.ExitProgram(AppConfig.Instance.ShutDown);
+                    oldSleepState = null; ;
                 }
             }
         }

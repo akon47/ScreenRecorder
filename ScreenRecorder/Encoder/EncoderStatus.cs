@@ -16,10 +16,6 @@
         /// <summary>
         /// Encoder Stopped
         /// </summary>
-        Stop,
-        /// <summary>
-        /// Encoder waiting time after start
-        /// </summary>
-        Wait
+        Stop
     }
 }

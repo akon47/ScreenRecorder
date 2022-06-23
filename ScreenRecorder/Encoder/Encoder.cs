@@ -2,8 +2,6 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Diagnostics;
-using System.Timers;
 using MediaEncoder;
 using ScreenRecorder.AudioSource;
 using ScreenRecorder.VideoSource;
@@ -352,9 +350,6 @@ namespace ScreenRecorder.Encoder
             public int VideoBitrate { get; set; }
             public int AudioBitrate { get; set; }
             public VideoSize VideoSize { get; set; }
-
-            public DateTime? StartTime { get; set; }
-            public DateTime? EndTime { get; set; }
         }
 
         private ulong videoFramesCount;
@@ -402,16 +397,6 @@ namespace ScreenRecorder.Encoder
             }
         }
 
-        private bool isStartedWithEncode = false;
-        public bool IsStartedWithEncode
-        {
-            get => isStartedWithEncode;
-            private set
-            {
-                SetProperty(ref isStartedWithEncode, value);
-            }
-        }
-
         private bool isPaused = false;
         public bool IsPaused
         {
@@ -440,8 +425,7 @@ namespace ScreenRecorder.Encoder
             {
                 if (SetProperty(ref status, value))
                 {
-                    IsStarted = (value == EncoderStatus.Start || value == EncoderStatus.Wait);
-                    IsStartedWithEncode = (value == EncoderStatus.Start);
+                    IsStarted = (value == EncoderStatus.Start);
                     IsPaused = (value == EncoderStatus.Pause);
                     IsStopped = (value == EncoderStatus.Stop);
                 }
@@ -486,8 +470,7 @@ namespace ScreenRecorder.Encoder
         private Thread workerThread = null;
         private ManualResetEvent needToStop = null;
 
-        public void Start(string format, string url, IVideoSource videoSource, VideoCodec videoCodec, int videoBitrate, VideoSize videoSize, 
-            IAudioSource audioSource, AudioCodec audioCodec, int audioBitrate, DateTime? captureStart, DateTime? captureEnd)
+        public void Start(string format, string url, IVideoSource videoSource, VideoCodec videoCodec, int videoBitrate, VideoSize videoSize, IAudioSource audioSource, AudioCodec audioCodec, int audioBitrate)
         {
             if (IsRunning)
                 return;
@@ -509,8 +492,6 @@ namespace ScreenRecorder.Encoder
                 VideoSize = videoSize,
                 AudioCodec = audioCodec,
                 AudioBitrate = audioBitrate,
-                StartTime = captureStart,
-                EndTime = captureEnd
             });
         }
 
@@ -532,22 +513,23 @@ namespace ScreenRecorder.Encoder
 
         public void Stop()
         {
-            needToStop?.Set();
-            _captureCanBegin?.Set();
+            if (!IsRunning)
+                return;
 
+            if (needToStop != null)
+            {
+                needToStop.Set();
+            }
             if (workerThread != null)
             {
                 if (workerThread.IsAlive && !workerThread.Join(3000))
                     workerThread.Abort();
-            }
-            workerThread = null;
+                workerThread = null;
 
-            needToStop?.Close();
-            needToStop = null;
-            _captureCanBegin?.Close();
-            _captureCanBegin = null;
-            _waitTimer?.Dispose();
-            _waitTimer = null;
+                if (needToStop != null)
+                    needToStop.Close();
+                needToStop = null;
+            }
 
             VideoFramesCount = 0;
             AudioSamplesCount = 0;
@@ -555,53 +537,12 @@ namespace ScreenRecorder.Encoder
             Status = EncoderStatus.Stop;
         }
 
-        public TimeSpan? TimeBeforeCapture { get; private set; }
-
-        private System.Timers.Timer _waitTimer;
-        private DateTime _captureStart;
-        private ManualResetEvent _captureCanBegin;
-
-        private void TimerHandler(object src, ElapsedEventArgs args)
-        {
-            if (_captureStart == null || needToStop == null)
-                return;
-            var now = DateTime.Now;
-            if (now >= _captureStart || needToStop.WaitOne(0))
-            {
-                TimeBeforeCapture = null;
-                _waitTimer.Stop();
-                _captureCanBegin.Set();
-            }
-            else
-                TimeBeforeCapture = _captureStart - now;
-        }
-
         private void WorkerThreadHandler(object argument)
         {
             try
             {
-                TimeBeforeCapture = null;
                 if (argument is EncoderArguments encoderArguments)
                 {
-                    if (encoderArguments.StartTime != null)
-                    {
-                        Status = EncoderStatus.Wait;
-                        _captureStart = encoderArguments.StartTime.Value - TimeSpan.FromSeconds(1);
-                        Debug.Assert(_captureCanBegin == null);
-                        _captureCanBegin = new ManualResetEvent(false);
-                        Debug.Assert(_waitTimer == null);
-                        _waitTimer?.Dispose();
-                        _waitTimer = new System.Timers.Timer(250);
-                        _waitTimer.Elapsed += TimerHandler;
-                        _waitTimer.Start();
-                        if (_captureCanBegin.WaitOne())
-                        {
-                            if (needToStop.WaitOne(0, false))
-                                return;
-                        }
-                    }
-                    Status = EncoderStatus.Start;
-
                     using (MediaBuffer mediaBuffer = new MediaBuffer(encoderArguments.VideoSource, encoderArguments.AudioCodec == AudioCodec.None ? null : encoderArguments.AudioSource))
                     {
                         using (MediaWriter mediaWriter = new MediaWriter(
@@ -649,14 +590,6 @@ namespace ScreenRecorder.Encoder
                                     if (needToStop.WaitOne(1, false))
                                         break;
                                 }
-                                if (encoderArguments.EndTime != null)
-                                {
-                                    if (DateTime.Now >= encoderArguments.EndTime)
-                                    {
-                                        needToStop?.Set();
-                                        break;
-                                    }
-                                }
                             }
                         }
                     }
@@ -673,7 +606,6 @@ namespace ScreenRecorder.Encoder
                 AudioSamplesCount = 0;
                 Url = "";
                 Status = EncoderStatus.Stop;
-                TimeBeforeCapture = null;
             }
         }
 

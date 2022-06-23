@@ -165,9 +165,6 @@
     <Compile Include="Shortcut\ShortcutEditorWindow.xaml.cs">
       <DependentUpon>ShortcutEditorWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TimeCtrl.xaml.cs">
-      <DependentUpon>TimeCtrl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="VideoSource\IVideoSource.cs" />
     <Compile Include="Reactive\NotifyPropertyBase.cs" />
     <Compile Include="Reactive\ReactiveExtensions.cs" />
@@ -208,10 +205,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="TimeCtrl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -238,6 +231,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include=".editorconfig" />
+    <Compile Include="MainWindow.HwndSourceHook.cs" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

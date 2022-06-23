@@ -11,6 +11,15 @@ namespace ScreenRecorder.Region
     public sealed class WindowRegion
     {
         #region Native Methods
+        public static RECT GetWindowRectangle(IntPtr hWnd)
+        {
+            RECT rect;
+
+            int size = Marshal.SizeOf(typeof(RECT));
+            DwmGetWindowAttribute(hWnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out rect, size);
+
+            return rect;
+        }
 
         [Flags]
         private enum DwmWindowAttribute : uint
@@ -61,56 +70,7 @@ namespace ScreenRecorder.Region
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool EnumChildWindows(IntPtr hwnd, WindowEnumProc callback, IntPtr lParam);
-
-        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
-        public static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int wFlags);
-
         #endregion
-
-        public static Rect GetWindowRectangle(IntPtr hWnd, bool oldApi = false)
-        {
-            // including type conversation from RECT to Rect
-            RECT rect;
-            if (oldApi)
-                GetWindowRect(hWnd, out rect);
-            else
-                DwmGetWindowAttribute(hWnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out rect, Marshal.SizeOf(typeof(RECT)));
-            return new Rect(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
-        }
-
-        public static void SizeWindow(IntPtr hwnd, int cx, int cy)
-        {
-            SizeWindow(hwnd, 0, 0, cx, cy, false);
-        }
-
-        public static void SizeWindow(IntPtr hWnd, int x, int y, int cx, int cy, bool move)
-        {
-            const short SWP_NOMOVE = 0X2;
-            //const short SWP_NOSIZE = 1;
-            const short SWP_NOZORDER = 0X4;
-            const int SWP_SHOWWINDOW = 0x0040;
-
-            int flags = SWP_NOZORDER | SWP_SHOWWINDOW;
-            if (!move)
-            {
-                flags |= SWP_NOMOVE;
-                x = 0;
-                y = 0;
-            }
-
-            SetWindowPos(hWnd, 0, x, y, cx, cy, flags);
-            if (move)
-            {
-                // s.a. http://www.brianapps.net/sizer4/moredetails.html
-                Rect rect = GetWindowRectangle(hWnd);
-                if (rect.Width < cx && rect.Height < cy)
-                {
-                    int dx = (int)(cx - rect.Width);
-                    int dy = (int)(cy - rect.Height);
-                    SetWindowPos(hWnd, 0, x-dx, y-dy, cx+dx, cy+dy, flags);
-                }
-            }
-        }
 
         public Rect Region { get; private set; }
         public IntPtr Hwnd { get; private set; }
@@ -127,7 +87,9 @@ namespace ScreenRecorder.Region
             {
                 if(IsWindowVisible(hWnd) && !Utils.IsWindowDisplayedOnlyMonitor(hWnd))
                 {
-                    Rect region = GetWindowRectangle(hWnd);
+                    RECT rect = GetWindowRectangle(hWnd);
+
+                    Rect region = new Rect(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
                     if (region.Height > 16 && region.Width > 16)
                     {
                         windowRegions.Add(new WindowRegion() { Region = region, Hwnd = hWnd });

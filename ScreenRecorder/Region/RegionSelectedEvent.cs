@@ -30,16 +30,13 @@ namespace ScreenRecorder.Region
         /// </summary>
         public bool IsCancelled { get; }
 
-        public IntPtr Hwnd { get; private set; }
-
-        public RegionSelectedEventArgs(RegionSelectionMode regionSelectionMode, string deviceName, Rect displayBounds, Rect region, IntPtr hwnd, bool isCancelled)
+        public RegionSelectedEventArgs(RegionSelectionMode regionSelectionMode, string deviceName, Rect displayBounds, Rect region, bool isCancelled)
         {
             RegionSelectionMode = regionSelectionMode;
             DeviceName = deviceName;
             DisplayBounds = displayBounds;
             Region = region;
             IsCancelled = isCancelled;
-            Hwnd = hwnd;
         }
     }
 
