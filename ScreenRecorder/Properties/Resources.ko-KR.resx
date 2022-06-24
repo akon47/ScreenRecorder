@@ -184,7 +184,7 @@
     <value>비디오 코덱</value>
   </data>
   <data name="ExcludeAppFromCapture" xml:space="preserve">
-    <value>캡처에서 앱을 제외하고 캡처합니다.</value>
+    <value>캡처 시 앱을 제외하고 캡처합니다.</value>
   </data>
   <data name="Exit" xml:space="preserve">
     <value>종료</value>
