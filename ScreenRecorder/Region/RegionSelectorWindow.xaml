@@ -20,14 +20,6 @@
     WindowStartupLocation="Manual"
     Title=""
     >
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Icons.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-            <cc:EnumBooleanConverter x:Key="enumBooleanConverter" />
-        </ResourceDictionary>
-    </Window.Resources>
     <Grid ClipToBounds="True">
         <local:RegionSelector
             x:Name="regionSelector"
@@ -88,19 +80,19 @@
                         <RadioButton
                             Grid.Column="0"
                             Content="{StaticResource Icon_SquarePlus}"
-                            IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource enumBooleanConverter}, ConverterParameter=UserRegion}"
+                            IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=UserRegion}"
                             ToolTip="{x:Static properties:Resources.CaptureRegion}"
                             />
                         <RadioButton
                             Grid.Column="1"
                             Content="{StaticResource Icon_WindowMaximize}"
-                            IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource enumBooleanConverter}, ConverterParameter=WindowRegion}"
+                            IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=WindowRegion}"
                             ToolTip="{x:Static properties:Resources.CaptureWindow}"
                             />
                         <RadioButton
                             Grid.Column="2"
                             Content="{StaticResource Icon_MonitorScreenshot}"
-                            IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource enumBooleanConverter}, ConverterParameter=DisplayRegion}"
+                            IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DisplayRegion}"
                             ToolTip="{x:Static properties:Resources.CaptureDisplay}"
                             />
                         <Rectangle

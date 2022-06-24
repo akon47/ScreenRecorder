@@ -6,6 +6,11 @@
     StartupUri="MainWindow.xaml"
     >
     <Application.Resources>
-        <ResourceDictionary Source="Themes/Generic.xaml" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Icons.xaml" />
+                <ResourceDictionary Source="Themes/Generic.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

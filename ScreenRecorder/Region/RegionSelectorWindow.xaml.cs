@@ -71,18 +71,9 @@ namespace ScreenRecorder.Region
             }
         }
 
-        protected override void OnLostFocus(RoutedEventArgs e)
-        {
-            base.OnLostFocus(e);
-        }
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Focus();
-        }
-        protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
-        {
-            base.OnGotKeyboardFocus(e);
         }
 
         protected override void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)
