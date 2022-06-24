@@ -12,19 +12,18 @@ namespace ScreenRecorder.Behaviors
                 "DisplayedOnlyMonitor", typeof(bool), typeof(PopupBehavior), new PropertyMetadata(false, DisplayedOnlyMonitorPropertyChanged));
         private static void DisplayedOnlyMonitorPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
         {
-            if(source is Popup popup)
+            Apply(source as Popup);
+        }
+
+        private static void Apply(Popup popup)
+        {
+            if (popup == null)
+                throw new ArgumentNullException(nameof(popup));
+
+            popup.Opened -= Popup_Opened;
+            if (GetDisplayedOnlyMonitor(popup))
             {
-                if(e.NewValue is bool displayedOnlyMonitor)
-                {
-                    if(displayedOnlyMonitor)
-                    {
-                        popup.Opened += Popup_Opened;
-                    }
-                    else
-                    {
-                        popup.Opened -= Popup_Opened;
-                    }
-                }
+                popup.Opened += Popup_Opened;
             }
         }
 
@@ -37,9 +36,13 @@ namespace ScreenRecorder.Behaviors
                     IntPtr popupWindowHandle = popup.GetPopupWindowHandle();
                     if (popupWindowHandle != IntPtr.Zero)
                     {
-#if !DEBUG
-                        Utils.SetWindowDisplayedOnlyMonitor(popupWindowHandle, true);
-#endif
+                        var excludeFromCapture = AppManager.Instance.ScreenEncoder.IsStarted && AppConfig.Instance.ExcludeFromCapture;
+
+                        var isWindowDisplayedOnlyMonitor = Utils.IsWindowDisplayedOnlyMonitor(popupWindowHandle);
+                        if (excludeFromCapture != isWindowDisplayedOnlyMonitor)
+                        {
+                            Utils.SetWindowDisplayedOnlyMonitor(popupWindowHandle, excludeFromCapture);
+                        }
                     }
                 }
             }

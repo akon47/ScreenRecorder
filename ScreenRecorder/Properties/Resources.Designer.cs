@@ -259,6 +259,15 @@ namespace ScreenRecorder.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Exclude app from capture..
+        /// </summary>
+        public static string ExcludeAppFromCapture {
+            get {
+                return ResourceManager.GetString("ExcludeAppFromCapture", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exit.
         /// </summary>
         public static string Exit {
@@ -282,6 +291,15 @@ namespace ScreenRecorder.Properties {
         public static string HardwareEncoderNotFoundWarning {
             get {
                 return ResourceManager.GetString("HardwareEncoderNotFoundWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Include app from capture..
+        /// </summary>
+        public static string IncludeAppFromCapture {
+            get {
+                return ResourceManager.GetString("IncludeAppFromCapture", resourceCulture);
             }
         }
         

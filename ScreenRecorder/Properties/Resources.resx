@@ -183,6 +183,9 @@
   <data name="EncoderVideoCodec" xml:space="preserve">
     <value>Video Codec</value>
   </data>
+  <data name="ExcludeAppFromCapture" xml:space="preserve">
+    <value>Exclude app from capture.</value>
+  </data>
   <data name="Exit" xml:space="preserve">
     <value>Exit</value>
   </data>
@@ -191,6 +194,9 @@
   </data>
   <data name="HardwareEncoderNotFoundWarning" xml:space="preserve">
     <value>Hardware encoder not found. Use a software encoder.</value>
+  </data>
+  <data name="IncludeAppFromCapture" xml:space="preserve">
+    <value>Include app from capture.</value>
   </data>
   <data name="NotSpecified" xml:space="preserve">
     <value>Not specified</value>

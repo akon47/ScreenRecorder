@@ -50,7 +50,7 @@ namespace ScreenRecorder.Encoder
 
             screenVideoSource = new ScreenVideoSource(deviceName, region, drawCursor);
 
-            
+
             loopbackAudioSource = new LoopbackAudioSource();
             IAudioSource audioSource = loopbackAudioSource;
             if (recordMicrophone)

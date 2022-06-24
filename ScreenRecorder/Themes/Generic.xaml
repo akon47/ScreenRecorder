@@ -11,8 +11,28 @@
 
     <conv:EnumBooleanConverter x:Key="EnumBooleanConverter" />
     <conv:BitrateFormatter x:Key="BitrateFormatter" />
-
+    <conv:TrueToParameter x:Key="TrueToParameter" />
 
     <!-- endregion -->
+
+    <Style x:Key="VoidToggleButtonStyle" TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Style.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#400080FF" />
+                <Setter Property="BorderBrush" Value="#80DADADA" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="#400080FF" />
+                <Setter Property="BorderBrush" Value="#90006CD9" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
 
 </ResourceDictionary>

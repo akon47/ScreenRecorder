@@ -15,7 +15,8 @@ namespace ScreenRecorder.Config
         private readonly IConfigFile configObject;
         private ManualResetEvent needToStop;
         private bool requireSaveConfig;
-        private readonly Object SyncObject = new object();
+        private DateTime lastModifiedDateTime;
+        private readonly object syncObject = new object();
         private Thread workerThread;
 
         public ConfigFileSaveWorker(IConfigFile configObject, string configFilePath)
@@ -23,6 +24,7 @@ namespace ScreenRecorder.Config
             this.configObject = configObject;
             this.configFilePath = configFilePath;
 
+            lastModifiedDateTime = DateTime.MinValue;
             needToStop = new ManualResetEvent(false);
             workerThread = new Thread(SaveWorkerThreadHandler) { Name = "ConfigFileSaveWorker", IsBackground = true };
             workerThread.Start();
@@ -30,6 +32,8 @@ namespace ScreenRecorder.Config
 
         public void Dispose()
         {
+            SaveConfig(true);
+
             if (needToStop != null)
             {
                 needToStop.Set();
@@ -51,30 +55,22 @@ namespace ScreenRecorder.Config
 
                 needToStop = null;
             }
-
-            lock (SyncObject)
-            {
-                if (requireSaveConfig)
-                {
-                    configObject?.Save(configFilePath);
-                    requireSaveConfig = false;
-                }
-            }
         }
 
         public void SetModifiedConfigData()
         {
-            lock (SyncObject)
+            lock (syncObject)
             {
+                lastModifiedDateTime = DateTime.Now;
                 requireSaveConfig = true;
             }
         }
 
-        private void SaveWorkerThreadHandler()
+        private void SaveConfig(bool forced = false)
         {
-            while (!needToStop.WaitOne(500))
+            lock (syncObject)
             {
-                lock (SyncObject)
+                if (forced || DateTime.Now.Subtract(lastModifiedDateTime) >= TimeSpan.FromMilliseconds(500))
                 {
                     if (requireSaveConfig)
                     {
@@ -82,6 +78,14 @@ namespace ScreenRecorder.Config
                         requireSaveConfig = false;
                     }
                 }
+            }
+        }
+
+        private void SaveWorkerThreadHandler()
+        {
+            while (!needToStop.WaitOne(300))
+            {
+                SaveConfig();
             }
         }
     }

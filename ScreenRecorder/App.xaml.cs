@@ -10,7 +10,7 @@ namespace ScreenRecorder
     /// </summary>
     public partial class App : Application
     {
-        public volatile static Mutex Mutex = null;
+        public static volatile Mutex Mutex = null;
 
         protected override void OnStartup(StartupEventArgs e)
         {

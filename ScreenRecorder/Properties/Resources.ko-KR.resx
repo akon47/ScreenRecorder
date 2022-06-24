@@ -183,6 +183,9 @@
   <data name="EncoderVideoCodec" xml:space="preserve">
     <value>비디오 코덱</value>
   </data>
+  <data name="ExcludeAppFromCapture" xml:space="preserve">
+    <value>캡처에서 앱을 제외하고 캡처합니다.</value>
+  </data>
   <data name="Exit" xml:space="preserve">
     <value>종료</value>
   </data>
@@ -191,6 +194,9 @@
   </data>
   <data name="HardwareEncoderNotFoundWarning" xml:space="preserve">
     <value>하드웨어 인코더를 찾을 수 없습니다. 소프트웨어 인코더를 사용합니다.</value>
+  </data>
+  <data name="IncludeAppFromCapture" xml:space="preserve">
+    <value>캡처에서 앱을 포함하여 캡처합니다.</value>
   </data>
   <data name="NotSpecified" xml:space="preserve">
     <value>지정 안 됨</value>

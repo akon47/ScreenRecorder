@@ -18,9 +18,9 @@ namespace ScreenRecorder.Behaviors
             defaultMetadata: new FrameworkPropertyMetadata(false, IgnoreToolTipWhenEncoderStartedPropertyChanged)
         );
 
-        private static void IgnoreToolTipWhenEncoderStartedPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void IgnoreToolTipWhenEncoderStartedPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
         {
-            Apply((FrameworkElement)d);
+            Apply(source as FrameworkElement);
         }
 
         public static bool GetIgnoreToolTipWhenEncoderStarted(DependencyObject obj)

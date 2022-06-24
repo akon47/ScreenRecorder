@@ -12,8 +12,8 @@
     mc:Ignorable="d"
     Icon="pack://application:,,,/icon.ico"
     SnapsToDevicePixels="True"
-    Left="{Binding Source={x:Static local:AppConfig.Instance}, Path=WindowLeft, Mode=TwoWay}"
-    Top="{Binding Source={x:Static local:AppConfig.Instance}, Path=WindowTop, Mode=TwoWay}"
+    Left="{Binding Source={x:Static local:AppConfig.Instance}, Path=WindowLeft, Mode=TwoWay, Delay=500}"
+    Top="{Binding Source={x:Static local:AppConfig.Instance}, Path=WindowTop, Mode=TwoWay, Delay=500}"
     WindowStyle="None"
     ResizeMode="NoResize"
     Background="Transparent"
@@ -96,12 +96,12 @@
                             <Button
                                 Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                                 Content="{StaticResource Icon_CursorClick}"
-                                Foreground="DarkGray"
                                 Focusable="False"
                                 ToolTip="{x:Static properties:Resources.CaptureRegionByUserSelection}"
                                 behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
                                 Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}"
                                 CommandParameter="{x:Static local:CaptureTarget.ByUserChoiceTargetDeviceName}"
+                                Visibility="{Binding Source={x:Static local:AppManager.Instance}, Path=ScreenEncoder.IsStarted, Mode=OneWay, Converter={StaticResource TrueToParameter}, ConverterParameter={x:Static Visibility.Collapsed}, FallbackValue={x:Static Visibility.Visible}}"
                                 Width="20"
                                 Height="20"
                                 Margin="1 0 1 0"
@@ -109,7 +109,6 @@
                             <Button
                                 Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                                 Content="{StaticResource Icon_FolderOpen}"
-                                Foreground="DarkGray"
                                 Focusable="False"
                                 ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}"
                                 behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
@@ -386,7 +385,6 @@
                     Margin="3"
                     Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                     Content="{StaticResource Icon_Close}"
-                    Foreground="DarkGray"
                     Focusable="False"
                     ToolTip="{x:Static properties:Resources.Exit}"
                     behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
@@ -399,14 +397,12 @@
                     >
                     <ToggleButton
                         Name="recordSetting"
-                        Focusable="False"
-                        Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}"
+                        Style="{StaticResource VoidToggleButtonStyle}"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Content="{StaticResource Icon_Settings}"
                         ToolTip="{x:Static properties:Resources.EncoderSettings}"
                         behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
-                        Foreground="DarkGray"
                         Margin="3"
                         />
                     <Popup
@@ -449,13 +445,35 @@
                                             >
                                             <StackPanel.Resources>
                                                 <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
-                                                    <Setter Property="Foreground" Value="DarkGray" />
-                                                    <Setter Property="Focusable" Value="False" />
                                                     <Setter Property="Margin" Value="3 0 0 0" />
                                                     <Setter Property="Width" Value="25" />
                                                     <Setter Property="Height" Value="25" />
                                                 </Style>
                                             </StackPanel.Resources>
+                                            <ToggleButton
+                                                Focusable="False"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
+                                                IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=ExcludeFromCapture, Mode=TwoWay}"
+                                                behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
+                                                >
+                                                <ToggleButton.Style>
+                                                    <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource VoidToggleButtonStyle}">
+                                                        <Setter Property="Focusable" Value="False" />
+                                                        <Setter Property="Margin" Value="3 0 0 0" />
+                                                        <Setter Property="Width" Value="25" />
+                                                        <Setter Property="Height" Value="25" />
+                                                        <Setter Property="ToolTip" Value="{x:Static properties:Resources.IncludeAppFromCapture}" />
+                                                        <Setter Property="Content" Value="{StaticResource Icon_Show}" />
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsChecked" Value="True">
+                                                                <Setter Property="ToolTip" Value="{x:Static properties:Resources.ExcludeAppFromCapture}" />
+                                                                <Setter Property="Content" Value="{StaticResource Icon_Hide}" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ToggleButton.Style>
+                                            </ToggleButton>
                                             <Button
                                                 Content="{StaticResource Icon_Keyboard}"
                                                 Focusable="False"
@@ -742,7 +760,7 @@
                                                     Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=SelectRecordDirectory, Mode=OneWay}"
                                                     />
                                             </Grid>
-                                            <StackPanel
+                                            <WrapPanel
                                                 Grid.Column="0"
                                                 Grid.Row="8"
                                                 Grid.ColumnSpan="2"
@@ -772,7 +790,7 @@
                                                     Margin="5 2 5 5"
                                                     HorizontalAlignment="Right"
                                                     />
-                                            </StackPanel>
+                                            </WrapPanel>
                                             <Border
                                                 Grid.Column="0"
                                                 Grid.Row="9"

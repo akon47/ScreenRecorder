@@ -15,7 +15,7 @@ namespace ScreenRecorder
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool DeleteObject([In] IntPtr hObject);
 
-        static public ImageSource ImageSourceFromBitmap(System.Drawing.Bitmap bmp)
+        public static ImageSource ImageSourceFromBitmap(System.Drawing.Bitmap bmp)
         {
             var handle = bmp.GetHbitmap();
             try
@@ -25,12 +25,12 @@ namespace ScreenRecorder
             finally { DeleteObject(handle); }
         }
 
-        static public TimeSpan VideoFramesCountToTimeSpan(ulong videoFramesCount)
+        public static TimeSpan VideoFramesCountToTimeSpan(ulong videoFramesCount)
         {
             return TimeSpan.FromSeconds(videoFramesCount / (double)VideoClockEvent.Framerate);
         }
 
-        static public string VideoFramesCountToStringTime(ulong videoFramesCount)
+        public static string VideoFramesCountToStringTime(ulong videoFramesCount)
         {
             ulong totalSecond = (ulong)(videoFramesCount / (double)VideoClockEvent.Framerate);
             ulong hour = totalSecond / 3600;
@@ -40,15 +40,15 @@ namespace ScreenRecorder
 
             if(VideoClockEvent.Framerate >= 100)
             {
-                return string.Format("{0:00}:{1:00}:{2:00}.{3:000}", hour, minute, second, frames);
+                return $"{hour:00}:{minute:00}:{second:00}.{frames:000}";
             }
             else
             {
-                return string.Format("{0:00}:{1:00}:{2:00}.{3:00}", hour, minute, second, frames);
+                return $"{hour:00}:{minute:00}:{second:00}.{frames:00}";
             }
         }
 
-        static public ulong VideoFramesCountToSeconds(ulong videoFramesCount)
+        public static ulong VideoFramesCountToSeconds(ulong videoFramesCount)
         {
             return (ulong)(videoFramesCount / (double)VideoClockEvent.Framerate);
         }

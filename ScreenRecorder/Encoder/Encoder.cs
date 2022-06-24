@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows;
 using MediaEncoder;
 using ScreenRecorder.AudioSource;
 using ScreenRecorder.VideoSource;
@@ -461,12 +462,6 @@ namespace ScreenRecorder.Encoder
             }
         }
 
-        public event EncoderStoppedEventHandler EncoderStopped;
-        protected virtual void OnEncoderStopped(EncoderStoppedEventArgs args)
-        {
-            this.EncoderStopped?.Invoke(this, args);
-        }
-
         private Thread workerThread = null;
         private ManualResetEvent needToStop = null;
 
@@ -478,6 +473,8 @@ namespace ScreenRecorder.Encoder
             Url = url;
 
             Status = EncoderStatus.Start;
+
+            OnEncoderFirstStarting();
 
             needToStop = new ManualResetEvent(false);
             workerThread = new Thread(new ParameterizedThreadStart(WorkerThreadHandler)) { Name = "Encoder", IsBackground = true };
@@ -622,5 +619,21 @@ namespace ScreenRecorder.Encoder
                 Stop();
             }
         }
+
+        #region Events
+
+        public event EncoderStoppedEventHandler EncoderStopped;
+        protected virtual void OnEncoderStopped(EncoderStoppedEventArgs args)
+        {
+            this.EncoderStopped?.Invoke(this, args);
+        }
+        
+        public event EventHandler EncoderFirstStarting;
+        protected virtual void OnEncoderFirstStarting()
+        {
+            EncoderFirstStarting?.Invoke(this, EventArgs.Empty);
+        }
+
+        #endregion
     }
 }

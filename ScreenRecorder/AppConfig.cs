@@ -67,6 +67,8 @@ namespace ScreenRecorder
 
                 config.Add(nameof(AdvancedSettings), AdvancedSettings.ToString());
 
+                config.Add(nameof(ExcludeFromCapture), ExcludeFromCapture.ToString());
+
                 config.Add(nameof(SelectedRecordFormat), SelectedRecordFormat);
                 config.Add(nameof(SelectedRecordVideoCodec), Enum.GetName(typeof(VideoCodec), SelectedRecordVideoCodec));
                 config.Add(nameof(SelectedRecordAudioCodec), Enum.GetName(typeof(AudioCodec), SelectedRecordAudioCodec));
@@ -100,6 +102,8 @@ namespace ScreenRecorder
 
                     AdvancedSettings = Config.Config.GetBool(config, nameof(AdvancedSettings), false);
 
+                    ExcludeFromCapture = Config.Config.GetBool(config, nameof(ExcludeFromCapture), true);
+
                     SelectedRecordFormat = Config.Config.GetString(config, nameof(SelectedRecordFormat), "mp4");
                     SelectedRecordVideoCodec = Config.Config.GetEnum<VideoCodec>(config, nameof(SelectedRecordVideoCodec), VideoCodec.H264);
                     SelectedRecordAudioCodec = Config.Config.GetEnum<AudioCodec>(config, nameof(SelectedRecordAudioCodec), AudioCodec.Aac);
@@ -130,6 +134,8 @@ namespace ScreenRecorder
             ScreenCaptureCursorVisible = true;
 
             AdvancedSettings = false;
+
+            ExcludeFromCapture = true;
 
             SelectedRecordFormat = "mp4";
             SelectedRecordVideoCodec = VideoCodec.H264;
@@ -170,7 +176,7 @@ namespace ScreenRecorder
             }
         }
 
-        #region Property
+        #region Properties
 
         #region Window
         private double windowLeft;
@@ -243,6 +249,13 @@ namespace ScreenRecorder
         {
             get => regionSelectionMode;
             set => SetProperty(ref regionSelectionMode, value);
+        }
+
+        private bool excludeFromCapture;
+        public bool ExcludeFromCapture
+        {
+            get => excludeFromCapture;
+            set => SetProperty(ref excludeFromCapture, value);
         }
         #endregion
 

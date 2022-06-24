@@ -85,9 +85,21 @@ namespace CustomConverter
         {
             throw new NotImplementedException();
         }
+    }
 
-        #region IValueConverter Members
+    public class TrueToParameter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value as bool? != true)
+                return DependencyProperty.UnsetValue;
 
-        #endregion
+            return parameter;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

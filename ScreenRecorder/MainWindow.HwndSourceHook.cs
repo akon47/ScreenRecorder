@@ -32,9 +32,20 @@ namespace ScreenRecorder
 
             // 자기 자신은 캡쳐가 안 되도록 하기 위해 사용
             // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowdisplayaffinity
-#if !DEBUG
-            Utils.SetWindowDisplayedOnlyMonitor(source.Handle, true);
-#endif
+            AppManager.Instance.ScreenEncoder.EncoderFirstStarting += (_, __) => UpdateWindowDisplayedOnlyMonitor(AppConfig.Instance.ExcludeFromCapture);
+            AppManager.Instance.ScreenEncoder.EncoderStopped += (_, __) => UpdateWindowDisplayedOnlyMonitor(false);
+        }
+
+        private void UpdateWindowDisplayedOnlyMonitor(bool excludeFromCapture)
+        {
+            if (windowHandle == IntPtr.Zero)
+                return;
+
+            var isWindowDisplayedOnlyMonitor = Utils.IsWindowDisplayedOnlyMonitor(windowHandle);
+            if (excludeFromCapture != isWindowDisplayedOnlyMonitor)
+            {
+                Utils.SetWindowDisplayedOnlyMonitor(windowHandle, excludeFromCapture);
+            }
         }
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
