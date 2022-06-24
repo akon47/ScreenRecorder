@@ -15,10 +15,10 @@
 It is a simple recording program with the ability to record the screen.
 
 ### Default Settings
-![screenshot1_en](https://user-images.githubusercontent.com/49547202/134748812-81cabf11-99fb-43a0-80e9-9c4bbd23a64b.png)
+![screenshot1_en](https://user-images.githubusercontent.com/49547202/175591292-fb399db4-8238-41c1-88ac-16a6750b95fa.png)
 
 ### Advanced Settings
-![screenshot2_en](https://user-images.githubusercontent.com/49547202/134748816-12f8df6b-c113-4678-ad0d-e2e2929766e3.png)
+![screenshot2_en](https://user-images.githubusercontent.com/49547202/175591254-5ee2ae21-1da0-4490-aba0-11093fa47002.png)
 
 ## 📃 Usage
 - Pressing the round button starts recording and stops when pressing the square button.
@@ -48,7 +48,7 @@ It is a simple recording program with the ability to record the screen.
   - If you want to use **NVENC HEVC**, you need **GTX 950** series or higher
   - The minimum required Nvidia driver for NVENC is **471.41** or newer
 - Space required: 110MB
-- Microsoft .Net Framework 4.7.2
+- Microsoft .Net Framework 4.8
 
 ## 📚 References
 - [Softpedia review of v1.0.4](https://www.softpedia.com/get/Multimedia/Video/Video-Recording/ScreenRecorder-K.shtml)
@@ -58,7 +58,7 @@ It is a simple recording program with the ability to record the screen.
 
 - Visual Studio 2019 or newer
 - Windows 10 64bit or newer
-- Microsoft .Net Framework 4.7.2
+- Microsoft .Net Framework 4.8
 
 The MediaEncoder project uses a shared ffmpeg library that [BtbN](https://github.com/BtbN/FFmpeg-Builds) builds and deploys.
 
