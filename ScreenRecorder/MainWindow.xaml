@@ -8,7 +8,7 @@
     xmlns:local="clr-namespace:ScreenRecorder"
     xmlns:mediaEncoder="clr-namespace:MediaEncoder;assembly=MediaEncoder"
     xmlns:properties="clr-namespace:ScreenRecorder.Properties"
-    xmlns:cc="clr-namespace:CustomConverter"
+    xmlns:behaviors="clr-namespace:ScreenRecorder.Behaviors"
     mc:Ignorable="d"
     Icon="pack://application:,,,/icon.ico"
     SnapsToDevicePixels="True"
@@ -99,6 +99,7 @@
                                 Foreground="DarkGray"
                                 Focusable="False"
                                 ToolTip="{x:Static properties:Resources.CaptureRegionByUserSelection}"
+                                behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
                                 Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}"
                                 CommandParameter="{x:Static local:CaptureTarget.ByUserChoiceTargetDeviceName}"
                                 Width="20"
@@ -111,6 +112,7 @@
                                 Foreground="DarkGray"
                                 Focusable="False"
                                 ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}"
+                                behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
                                 Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenRecordDirecotryCommand}"
                                 Width="20"
                                 Height="20"
@@ -142,7 +144,7 @@
                                 Focusable="False"
                                 Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}"
                                 ToolTip="{x:Static properties:Resources.StartRecording}"
-                                ToolTipOpening="Button_ToolTipOpening"
+                                behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
                                 >
                                 <Button.Style>
                                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
@@ -199,7 +201,7 @@
                                 Focusable="False"
                                 Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=PauseScreenRecordCommand}"
                                 ToolTip="{x:Static properties:Resources.PauseRecording}"
-                                ToolTipOpening="Button_ToolTipOpening"
+                                behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
                                 >
                                 <Button.Style>
                                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
@@ -285,7 +287,7 @@
                                 Focusable="False"
                                 Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StopScreenRecordCommand}"
                                 ToolTip="{x:Static properties:Resources.StopRecording}"
-                                ToolTipOpening="Button_ToolTipOpening"
+                                behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
                                 >
                                 <Button.Style>
                                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
@@ -387,7 +389,7 @@
                     Foreground="DarkGray"
                     Focusable="False"
                     ToolTip="{x:Static properties:Resources.Exit}"
-                    ToolTipOpening="Button_ToolTipOpening"
+                    behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
                     Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=WindowCloseCommand}"
                     CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                     />
@@ -403,6 +405,7 @@
                         VerticalAlignment="Stretch"
                         Content="{StaticResource Icon_Settings}"
                         ToolTip="{x:Static properties:Resources.EncoderSettings}"
+                        behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
                         Foreground="DarkGray"
                         Margin="3"
                         />
@@ -410,7 +413,7 @@
                         StaysOpen="False"
                         IsOpen="{Binding Path=IsChecked, ElementName=recordSetting, Mode=TwoWay}"
                         Placement="Bottom"
-                        local:PopupAttachedProperty.DisplayedOnlyMonitor="True"
+                        behaviors:PopupBehavior.DisplayedOnlyMonitor="True"
                         >
                         <Border
                             MinWidth="400"
@@ -457,6 +460,7 @@
                                                 Content="{StaticResource Icon_Keyboard}"
                                                 Focusable="False"
                                                 ToolTip="{x:Static properties:Resources.ShortcutSettings}"
+                                                behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
                                                 Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenShortcutSettingsCommand, Mode=OneWay}"
                                                 />
                                         </StackPanel>

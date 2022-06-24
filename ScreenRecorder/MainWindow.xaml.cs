@@ -16,14 +16,5 @@ namespace ScreenRecorder
         {
             InitializeComponent();
         }
-
-        private void Button_ToolTipOpening(object sender, ToolTipEventArgs e)
-        {
-            if (AppManager.Instance.ScreenEncoder.IsStarted)
-            {
-                // Disable tooltips during capturing (main window will already not be captured, s. OnContentRendered)
-                e.Handled = true;
-            }
-        }
     }
 }

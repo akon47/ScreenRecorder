@@ -3,13 +3,13 @@ using System.Windows;
 using System.Windows.Controls.Primitives;
 using ScreenRecorder.Extensions;
 
-namespace ScreenRecorder
+namespace ScreenRecorder.Behaviors
 {
-    public static class PopupAttachedProperty
+    public static class PopupBehavior
     {
         public static readonly DependencyProperty DisplayedOnlyMonitorProperty =
             DependencyProperty.RegisterAttached(
-                "DisplayedOnlyMonitor", typeof(bool), typeof(PopupAttachedProperty), new PropertyMetadata(false, DisplayedOnlyMonitorPropertyChanged));
+                "DisplayedOnlyMonitor", typeof(bool), typeof(PopupBehavior), new PropertyMetadata(false, DisplayedOnlyMonitorPropertyChanged));
         private static void DisplayedOnlyMonitorPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
         {
             if(source is Popup popup)
@@ -32,7 +32,7 @@ namespace ScreenRecorder
         {
             if (sender is System.Windows.Controls.Primitives.Popup popup)
             {
-                if (PopupAttachedProperty.GetDisplayedOnlyMonitor(popup))
+                if (PopupBehavior.GetDisplayedOnlyMonitor(popup))
                 {
                     IntPtr popupWindowHandle = popup.GetPopupWindowHandle();
                     if (popupWindowHandle != IntPtr.Zero)

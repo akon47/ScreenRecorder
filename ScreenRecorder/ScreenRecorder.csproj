@@ -119,6 +119,7 @@
     <Compile Include="AudioSource\AudioSourceResampler.cs" />
     <Compile Include="AudioSource\IAudioSource.cs" />
     <Compile Include="AudioSource\LoopbackAudioSource.cs" />
+    <Compile Include="Behaviors\ToolTipBehavior.cs" />
     <Compile Include="CaptureTarget.cs" />
     <Compile Include="Command\DelegateCommand.cs" />
     <Compile Include="Config\ConfigFileSaveWorker.cs" />
@@ -172,7 +173,7 @@
     <Compile Include="VideoClockEvent.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="VideoSource\VideoSize.cs" />
-    <Compile Include="PopupAttachedProperty.cs" />
+    <Compile Include="Behaviors\PopupBehavior.cs" />
     <Page Include="Icons.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
