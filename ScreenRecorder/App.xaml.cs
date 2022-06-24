@@ -22,17 +22,11 @@ namespace ScreenRecorder
                 Mutex = new Mutex(true, AppConstants.AppName, out bool isNew);
                 if (isNew)
                 {
-                    if (!IsMicrosoftVisualCPlusPlus2019OrNewerAvailable())
-                    {
-                        MessageBox.Show("Please Install \"Microsoft Visual C++ 2019 or newer Redistributable (x64)\"");
-                        Environment.Exit(-2);
-                    }
-
                     VideoClockEvent.Start();
                     AppManager.Instance.Initialize();
                     AppConfig.Instance.WhenChanged(() =>
                     {
-                        VideoClockEvent.Framerate = AppConfig.Instance.AdvancedSettings ? 
+                        VideoClockEvent.Framerate = AppConfig.Instance.AdvancedSettings ?
                             AppConfig.Instance.SelectedRecordFrameRate : 60;
                     },
                     nameof(AppConfig.SelectedRecordFrameRate),
@@ -61,25 +55,6 @@ namespace ScreenRecorder
             VideoClockEvent.Stop();
 
             base.OnExit(e);
-        }
-
-        private bool IsMicrosoftVisualCPlusPlus2019OrNewerAvailable()
-        {
-            using (var depRegistryKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(@"Installer\Dependencies", false))
-            {
-                foreach (string subKeyName in depRegistryKey.GetSubKeyNames())
-                {
-                    using (var registryKey = depRegistryKey.OpenSubKey(subKeyName))
-                    {
-                        if (registryKey.GetValue("DisplayName") is string displayName && Regex.IsMatch(displayName, "[cC]\\+\\+.*(?:2019|2022).*[xX]64"))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
         }
     }
 }

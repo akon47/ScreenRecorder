@@ -45,6 +45,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_176BC3484F384D259F573393B25FAEC1"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_1C7CBE96084EDA5D5B405F1164ACCE14"
         "OwnerKey" = "8:_3C6494BFE21840E7A935CA4596E91F15"
         "MsmSig" = "8:_UNDEFINED"
@@ -64,6 +70,12 @@
         "Entry"
         {
         "MsmKey" = "8:_1CE1BC84993E40A5A944E13BD2A89874"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_1F9B57CAFCBE4082BF61416CC3EEDA15"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -171,6 +183,18 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_4F6675E5329849B2A64FBB9C17439C03"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_5A655FBA845C420E91B417E14EE33834"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_5EEC94338A9840C583F6582F947A0587"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -269,6 +293,12 @@
         {
         "MsmKey" = "8:_93642A157FE3D3BE8348AB835CF570A6"
         "OwnerKey" = "8:_3C6494BFE21840E7A935CA4596E91F15"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_982F9BEDE1A4481F9913ED1F132074CB"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -376,6 +406,12 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_1CA83616006F6FF89986A6A496A90EAC"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_D6F63F37F4661857FC2726DBDCC6282C"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -430,12 +466,6 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_1CA83616006F6FF89986A6A496A90EAC"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_1C7CBE96084EDA5D5B405F1164ACCE14"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -483,7 +513,7 @@
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:..\\bin\\x64\\Release_Setup\\ScreenRecorder_Setup_1.1.3.msi"
+        "OutputFilename" = "8:..\\bin\\x64\\Release_Setup\\ScreenRecorder_Setup_1.1.4.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -1527,15 +1557,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:ScreenRecorder"
-        "ProductCode" = "8:{98734EC4-1E4E-4548-B435-BBCFCB6F560D}"
-        "PackageCode" = "8:{89CD6820-8448-4E83-BFFF-9EBA08A505C5}"
+        "ProductCode" = "8:{54929989-659D-4E84-B2A2-4FCE0285888F}"
+        "PackageCode" = "8:{1D3594D8-7D3F-4FAA-8D44-FA8B27192640}"
         "UpgradeCode" = "8:{75B87256-B559-4CF6-ABE6-AEF9F61BD36D}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.1.3"
+        "ProductVersion" = "8:1.1.4"
         "Manufacturer" = "8:kimhwan"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://github.com/akon47/ScreenRecorder"
@@ -1543,7 +1573,7 @@
         "Subject" = "8:ScreenRecorder"
         "ARPCONTACT" = "8:kimhwan"
         "Keywords" = "8:"
-        "ARPCOMMENTS" = "8:"
+        "ARPCOMMENTS" = "8:A simple recording program with the ability to record screens and audio on your computer."
         "ARPURLINFOABOUT" = "8:https://github.com/akon47/ScreenRecorder"
         "ARPPRODUCTICON" = "8:_3C6494BFE21840E7A935CA4596E91F15"
         "ARPIconIndex" = "3:32512"
@@ -2164,6 +2194,76 @@
         }
         "MergeModule"
         {
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_176BC3484F384D259F573393B25FAEC1"
+            {
+            "UseDynamicProperties" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "SourcePath" = "8:C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Redist\\MSVC\\v142\\MergeModules\\Microsoft_VC142_CXXAMP_x64.msm"
+                "Properties"
+                {
+                }
+            "LanguageId" = "3:0"
+            "Exclude" = "11:FALSE"
+            "Folder" = "8:"
+            "Feature" = "8:"
+            "IsolateTo" = "8:"
+            }
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_1F9B57CAFCBE4082BF61416CC3EEDA15"
+            {
+            "UseDynamicProperties" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "SourcePath" = "8:C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Redist\\MSVC\\v142\\MergeModules\\Microsoft_VC142_OpenMP_x64.msm"
+                "Properties"
+                {
+                }
+            "LanguageId" = "3:0"
+            "Exclude" = "11:FALSE"
+            "Folder" = "8:"
+            "Feature" = "8:"
+            "IsolateTo" = "8:"
+            }
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_4F6675E5329849B2A64FBB9C17439C03"
+            {
+            "UseDynamicProperties" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "SourcePath" = "8:C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Redist\\MSVC\\v142\\MergeModules\\Microsoft_VC142_MFC_x64.msm"
+                "Properties"
+                {
+                }
+            "LanguageId" = "3:0"
+            "Exclude" = "11:FALSE"
+            "Folder" = "8:"
+            "Feature" = "8:"
+            "IsolateTo" = "8:"
+            }
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_5A655FBA845C420E91B417E14EE33834"
+            {
+            "UseDynamicProperties" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "SourcePath" = "8:C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Redist\\MSVC\\v142\\MergeModules\\Microsoft_VC142_MFCLOC_x64.msm"
+                "Properties"
+                {
+                }
+            "LanguageId" = "3:0"
+            "Exclude" = "11:FALSE"
+            "Folder" = "8:"
+            "Feature" = "8:"
+            "IsolateTo" = "8:"
+            }
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_982F9BEDE1A4481F9913ED1F132074CB"
+            {
+            "UseDynamicProperties" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "SourcePath" = "8:C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Redist\\MSVC\\v142\\MergeModules\\Microsoft_VC142_CRT_x64.msm"
+                "Properties"
+                {
+                }
+            "LanguageId" = "3:0"
+            "Exclude" = "11:FALSE"
+            "Folder" = "8:"
+            "Feature" = "8:"
+            "IsolateTo" = "8:"
+            }
         }
         "ProjectOutput"
         {
