@@ -406,12 +406,6 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_1CA83616006F6FF89986A6A496A90EAC"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_D6F63F37F4661857FC2726DBDCC6282C"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -466,6 +460,12 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_1CA83616006F6FF89986A6A496A90EAC"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_1C7CBE96084EDA5D5B405F1164ACCE14"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -513,7 +513,7 @@
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:..\\bin\\x64\\Release_Setup\\ScreenRecorder_Setup_1.1.4.msi"
+        "OutputFilename" = "8:..\\bin\\x64\\Release_Setup\\ScreenRecorder_Setup_1.1.5.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -1557,15 +1557,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:ScreenRecorder"
-        "ProductCode" = "8:{54929989-659D-4E84-B2A2-4FCE0285888F}"
-        "PackageCode" = "8:{1D3594D8-7D3F-4FAA-8D44-FA8B27192640}"
+        "ProductCode" = "8:{EF13AAC9-A649-43B9-9215-11278B23B107}"
+        "PackageCode" = "8:{0634A993-8A1D-46E5-B346-E37697DCE7EE}"
         "UpgradeCode" = "8:{75B87256-B559-4CF6-ABE6-AEF9F61BD36D}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.1.4"
+        "ProductVersion" = "8:1.1.5"
         "Manufacturer" = "8:kimhwan"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://github.com/akon47/ScreenRecorder"
@@ -2269,7 +2269,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_3C6494BFE21840E7A935CA4596E91F15"
             {
-            "SourcePath" = "8:..\\ScreenRecorder\\obj\\x64\\Release\\ScreenRecorder.exe"
+            "SourcePath" = "8:"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_7D9EF09E5DF34B809E04523D54E7AEFD"

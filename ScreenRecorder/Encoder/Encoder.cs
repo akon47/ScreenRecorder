@@ -10,6 +10,7 @@ using ScreenRecorder.VideoSource;
 namespace ScreenRecorder.Encoder
 {
     public delegate void EncoderStoppedEventHandler(object sender, EncoderStoppedEventArgs eventArgs);
+
     public class EncoderStoppedEventArgs : EventArgs
     {
         public ulong VideoFramesCount { get; private set; }
@@ -18,9 +19,9 @@ namespace ScreenRecorder.Encoder
 
         public EncoderStoppedEventArgs(ulong videoFramesCount, ulong audioSamplesCount, string url)
         {
-            this.VideoFramesCount = videoFramesCount;
-            this.AudioSamplesCount = audioSamplesCount;
-            this.Url = url;
+            VideoFramesCount = videoFramesCount;
+            AudioSamplesCount = audioSamplesCount;
+            Url = url;
         }
     }
 
@@ -28,80 +29,103 @@ namespace ScreenRecorder.Encoder
     {
         private class MediaBuffer : IDisposable
         {
-            private object videoSyncObject = new object();
-            private object audioSyncObject = new object();
-            private IVideoSource videoSource;
-            private IAudioSource audioSource;
-            private bool isDisposed = false;
+            #region Fields
 
-            private ConcurrentQueue<VideoFrame> srcVideoFrameQueue;
+            private readonly object _videoSyncObject = new object();
+            private readonly object _audioSyncObject = new object();
+            private readonly IVideoSource _videoSource;
+            private readonly IAudioSource _audioSource;
+            private bool _isDisposed = false;
 
+            private readonly ConcurrentQueue<VideoFrame> _srcVideoFrameQueue;
 
-            private ConcurrentQueue<VideoFrame> videoFrameQueue;
-            private ConcurrentQueue<AudioFrame> audioFrameQueue;
+            private readonly ConcurrentQueue<VideoFrame> _videoFrameQueue;
+            private readonly ConcurrentQueue<AudioFrame> _audioFrameQueue;
 
-            private ManualResetEvent enableEvent;
+            private readonly ManualResetEvent _enableEvent;
 
-            private Thread videoWorkerThread;
-            private Thread audioWorkerThread;
-            private ManualResetEvent needToStop;
+            private Thread _videoWorkerThread;
+            private Thread _audioWorkerThread;
+            private ManualResetEvent _needToStop;
 
-            private CircularBuffer srcAudioCircularBuffer;
-            private Resampler resampler;
+            private readonly CircularBuffer _srcAudioCircularBuffer;
+            private Resampler _resampler;
+
+            private readonly int _samplesPerFrame;
+            private readonly int _samplesBytesPerFrame;
+            private readonly int _framesPerAdditinalSample;
+
+            #endregion
+
+            #region Constructors
 
             public MediaBuffer(IVideoSource videoSource, IAudioSource audioSource)
             {
-                this.enableEvent = new ManualResetEvent(false);
-                this.videoSource = videoSource;
-                this.audioSource = audioSource;
+                _enableEvent = new ManualResetEvent(false);
+                _videoSource = videoSource;
+                _audioSource = audioSource;
 
-                if (this.videoSource != null)
+                if (_videoSource != null)
                 {
-                    this.videoFrameQueue = new ConcurrentQueue<VideoFrame>();
-                    this.srcVideoFrameQueue = new ConcurrentQueue<VideoFrame>();
-                    this.videoSource.NewVideoFrame += VideoSource_NewVideoFrame;
-                    videoWorkerThread = new Thread(new ThreadStart(VideoWorkerThreadHandler)) { IsBackground = true };
+                    _videoFrameQueue = new ConcurrentQueue<VideoFrame>();
+                    _srcVideoFrameQueue = new ConcurrentQueue<VideoFrame>();
+                    _videoSource.NewVideoFrame += VideoSource_NewVideoFrame;
+                    _videoWorkerThread = new Thread(new ThreadStart(VideoWorkerThreadHandler)) { IsBackground = true };
                 }
-                if (this.audioSource != null)
+                if (_audioSource != null)
                 {
-                    resampler = new Resampler();
-                    int framePerBytes = (int)(48000.0d / VideoClockEvent.Framerate * 4);
+                    _resampler = new Resampler();
 
-                    this.srcAudioCircularBuffer = new CircularBuffer(framePerBytes * 15);
-                    this.audioFrameQueue = new ConcurrentQueue<AudioFrame>();
-                    this.audioSource.NewAudioPacket += AudioSource_NewAudioPacket;
-                    audioWorkerThread = new Thread(new ThreadStart(AudioWorkerThreadHandler)) { IsBackground = true };
+                    _samplesPerFrame = (int)(48000.0d / VideoClockEvent.Framerate);
+                    _samplesBytesPerFrame = _samplesPerFrame * 2 * 2; // 2Ch, 16bit
+
+                    var remainingSamples = 48000 - (_samplesPerFrame * VideoClockEvent.Framerate);
+                    _framesPerAdditinalSample = remainingSamples != 0 ? VideoClockEvent.Framerate / remainingSamples : 0;
+
+                    _srcAudioCircularBuffer = new CircularBuffer(_samplesBytesPerFrame * 15);
+                    _audioFrameQueue = new ConcurrentQueue<AudioFrame>();
+                    _audioSource.NewAudioPacket += AudioSource_NewAudioPacket;
+                    _audioWorkerThread = new Thread(new ThreadStart(AudioWorkerThreadHandler)) { IsBackground = true };
                 }
 
-                needToStop = new ManualResetEvent(false);
+                _needToStop = new ManualResetEvent(false);
 
-                videoWorkerThread?.Start();
-                audioWorkerThread?.Start();
+                _videoWorkerThread?.Start();
+                _audioWorkerThread?.Start();
             }
+
+            #endregion
+
+            #region Helpers
 
             private void AudioWorkerThreadHandler()
             {
-                int samples = (int)(48000.0d / VideoClockEvent.Framerate);
+                int samplesPerAudioFrame = _samplesPerFrame;
 
                 // Keep the minimum number of samples at 1600 (Aac codec has a minimum number of samples, so less than this will cause problems)
                 // I tried to process it on the encoder, but it's easier to implement if I just supply a lot of samples.
-                int skipFrames = (int)(Math.Ceiling(1600.0d / samples) - 1);
-                samples *= (skipFrames + 1);
+                int skipFrames = (int)(Math.Ceiling(1600.0d / samplesPerAudioFrame) - 1);
+                samplesPerAudioFrame *= skipFrames + 1;
+
+                var samplesBytesPerFrame = samplesPerAudioFrame * 2 * 2;
 
                 long skipCount = skipFrames;
-                IntPtr audioBuffer = Marshal.AllocHGlobal(samples * 4);
+                IntPtr audioBuffer = Marshal.AllocHGlobal(samplesBytesPerFrame + (VideoClockEvent.Framerate * 2 * 2));
                 using (VideoClockEvent videoClockEvent = new VideoClockEvent())
                 {
-                    while (!needToStop.WaitOne(0, false))
+                    long frames = 0, lastReadedFrames = 0;
+                    while (!_needToStop.WaitOne(0, false))
                     {
                         if (videoClockEvent.WaitOne(10))
                         {
-                            if (!(enableEvent?.WaitOne(0, false) ?? true))
+                            frames++;
+
+                            if (!(_enableEvent?.WaitOne(0, false) ?? true))
                                 continue;
 
                             /// Frames can stack if the PC momentarily slows down and the encoding speed drops below x1.
                             /// This will cause the recorded image to be disconnected, so it is specified that it can be buffered up to 300 frames.
-                            if (audioFrameQueue.Count > 300)
+                            if (_audioFrameQueue.Count > 300)
                             {
                                 continue;
                             }
@@ -115,21 +139,26 @@ namespace ScreenRecorder.Encoder
                                 skipCount = skipFrames;
                             }
 
-                            if (srcAudioCircularBuffer.Count >= (samples * 4))
-                            {
-                                srcAudioCircularBuffer.Read(audioBuffer, (samples * 4));
+                            var needAdditinalSamples = _framesPerAdditinalSample != 0 ? Math.Min(VideoClockEvent.Framerate, (int)(lastReadedFrames - frames) % _framesPerAdditinalSample) : 0;
+                            var needSamplesBytes = samplesBytesPerFrame + (needAdditinalSamples * 4);
 
-                                AudioFrame audioFrame = new AudioFrame(48000, 2, SampleFormat.S16, samples);
+                            if (_srcAudioCircularBuffer.Count >= needSamplesBytes)
+                            {
+                                _srcAudioCircularBuffer.Read(audioBuffer, needSamplesBytes);
+
+                                AudioFrame audioFrame = new AudioFrame(48000, 2, SampleFormat.S16, needSamplesBytes / 4);
                                 audioFrame.FillFrame(audioBuffer);
 
-                                audioFrameQueue.Enqueue(audioFrame);
+                                _audioFrameQueue.Enqueue(audioFrame);
                             }
                             else
                             {
-                                AudioFrame audioFrame = new AudioFrame(48000, 2, SampleFormat.S16, samples);
+                                AudioFrame audioFrame = new AudioFrame(48000, 2, SampleFormat.S16, needSamplesBytes / 4);
                                 audioFrame.ClearFrame();
-                                audioFrameQueue.Enqueue(audioFrame);
+                                _audioFrameQueue.Enqueue(audioFrame);
                             }
+
+                            lastReadedFrames = frames;
                         }
                     }
                 }
@@ -142,44 +171,44 @@ namespace ScreenRecorder.Encoder
 
                 using (VideoClockEvent videoClockEvent = new VideoClockEvent())
                 {
-                    while (!needToStop.WaitOne(0, false))
+                    while (!_needToStop.WaitOne(0, false))
                     {
                         if (videoClockEvent.WaitOne(10))
                         {
-                            if (!(enableEvent?.WaitOne(0, false) ?? true))
+                            if (!(_enableEvent?.WaitOne(0, false) ?? true))
                                 continue;
 
                             /// Frames can stack if the PC momentarily slows down and the encoding speed drops below x1.
                             /// This will cause the recorded image to be disconnected, so it is specified that it can be buffered up to 300 frames.
-                            if (videoFrameQueue.Count > 300) // max buffer
+                            if (_videoFrameQueue.Count > 300) // max buffer
                             {
                                 continue;
                             }
 
-                            if (srcVideoFrameQueue.TryDequeue(out VideoFrame videoFrame))
+                            if (_srcVideoFrameQueue.TryDequeue(out VideoFrame videoFrame))
                             {
-                                if (srcVideoFrameQueue.Count > 3)
+                                if (_srcVideoFrameQueue.Count > 3)
                                 {
                                     for (int i = 0; i < 3; i++)
                                     {
-                                        if (srcVideoFrameQueue.TryDequeue(out VideoFrame temp))
+                                        if (_srcVideoFrameQueue.TryDequeue(out VideoFrame temp))
                                             temp.Dispose();
                                     }
                                 }
 
                                 lastVideoFrame?.Dispose();
                                 lastVideoFrame = new VideoFrame(videoFrame);
-                                videoFrameQueue.Enqueue(videoFrame);
+                                _videoFrameQueue.Enqueue(videoFrame);
                             }
                             else if (lastVideoFrame != null)
                             {
                                 VideoFrame clone = new VideoFrame(lastVideoFrame);
-                                videoFrameQueue.Enqueue(lastVideoFrame);
+                                _videoFrameQueue.Enqueue(lastVideoFrame);
                                 lastVideoFrame = clone;
                             }
                             else
                             {
-                                videoFrameQueue.Enqueue(new VideoFrame(1920, 1080, PixelFormat.RGB24));
+                                _videoFrameQueue.Enqueue(new VideoFrame(1920, 1080, PixelFormat.RGB24));
                             }
                         }
                     }
@@ -189,43 +218,43 @@ namespace ScreenRecorder.Encoder
 
             public void Start()
             {
-                if (enableEvent != null)
+                if (_enableEvent != null)
                 {
-                    while (audioFrameQueue?.Count > 0)
+                    while (_audioFrameQueue?.Count > 0)
                     {
-                        if (audioFrameQueue.TryDequeue(out AudioFrame audioFrame))
+                        if (_audioFrameQueue.TryDequeue(out AudioFrame audioFrame))
                             audioFrame.Dispose();
                     }
-                    while (videoFrameQueue?.Count > 0)
+                    while (_videoFrameQueue?.Count > 0)
                     {
-                        if (videoFrameQueue.TryDequeue(out VideoFrame videoFrame))
+                        if (_videoFrameQueue.TryDequeue(out VideoFrame videoFrame))
                             videoFrame.Dispose();
                     }
 
-                    if (!enableEvent.WaitOne(0, false))
-                        enableEvent.Set();
+                    if (!_enableEvent.WaitOne(0, false))
+                        _enableEvent.Set();
                 }
             }
 
             public void Stop()
             {
-                if (enableEvent != null)
+                if (_enableEvent != null)
                 {
-                    if (enableEvent.WaitOne(0, false))
+                    if (_enableEvent.WaitOne(0, false))
                     {
-                        enableEvent.Reset();
+                        _enableEvent.Reset();
                     }
                 }
             }
 
             private void VideoSource_NewVideoFrame(object sender, NewVideoFrameEventArgs eventArgs)
             {
-                lock (videoSyncObject)
+                lock (_videoSyncObject)
                 {
-                    if (isDisposed)
+                    if (_isDisposed)
                         return;
 
-                    if (enableEvent != null && !enableEvent.WaitOne(0, false))
+                    if (_enableEvent != null && !_enableEvent.WaitOne(0, false))
                         return;
 
                     VideoFrame videoFrame = new VideoFrame(eventArgs.Width, eventArgs.Height, eventArgs.PixelFormat);
@@ -237,91 +266,91 @@ namespace ScreenRecorder.Encoder
                     {
                         videoFrame.FillFrame(eventArgs.DataPointer, eventArgs.Stride);
                     }
-                    srcVideoFrameQueue.Enqueue(videoFrame);
+                    _srcVideoFrameQueue.Enqueue(videoFrame);
                 }
             }
 
             private void AudioSource_NewAudioPacket(object sender, NewAudioPacketEventArgs eventArgs)
             {
-                lock (audioSyncObject)
+                lock (_audioSyncObject)
                 {
-                    if (isDisposed)
+                    if (_isDisposed)
                         return;
 
-                    if (enableEvent != null && !enableEvent.WaitOne(0, false))
+                    if (_enableEvent != null && !_enableEvent.WaitOne(0, false))
                         return;
 
                     if (eventArgs.Channels != 2 || eventArgs.SampleFormat != SampleFormat.S16 || eventArgs.SampleRate != 48000)
                     {
-                        resampler.Resampling(eventArgs.Channels, eventArgs.SampleFormat, eventArgs.SampleRate,
-                            2, SampleFormat.S16, 48000, eventArgs.DataPointer, eventArgs.Samples, out IntPtr destData, out int destSamples);
+                        _resampler.Resampling(eventArgs.Channels, eventArgs.SampleFormat, eventArgs.SampleRate,
+                            2, SampleFormat.S16, 48000, eventArgs.DataPointer, eventArgs.Samples, out var destData, out var destSamples);
 
-                        srcAudioCircularBuffer.Write(destData, 0, destSamples * 4);
+                        _srcAudioCircularBuffer.Write(destData, 0, destSamples * 4);
                     }
                     else
                     {
-                        srcAudioCircularBuffer.Write(eventArgs.DataPointer, 0, eventArgs.Samples * 4);
+                        _srcAudioCircularBuffer.Write(eventArgs.DataPointer, 0, eventArgs.Samples * 4);
                     }
                 }
             }
 
             public void Dispose()
             {
-                needToStop?.Set();
-                if (videoWorkerThread != null)
+                _needToStop?.Set();
+                if (_videoWorkerThread != null)
                 {
-                    if (videoWorkerThread.IsAlive && !videoWorkerThread.Join(2000))
-                        videoWorkerThread.Abort();
+                    if (_videoWorkerThread.IsAlive && !_videoWorkerThread.Join(2000))
+                        _videoWorkerThread.Abort();
 
-                    videoWorkerThread = null;
+                    _videoWorkerThread = null;
                 }
-                if (audioWorkerThread != null)
+                if (_audioWorkerThread != null)
                 {
-                    if (audioWorkerThread.IsAlive && !audioWorkerThread.Join(500))
-                        audioWorkerThread.Abort();
+                    if (_audioWorkerThread.IsAlive && !_audioWorkerThread.Join(500))
+                        _audioWorkerThread.Abort();
 
-                    audioWorkerThread = null;
+                    _audioWorkerThread = null;
                 }
-                needToStop?.Close();
-                needToStop = null;
+                _needToStop?.Close();
+                _needToStop = null;
 
-                lock (videoSyncObject)
+                lock (_videoSyncObject)
                 {
-                    lock (audioSyncObject)
+                    lock (_audioSyncObject)
                     {
-                        if (this.videoSource != null)
-                            this.videoSource.NewVideoFrame -= VideoSource_NewVideoFrame;
-                        while (srcVideoFrameQueue?.Count > 0)
+                        if (_videoSource != null)
+                            _videoSource.NewVideoFrame -= VideoSource_NewVideoFrame;
+                        while (_srcVideoFrameQueue?.Count > 0)
                         {
-                            if (srcVideoFrameQueue.TryDequeue(out VideoFrame videoFrame))
+                            if (_srcVideoFrameQueue.TryDequeue(out VideoFrame videoFrame))
                                 videoFrame.Dispose();
                         }
 
-                        if (this.audioSource != null)
-                            this.audioSource.NewAudioPacket -= AudioSource_NewAudioPacket;
-                        while (audioFrameQueue?.Count > 0)
+                        if (_audioSource != null)
+                            _audioSource.NewAudioPacket -= AudioSource_NewAudioPacket;
+                        while (_audioFrameQueue?.Count > 0)
                         {
-                            if (audioFrameQueue.TryDequeue(out AudioFrame audioFrame))
+                            if (_audioFrameQueue.TryDequeue(out AudioFrame audioFrame))
                                 audioFrame.Dispose();
                         }
 
-                        while (videoFrameQueue?.Count > 0)
+                        while (_videoFrameQueue?.Count > 0)
                         {
-                            if (videoFrameQueue.TryDequeue(out VideoFrame videoFrame))
+                            if (_videoFrameQueue.TryDequeue(out VideoFrame videoFrame))
                                 videoFrame.Dispose();
                         }
 
-                        resampler?.Dispose();
-                        resampler = null;
+                        _resampler?.Dispose();
+                        _resampler = null;
 
-                        isDisposed = true;
+                        _isDisposed = true;
                     }
                 }
             }
 
             public VideoFrame TryVideoFrameDequeue()
             {
-                if (videoFrameQueue != null && videoFrameQueue.TryDequeue(out VideoFrame videoFrame))
+                if (_videoFrameQueue != null && _videoFrameQueue.TryDequeue(out VideoFrame videoFrame))
                 {
                     return videoFrame;
                 }
@@ -330,12 +359,14 @@ namespace ScreenRecorder.Encoder
 
             public AudioFrame TryAudioFrameDequeue()
             {
-                if (audioFrameQueue != null && audioFrameQueue.TryDequeue(out AudioFrame audioFrame))
+                if (_audioFrameQueue != null && _audioFrameQueue.TryDequeue(out AudioFrame audioFrame))
                 {
                     return audioFrame;
                 }
                 return null;
             }
+
+            #endregion
         }
 
         private class EncoderArguments
@@ -353,78 +384,88 @@ namespace ScreenRecorder.Encoder
             public VideoSize VideoSize { get; set; }
         }
 
-        private ulong videoFramesCount;
+        #region Bindable Properties
+
+        private ulong _videoFramesCount;
+
         public ulong VideoFramesCount
         {
-            get => videoFramesCount;
+            get => _videoFramesCount;
             private set
             {
-                SetProperty(ref videoFramesCount, value);
+                SetProperty(ref _videoFramesCount, value);
                 VideoTime = Utils.VideoFramesCountToSeconds(value);
             }
         }
 
-        private ulong videoTime;
+        private ulong _videoTime;
+
         public ulong VideoTime
         {
-            get => videoTime;
+            get => _videoTime;
             private set
             {
-                SetProperty(ref videoTime, value);
+                SetProperty(ref _videoTime, value);
             }
         }
 
-        private ulong audioSamplesCount;
+        private ulong _audioSamplesCount;
+
         public ulong AudioSamplesCount
         {
-            get => audioSamplesCount;
-            private set => SetProperty(ref audioSamplesCount, value);
+            get => _audioSamplesCount;
+            private set => SetProperty(ref _audioSamplesCount, value);
         }
 
-        private string url;
+        private string _url;
+
         public string Url
         {
-            get => url;
-            private set => SetProperty(ref url, value);
+            get => _url;
+            private set => SetProperty(ref _url, value);
         }
 
-        private bool isStarted = false;
+        private bool _isStarted = false;
+
         public bool IsStarted
         {
-            get => isStarted;
+            get => _isStarted;
             private set
             {
-                SetProperty(ref isStarted, value);
+                SetProperty(ref _isStarted, value);
             }
         }
 
-        private bool isPaused = false;
+        private bool _isPaused = false;
+
         public bool IsPaused
         {
-            get => isPaused;
+            get => _isPaused;
             private set
             {
-                SetProperty(ref isPaused, value);
+                SetProperty(ref _isPaused, value);
             }
         }
 
-        private bool isStopped = true;
+        private bool _isStopped = true;
+
         public bool IsStopped
         {
-            get => isStopped;
+            get => _isStopped;
             private set
             {
-                SetProperty(ref isStopped, value);
+                SetProperty(ref _isStopped, value);
             }
         }
 
-        private EncoderStatus status = EncoderStatus.Stop;
+        private EncoderStatus _status = EncoderStatus.Stop;
+
         public EncoderStatus Status
         {
-            get => status;
+            get => _status;
             private set
             {
-                if (SetProperty(ref status, value))
+                if (SetProperty(ref _status, value))
                 {
                     IsStarted = (value == EncoderStatus.Start);
                     IsPaused = (value == EncoderStatus.Pause);
@@ -437,33 +478,39 @@ namespace ScreenRecorder.Encoder
         {
             get
             {
-                if (workerThread != null)
+                if (_workerThread != null)
                 {
-                    if (workerThread.IsAlive && workerThread.Join(0) == false)
+                    if (_workerThread.IsAlive && _workerThread.Join(0) == false)
                         return true;
 
-                    workerThread = null;
+                    _workerThread = null;
 
-                    if (needToStop != null)
-                        needToStop.Close();
-                    needToStop = null;
+                    if (_needToStop != null)
+                        _needToStop.Close();
+                    _needToStop = null;
                 }
                 return false;
             }
         }
 
-        private ulong maximumVideoFramesCount = 0;
+        private ulong _maximumVideoFramesCount = 0;
+
         public ulong MaximumVideoFramesCount
         {
-            get => maximumVideoFramesCount;
+            get => _maximumVideoFramesCount;
             set
             {
-                SetProperty(ref maximumVideoFramesCount, value);
+                SetProperty(ref _maximumVideoFramesCount, value);
             }
         }
 
-        private Thread workerThread = null;
-        private ManualResetEvent needToStop = null;
+        #endregion
+
+        #region Helpers
+
+        private Thread _workerThread = null;
+
+        private ManualResetEvent _needToStop = null;
 
         public void Start(string format, string url, IVideoSource videoSource, VideoCodec videoCodec, int videoBitrate, VideoSize videoSize, IAudioSource audioSource, AudioCodec audioCodec, int audioBitrate)
         {
@@ -476,9 +523,9 @@ namespace ScreenRecorder.Encoder
 
             OnEncoderFirstStarting();
 
-            needToStop = new ManualResetEvent(false);
-            workerThread = new Thread(new ParameterizedThreadStart(WorkerThreadHandler)) { Name = "Encoder", IsBackground = true };
-            workerThread.Start(new EncoderArguments()
+            _needToStop = new ManualResetEvent(false);
+            _workerThread = new Thread(new ParameterizedThreadStart(WorkerThreadHandler)) { Name = "Encoder", IsBackground = true };
+            _workerThread.Start(new EncoderArguments()
             {
                 VideoSource = videoSource,
                 AudioSource = audioSource,
@@ -513,19 +560,19 @@ namespace ScreenRecorder.Encoder
             if (!IsRunning)
                 return;
 
-            if (needToStop != null)
+            if (_needToStop != null)
             {
-                needToStop.Set();
+                _needToStop.Set();
             }
-            if (workerThread != null)
+            if (_workerThread != null)
             {
-                if (workerThread.IsAlive && !workerThread.Join(3000))
-                    workerThread.Abort();
-                workerThread = null;
+                if (_workerThread.IsAlive && !_workerThread.Join(3000))
+                    _workerThread.Abort();
+                _workerThread = null;
 
-                if (needToStop != null)
-                    needToStop.Close();
-                needToStop = null;
+                if (_needToStop != null)
+                    _needToStop.Close();
+                _needToStop = null;
             }
 
             VideoFramesCount = 0;
@@ -540,40 +587,40 @@ namespace ScreenRecorder.Encoder
             {
                 if (argument is EncoderArguments encoderArguments)
                 {
-                    using (MediaBuffer mediaBuffer = new MediaBuffer(encoderArguments.VideoSource, encoderArguments.AudioCodec == AudioCodec.None ? null : encoderArguments.AudioSource))
+                    using (var mediaBuffer = new MediaBuffer(encoderArguments.VideoSource, encoderArguments.AudioCodec == AudioCodec.None ? null : encoderArguments.AudioSource))
                     {
-                        using (MediaWriter mediaWriter = new MediaWriter(
-                            encoderArguments.VideoSize.Width, encoderArguments.VideoSize.Height, (int)VideoClockEvent.Framerate, 1,
+                        using (var mediaWriter = new MediaWriter(
+                            encoderArguments.VideoSize.Width, encoderArguments.VideoSize.Height, VideoClockEvent.Framerate, 1,
                             encoderArguments.VideoCodec, encoderArguments.VideoBitrate,
                             encoderArguments.AudioCodec, encoderArguments.AudioBitrate))
                         {
                             mediaWriter.Open(encoderArguments.Url, encoderArguments.Format);
 
                             mediaBuffer.Start();
-                            while (!needToStop.WaitOne(0, false))
+                            while (!_needToStop.WaitOne(0, false))
                             {
-                                VideoFrame videoFrame = mediaBuffer.TryVideoFrameDequeue();
-                                AudioFrame audioFrame = mediaBuffer.TryAudioFrameDequeue();
+                                var videoFrame = mediaBuffer.TryVideoFrameDequeue();
+                                var audioFrame = mediaBuffer.TryAudioFrameDequeue();
                                 if (videoFrame != null || audioFrame != null)
                                 {
                                     if (videoFrame != null)
                                     {
-                                        if (status != EncoderStatus.Pause)
+                                        if (_status != EncoderStatus.Pause)
                                         {
                                             mediaWriter.EncodeVideoFrame(videoFrame);
                                             VideoFramesCount = mediaWriter.VideoFramesCount;
                                         }
 
-                                        if (maximumVideoFramesCount > 0 && maximumVideoFramesCount <= videoFramesCount)
+                                        if (_maximumVideoFramesCount > 0 && _maximumVideoFramesCount <= _videoFramesCount)
                                         {
-                                            needToStop?.Set();
+                                            _needToStop?.Set();
                                         }
 
                                         videoFrame.Dispose();
                                     }
                                     if (audioFrame != null)
                                     {
-                                        if (status != EncoderStatus.Pause)
+                                        if (_status != EncoderStatus.Pause)
                                         {
                                             mediaWriter.EncodeAudioFrame(audioFrame);
                                             AudioSamplesCount = mediaWriter.AudioSamplesCount;
@@ -584,7 +631,7 @@ namespace ScreenRecorder.Encoder
                                 }
                                 else
                                 {
-                                    if (needToStop.WaitOne(1, false))
+                                    if (_needToStop.WaitOne(1, false))
                                         break;
                                 }
                             }
@@ -598,7 +645,7 @@ namespace ScreenRecorder.Encoder
             }
             finally
             {
-                OnEncoderStopped(new EncoderStoppedEventArgs(videoFramesCount, audioSamplesCount, url));
+                OnEncoderStopped(new EncoderStoppedEventArgs(_videoFramesCount, _audioSamplesCount, _url));
                 VideoFramesCount = 0;
                 AudioSamplesCount = 0;
                 Url = "";
@@ -620,14 +667,17 @@ namespace ScreenRecorder.Encoder
             }
         }
 
+        #endregion
+
         #region Events
 
         public event EncoderStoppedEventHandler EncoderStopped;
+
         protected virtual void OnEncoderStopped(EncoderStoppedEventArgs args)
         {
-            this.EncoderStopped?.Invoke(this, args);
+            EncoderStopped?.Invoke(this, args);
         }
-        
+
         public event EventHandler EncoderFirstStarting;
         protected virtual void OnEncoderFirstStarting()
         {
