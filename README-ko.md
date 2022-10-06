@@ -52,7 +52,7 @@
 ## 📚 레퍼런스
 - [v1.0.4 버전에 대한 소프트피디아 에디터의 리뷰](https://www.softpedia.com/get/Multimedia/Video/Video-Recording/ScreenRecorder-K.shtml)
 - [ilovefreesoftware 리뷰](https://www.ilovefreesoftware.com/08/windows-10/free-screen-recorder-for-windows-select-desired-gpu-for-recording.html)
-- 
+- [유튜버 ODORIZZI 리뷰](https://www.youtube.com/watch?v=_GoPhpy4Q44)
 ## 👨‍💻 빌드
 
 - Visual Studio 2019 or newer
