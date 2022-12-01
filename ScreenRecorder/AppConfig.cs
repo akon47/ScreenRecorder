@@ -9,7 +9,7 @@ namespace ScreenRecorder
 {
     public sealed class AppConfig : NotifyPropertyBase, IConfigFile, IDisposable
     {
-        #region 생성자
+        #region Constructors
         private static volatile AppConfig instance;
         private static object syncRoot = new object();
         public static AppConfig Instance

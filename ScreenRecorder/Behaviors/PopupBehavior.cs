@@ -7,9 +7,14 @@ namespace ScreenRecorder.Behaviors
 {
     public static class PopupBehavior
     {
-        public static readonly DependencyProperty DisplayedOnlyMonitorProperty =
-            DependencyProperty.RegisterAttached(
-                "DisplayedOnlyMonitor", typeof(bool), typeof(PopupBehavior), new PropertyMetadata(false, DisplayedOnlyMonitorPropertyChanged));
+        public static readonly DependencyProperty DisplayedOnlyMonitorProperty = DependencyProperty.RegisterAttached
+        (
+            name: "DisplayedOnlyMonitor",
+            propertyType: typeof(bool),
+            ownerType: typeof(PopupBehavior),
+            defaultMetadata: new PropertyMetadata(false, DisplayedOnlyMonitorPropertyChanged)
+        );
+
         private static void DisplayedOnlyMonitorPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
         {
             Apply(source as Popup);
@@ -29,7 +34,7 @@ namespace ScreenRecorder.Behaviors
 
         private static void Popup_Opened(object sender, EventArgs e)
         {
-            if (sender is System.Windows.Controls.Primitives.Popup popup)
+            if (sender is Popup popup)
             {
                 if (PopupBehavior.GetDisplayedOnlyMonitor(popup))
                 {

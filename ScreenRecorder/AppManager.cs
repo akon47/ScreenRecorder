@@ -10,7 +10,7 @@ namespace ScreenRecorder
 {
     public sealed class AppManager : NotifyPropertyBase, IDisposable
     {
-        #region 생성자
+        #region Constructors
         private static volatile AppManager instance;
         private static object syncRoot = new object();
         public static AppManager Instance

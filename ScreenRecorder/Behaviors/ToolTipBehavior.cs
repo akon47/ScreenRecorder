@@ -8,6 +8,9 @@ using System.Windows.Controls;
 
 namespace ScreenRecorder.Behaviors
 {
+    /// <summary>
+    /// ToolTip Behavior
+    /// </summary>
     public static class ToolTipBehavior
     {
         public static readonly DependencyProperty IgnoreToolTipWhenEncoderStartedProperty = DependencyProperty.RegisterAttached
