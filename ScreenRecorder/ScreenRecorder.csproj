@@ -119,6 +119,7 @@
     <Compile Include="AudioSource\AudioSourceResampler.cs" />
     <Compile Include="AudioSource\IAudioSource.cs" />
     <Compile Include="AudioSource\LoopbackAudioSource.cs" />
+    <Compile Include="Behaviors\DragMoveBehavior.cs" />
     <Compile Include="Behaviors\ToolTipBehavior.cs" />
     <Compile Include="CaptureTarget.cs" />
     <Compile Include="Command\DelegateCommand.cs" />

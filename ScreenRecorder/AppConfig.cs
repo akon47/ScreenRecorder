@@ -33,7 +33,7 @@ namespace ScreenRecorder
 
         private readonly string ConfigFilePath = System.IO.Path.Combine(AppConstants.AppDataFolderPath, "config");
 
-        private Object SyncObject = new object();
+        private object SyncObject = new object();
         private ConfigFileSaveWorker configFileSaveWorker;
         private volatile bool isDisposed = false;
 
@@ -50,16 +50,16 @@ namespace ScreenRecorder
             configFileSaveWorker = new ConfigFileSaveWorker(this, ConfigFilePath);
 
             this.PropertyChanged += (s, e) =>
-			{
-				configFileSaveWorker?.SetModifiedConfigData();
-			};
+            {
+                configFileSaveWorker?.SetModifiedConfigData();
+            };
         }
         #endregion
 
         #region IConfigFile
         public void Save(string filePath)
         {
-            lock (this)
+            lock (SyncObject)
             {
                 Dictionary<string, string> config = new Dictionary<string, string>();
                 config.Add(nameof(ScreenCaptureMonitor), ScreenCaptureMonitor);
@@ -91,7 +91,7 @@ namespace ScreenRecorder
 
         public void Load(string filePath)
         {
-            lock (this)
+            lock (SyncObject)
             {
                 Dictionary<string, string> config = Config.Config.LoadFromFile(filePath, true);
 
@@ -154,12 +154,12 @@ namespace ScreenRecorder
         {
             lock (this)
             {
-                if(string.IsNullOrWhiteSpace(SelectedRecordFormat))
+                if (string.IsNullOrWhiteSpace(SelectedRecordFormat))
                 {
                     SelectedRecordFormat = "mp4";
                 }
 
-                if(!AppManager.Instance.EncoderVideoCodecs?.Select(x => x.VideoCodec).Contains(SelectedRecordVideoCodec) ?? false)
+                if (!AppManager.Instance.EncoderVideoCodecs?.Select(x => x.VideoCodec).Contains(SelectedRecordVideoCodec) ?? false)
                 {
                     SelectedRecordVideoCodec = VideoCodec.H264;
                 }
@@ -169,7 +169,7 @@ namespace ScreenRecorder
                     SelectedRecordAudioCodec = AudioCodec.Aac;
                 }
 
-                if(string.IsNullOrWhiteSpace(ScreenCaptureMonitor))
+                if (string.IsNullOrWhiteSpace(ScreenCaptureMonitor))
                 {
                     ScreenCaptureMonitor = CaptureTarget.PrimaryDisplay.DeviceName;
                 }

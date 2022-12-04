@@ -213,5 +213,25 @@ namespace ScreenRecorder
                 Process.Start("shutdown", "/s /f /t 120");
             }
         }
+
+        /// <summary>
+        /// Find Parent Window
+        /// </summary>
+        public static Window FindParentWindow(DependencyObject child)
+        {
+            var parent = VisualTreeHelper.GetParent(child);
+
+            if (parent == null) return null;
+
+            var parentWindow = parent as Window;
+            if (parentWindow != null)
+            {
+                return parentWindow;
+            }
+            else
+            {
+                return FindParentWindow(parent);
+            }
+        }
     }
 }

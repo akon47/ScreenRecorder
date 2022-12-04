@@ -94,13 +94,5 @@ namespace ScreenRecorder
 
             return IntPtr.Zero;
         }
-
-        #region Window Moving
-        private void Border_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ChangedButton == MouseButton.Left)
-                DragMove();
-        }
-        #endregion
     }
 }
