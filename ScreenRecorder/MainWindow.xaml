@@ -30,7 +30,7 @@
         <Style x:Key="EncoderStatusTextBlockStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="Text" Value="{x:Static properties:Resources.EncoderStatusStopMessage}" />
             <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Foreground" Value="{StaticResource WhiteBrush}" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" Value="True">
                     <Setter Property="Text" Value="{x:Static properties:Resources.EncoderStatusStartMessage}" />
@@ -202,7 +202,7 @@
     <Border
         CornerRadius="0"
         Background="#454545"
-        BorderBrush="Black"
+        BorderBrush="{StaticResource BlackBrush}"
         BorderThickness="1"
         behaviors:DragMoveBehavior.IsActivated="True"
         >
@@ -216,7 +216,7 @@
                 Margin="5 5 3 5"
                 CornerRadius="2"
                 Background="#212121"
-                BorderBrush="Black"
+                BorderBrush="{StaticResource BlackBrush}"
                 BorderThickness="1"
                 >
                 <Grid>
@@ -356,7 +356,7 @@
                                 FontSize="16"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                Foreground="White"
+                                Foreground="{StaticResource WhiteBrush}"
                                 Margin="5 2 5 2"
                                 TextOptions.TextFormattingMode="Display"
                                 FontFamily="Franklin Gothic Medium"
@@ -411,8 +411,8 @@
                         <Border
                             MinWidth="400"
                             BorderThickness="1"
-                            BorderBrush="Black"
-                            Background="#434343"
+                            BorderBrush="{StaticResource BlackBrush}"
+                            Background="{StaticResource DarkGrayBrush}"
                             SnapsToDevicePixels="True"
                             >
                             <Grid>
@@ -424,14 +424,14 @@
                                     Grid.Column="0"
                                     Grid.Row="0"
                                     BorderThickness="0 0 0 1"
-                                    BorderBrush="Black"
+                                    BorderBrush="{StaticResource BlackBrush}"
                                     Background="#212121"
                                     Margin="0 0 0 0"
                                     >
                                     <Grid Margin="3">
                                         <TextBlock
                                             Text="{x:Static properties:Resources.EncoderSettings}"
-                                            Foreground="White"
+                                            Foreground="{StaticResource WhiteBrush}"
                                             VerticalAlignment="Center"
                                             Margin="3 0"
                                             />
@@ -489,7 +489,7 @@
                                         Margin="5"
                                         CornerRadius="2"
                                         Background="#212121"
-                                        BorderBrush="Black"
+                                        BorderBrush="{StaticResource BlackBrush}"
                                         BorderThickness="1"
                                         >
                                         <Grid IsEnabled="{Binding Source={x:Static local:AppManager.Instance}, Path=ScreenEncoder.IsStopped, Mode=OneWay}">
@@ -497,7 +497,7 @@
                                                 <Style TargetType="{x:Type TextBlock}">
                                                     <Setter Property="VerticalAlignment" Value="Center" />
                                                     <Setter Property="TextAlignment" Value="Right" />
-                                                    <Setter Property="Foreground" Value="White" />
+                                                    <Setter Property="Foreground" Value="{StaticResource WhiteBrush}" />
                                                 </Style>
                                                 <Style TargetType="{x:Type RowDefinition}">
                                                     <Setter Property="Height" Value="Auto" />
@@ -767,7 +767,7 @@
                                                 <CheckBox
                                                     Content="{x:Static properties:Resources.RecordMicrophone}"
                                                     IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=RecordMicrophone, Mode=TwoWay}"
-                                                    Foreground="White"
+                                                    Foreground="{StaticResource WhiteBrush}"
                                                     Margin="5 2 0 5"
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Center"
@@ -775,7 +775,7 @@
                                                 <CheckBox
                                                     Content="{x:Static properties:Resources.CaptureCursor}"
                                                     IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=ScreenCaptureCursorVisible, Mode=TwoWay}"
-                                                    Foreground="White"
+                                                    Foreground="{StaticResource WhiteBrush}"
                                                     Margin="5 2 0 5"
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Center"
@@ -783,7 +783,7 @@
                                                 <CheckBox
                                                     Content="{x:Static properties:Resources.AdvancedSettings}"
                                                     IsChecked="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=TwoWay}"
-                                                    Foreground="White"
+                                                    Foreground="{StaticResource WhiteBrush}"
                                                     Margin="5 2 5 5"
                                                     HorizontalAlignment="Right"
                                                     />

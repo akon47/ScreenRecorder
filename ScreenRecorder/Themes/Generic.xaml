@@ -5,7 +5,24 @@
     mc:Ignorable="d"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:conv="clr-namespace:CustomConverter"
+    xmlns:opt="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
     >
+
+    <!-- region Colors -->
+
+    <Color x:Key="BlackColor">#FF000000</Color>
+    <Color x:Key="WhiteColor">#FFFFFFFF</Color>
+    <Color x:Key="DarkGrayColor">#FF434343</Color>
+
+    <!-- endregion -->
+
+    <!-- region Brushes -->
+
+    <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource BlackColor}" opt:Freeze="True" />
+    <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource WhiteColor}" opt:Freeze="True" />
+    <SolidColorBrush x:Key="DarkGrayBrush" Color="{StaticResource DarkGrayColor}" opt:Freeze="True" />
+
+    <!-- endregion -->
 
     <!-- region Custom Converters -->
 
@@ -14,6 +31,8 @@
     <conv:TrueToParameter x:Key="TrueToParameter" />
 
     <!-- endregion -->
+
+    <!-- region ToggleButtons -->
 
     <Style x:Key="VoidToggleButtonStyle" TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}">
         <Setter Property="Focusable" Value="False" />
@@ -34,5 +53,7 @@
             </Trigger>
         </Style.Triggers>
     </Style>
+
+    <!-- endregion -->
 
 </ResourceDictionary>
