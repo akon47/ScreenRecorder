@@ -72,9 +72,9 @@ namespace ScreenRecorder
 
         public static Rect ComputeUniformBounds(Rect availableBounds, Size contentSize)
         {
-            Size scaleFactor = Utils.ComputeScaleFactor(availableBounds.Size, contentSize, Stretch.Uniform);
-            Size uniformSize = new Size(contentSize.Width * scaleFactor.Width, contentSize.Height * scaleFactor.Height);
-            Rect uniformBounds = new Rect(
+            var scaleFactor = Utils.ComputeScaleFactor(availableBounds.Size, contentSize, Stretch.Uniform);
+            var uniformSize = new Size(contentSize.Width * scaleFactor.Width, contentSize.Height * scaleFactor.Height);
+            var uniformBounds = new Rect(
                 (availableBounds.X + ((availableBounds.Width - uniformSize.Width) / 2.0d)),
                 (availableBounds.Y + ((availableBounds.Height - uniformSize.Height) / 2.0d)),
                 uniformSize.Width,
@@ -85,11 +85,11 @@ namespace ScreenRecorder
 
         public static Size ComputeScaleFactor(Size availableSize, Size contentSize, Stretch stretch, StretchDirection stretchDirection = StretchDirection.Both)
         {
-            double scaleX = 1.0;
-            double scaleY = 1.0;
+            var scaleX = 1.0d;
+            var scaleY = 1.0d;
 
-            bool isConstrainedWidth = !Double.IsPositiveInfinity(availableSize.Width);
-            bool isConstrainedHeight = !Double.IsPositiveInfinity(availableSize.Height);
+            var isConstrainedWidth = !Double.IsPositiveInfinity(availableSize.Width);
+            var isConstrainedHeight = !Double.IsPositiveInfinity(availableSize.Height);
 
             if ((stretch == Stretch.Uniform || stretch == Stretch.UniformToFill || stretch == Stretch.Fill)
                  && (isConstrainedWidth || isConstrainedHeight))
@@ -110,12 +110,12 @@ namespace ScreenRecorder
                     switch (stretch)
                     {
                         case Stretch.Uniform:
-                            double minscale = scaleX < scaleY ? scaleX : scaleY;
+                            var minscale = scaleX < scaleY ? scaleX : scaleY;
                             scaleX = scaleY = minscale;
                             break;
 
                         case Stretch.UniformToFill:
-                            double maxscale = scaleX > scaleY ? scaleX : scaleY;
+                            var maxscale = scaleX > scaleY ? scaleX : scaleY;
                             scaleX = scaleY = maxscale;
                             break;
 

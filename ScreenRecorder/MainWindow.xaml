@@ -34,11 +34,11 @@
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=ScreenEncoder.IsStarted, Mode=OneWay}" Value="True">
                     <Setter Property="Text" Value="{x:Static properties:Resources.EncoderStatusStartMessage}" />
-                    <Setter Property="Foreground" Value="Red" />
+                    <Setter Property="Foreground" Value="{StaticResource CrimsonBrush}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=ScreenEncoder.IsPaused, Mode=OneWay}" Value="True">
                     <Setter Property="Text" Value="{x:Static properties:Resources.EncoderStatusPauseMessage}" />
-                    <Setter Property="Foreground" Value="Red" />
+                    <Setter Property="Foreground" Value="{StaticResource CrimsonBrush}" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -197,11 +197,14 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="IconButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+            <Setter Property="Focusable" Value="False" />
+        </Style>
+
     </Window.Resources>
 
     <Border
-        CornerRadius="0"
-        Background="#454545"
+        Background="{StaticResource DarkGrayBrush}"
         BorderBrush="{StaticResource BlackBrush}"
         BorderThickness="1"
         behaviors:DragMoveBehavior.IsActivated="True"
@@ -215,7 +218,7 @@
                 Grid.Column="0"
                 Margin="5 5 3 5"
                 CornerRadius="2"
-                Background="#212121"
+                Background="{StaticResource DeepDarkGrayBrush}"
                 BorderBrush="{StaticResource BlackBrush}"
                 BorderThickness="1"
                 >
@@ -251,9 +254,8 @@
                             Margin="0 0 2 0"
                             >
                             <Button
-                                Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                                Style="{StaticResource IconButtonStyle}"
                                 Content="{StaticResource Icon_CursorClick}"
-                                Focusable="False"
                                 ToolTip="{x:Static properties:Resources.CaptureRegionByUserSelection}"
                                 behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
                                 Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=StartScreenRecordCommand}"
@@ -264,9 +266,8 @@
                                 Margin="1 0 1 0"
                                 />
                             <Button
-                                Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                                Style="{StaticResource IconButtonStyle}"
                                 Content="{StaticResource Icon_FolderOpen}"
-                                Focusable="False"
                                 ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}"
                                 behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
                                 Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=OpenRecordDirecotryCommand}"
@@ -378,14 +379,13 @@
                 <Button
                     Grid.Column="0"
                     Grid.Row="0"
-                    Margin="3"
-                    Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                    Style="{StaticResource IconButtonStyle}"
                     Content="{StaticResource Icon_Close}"
-                    Focusable="False"
                     ToolTip="{x:Static properties:Resources.Exit}"
                     behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
                     Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=WindowCloseCommand}"
                     CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                    Margin="3"
                     />
 
                 <Grid
@@ -425,8 +425,7 @@
                                     Grid.Row="0"
                                     BorderThickness="0 0 0 1"
                                     BorderBrush="{StaticResource BlackBrush}"
-                                    Background="#212121"
-                                    Margin="0 0 0 0"
+                                    Background="{StaticResource DeepDarkGrayBrush}"
                                     >
                                     <Grid Margin="3">
                                         <TextBlock
@@ -488,7 +487,7 @@
                                     <Border
                                         Margin="5"
                                         CornerRadius="2"
-                                        Background="#212121"
+                                        Background="{StaticResource DeepDarkGrayBrush}"
                                         BorderBrush="{StaticResource BlackBrush}"
                                         BorderThickness="1"
                                         >
@@ -706,7 +705,7 @@
                                                     />
                                                 <TextBlock
                                                     Text="{x:Static properties:Resources.DisplayNotFound}"
-                                                    Foreground="Red"
+                                                    Foreground="{StaticResource CrimsonBrush}"
                                                     VerticalAlignment="Center"
                                                     Margin="6 0 30 0"
                                                     IsHitTestVisible="False"

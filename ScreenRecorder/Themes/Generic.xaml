@@ -13,6 +13,8 @@
     <Color x:Key="BlackColor">#FF000000</Color>
     <Color x:Key="WhiteColor">#FFFFFFFF</Color>
     <Color x:Key="DarkGrayColor">#FF434343</Color>
+    <Color x:Key="DeepDarkGrayColor">#FF212121</Color>
+    <Color x:Key="CrimsonColor">#FFDC143C</Color>
 
     <!-- endregion -->
 
@@ -21,6 +23,8 @@
     <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource BlackColor}" opt:Freeze="True" />
     <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource WhiteColor}" opt:Freeze="True" />
     <SolidColorBrush x:Key="DarkGrayBrush" Color="{StaticResource DarkGrayColor}" opt:Freeze="True" />
+    <SolidColorBrush x:Key="DeepDarkGrayBrush" Color="{StaticResource DeepDarkGrayColor}" opt:Freeze="True" />
+    <SolidColorBrush x:Key="CrimsonBrush" Color="{StaticResource CrimsonColor}" opt:Freeze="True" />
 
     <!-- endregion -->
 
