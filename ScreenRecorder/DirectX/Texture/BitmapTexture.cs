@@ -17,19 +17,19 @@ namespace ScreenRecorder.DirectX.Texture
 {
     public class BitmapTexture : IDisposable
     {
-        private ShaderResourceView bitmapTextureResourceView;
+        private ShaderResourceView _bitmapTextureResourceView;
 
-        private readonly int screenWidth;
-        private readonly int screenHeight;
-        private VertexBufferBinding vertextBufferBinding;
+        private readonly int _screenWidth;
+        private readonly int _screenHeight;
+        private VertexBufferBinding _vertextBufferBinding;
 
-        private Buffer verticesBuffer;
+        private Buffer _verticesBuffer;
 
         public BitmapTexture(Device device, int screenWidth, int screenHeight, int bitmapWidth, int bitmapHeight,
             Format format = Format.B8G8R8A8_UNorm, int mipLevels = 1)
         {
-            this.screenWidth = screenWidth;
-            this.screenHeight = screenHeight;
+            this._screenWidth = screenWidth;
+            this._screenHeight = screenHeight;
             TextureWidth = bitmapWidth;
             TextureHeight = bitmapHeight;
 
@@ -47,10 +47,10 @@ namespace ScreenRecorder.DirectX.Texture
         {
             get
             {
-                var left = (OldX / (float)screenWidth * 2.0f) - 1.0f;
-                var top = (-OldY / (float)screenHeight * 2.0f) + 1.0f;
-                var right = (2.0f * ((OldX + (float)OldWidth) / screenWidth)) - 1.0f;
-                var bottom = (2.0f * ((-OldY - (float)OldHeight) / screenHeight)) + 1.0f;
+                var left = (OldX / (float)_screenWidth * 2.0f) - 1.0f;
+                var top = (-OldY / (float)_screenHeight * 2.0f) + 1.0f;
+                var right = (2.0f * ((OldX + (float)OldWidth) / _screenWidth)) - 1.0f;
+                var bottom = (2.0f * ((-OldY - (float)OldHeight) / _screenHeight)) + 1.0f;
 
                 var centerX = left + ((right - left) / 2.0f);
                 var centerY = top + ((bottom - top) / 2.0f);
@@ -82,9 +82,9 @@ namespace ScreenRecorder.DirectX.Texture
 
         public void Dispose()
         {
-            if (verticesBuffer != null)
+            if (_verticesBuffer != null)
             {
-                verticesBuffer.Dispose();
+                _verticesBuffer.Dispose();
             }
 
             if (Texture != null)
@@ -92,9 +92,9 @@ namespace ScreenRecorder.DirectX.Texture
                 Texture.Dispose();
             }
 
-            if (bitmapTextureResourceView != null)
+            if (_bitmapTextureResourceView != null)
             {
-                bitmapTextureResourceView.Dispose();
+                _bitmapTextureResourceView.Dispose();
             }
         }
 
@@ -158,64 +158,64 @@ namespace ScreenRecorder.DirectX.Texture
             {
                 var dataRectangle = surface.Map(MapFlags.Write | MapFlags.Discard);
 
-                var xor_offset = pitch * (height / 2);
-                var and_map = (byte*)cursorDataPointer.ToPointer();
-                var xor_map = (byte*)(cursorDataPointer + xor_offset).ToPointer();
-                var out_pixels = (byte*)dataRectangle.DataPointer.ToPointer();
+                var xorOffset = pitch * (height / 2);
+                var andMap = (byte*)cursorDataPointer.ToPointer();
+                var xorMap = (byte*)(cursorDataPointer + xorOffset).ToPointer();
+                var outPixels = (byte*)dataRectangle.DataPointer.ToPointer();
                 ;
-                var width_in_bytes = (width + 7) / 8;
+                var widthInBytes = (width + 7) / 8;
 
-                var img_height = height / 2;
-                var img_width = width;
+                var imgHeight = height / 2;
+                var imgWidth = width;
 
-                for (var j = 0; j < img_height; ++j)
+                for (var j = 0; j < imgHeight; ++j)
                 {
                     byte bit = 0x80;
 
                     for (var i = 0; i < width; ++i)
                     {
-                        var and_byte = and_map[(j * width_in_bytes) + (i / 8)];
-                        var xor_byte = xor_map[(j * width_in_bytes) + (i / 8)];
-                        var and_bit = (byte)((and_byte & bit) != 0x00 ? 1 : 0);
-                        var xor_bit = (byte)((xor_byte & bit) != 0x00 ? 1 : 0);
-                        var out_dx = (j * width * 4) + (i * 4);
+                        var andByte = andMap[(j * widthInBytes) + (i / 8)];
+                        var xorByte = xorMap[(j * widthInBytes) + (i / 8)];
+                        var andBit = (byte)((andByte & bit) != 0x00 ? 1 : 0);
+                        var xorBit = (byte)((xorByte & bit) != 0x00 ? 1 : 0);
+                        var outDx = (j * width * 4) + (i * 4);
 
-                        if (0 == and_bit)
+                        if (0 == andBit)
                         {
-                            if (0 == xor_bit)
+                            if (0 == xorBit)
                             {
                                 /* 0 - 0 = black */
-                                out_pixels[out_dx + 0] = 0x00;
-                                out_pixels[out_dx + 1] = 0x00;
-                                out_pixels[out_dx + 2] = 0x00;
-                                out_pixels[out_dx + 3] = 0xFF;
+                                outPixels[outDx + 0] = 0x00;
+                                outPixels[outDx + 1] = 0x00;
+                                outPixels[outDx + 2] = 0x00;
+                                outPixels[outDx + 3] = 0xFF;
                             }
                             else
                             {
                                 /* 0 - 1 = white */
-                                out_pixels[out_dx + 0] = 0xFF;
-                                out_pixels[out_dx + 1] = 0xFF;
-                                out_pixels[out_dx + 2] = 0xFF;
-                                out_pixels[out_dx + 3] = 0xFF;
+                                outPixels[outDx + 0] = 0xFF;
+                                outPixels[outDx + 1] = 0xFF;
+                                outPixels[outDx + 2] = 0xFF;
+                                outPixels[outDx + 3] = 0xFF;
                             }
                         }
                         else
                         {
-                            if (0 == xor_bit)
+                            if (0 == xorBit)
                             {
                                 /* 1 - 0 = transparent (screen). */
-                                out_pixels[out_dx + 0] = 0x00;
-                                out_pixels[out_dx + 1] = 0x00;
-                                out_pixels[out_dx + 2] = 0x00;
-                                out_pixels[out_dx + 3] = 0x00;
+                                outPixels[outDx + 0] = 0x00;
+                                outPixels[outDx + 1] = 0x00;
+                                outPixels[outDx + 2] = 0x00;
+                                outPixels[outDx + 3] = 0x00;
                             }
                             else
                             {
                                 /* 1 - 1 = reverse, black. */
-                                out_pixels[out_dx + 0] = 0x00;
-                                out_pixels[out_dx + 1] = 0x00;
-                                out_pixels[out_dx + 2] = 0x00;
-                                out_pixels[out_dx + 3] = 0xFF;
+                                outPixels[outDx + 0] = 0x00;
+                                outPixels[outDx + 1] = 0x00;
+                                outPixels[outDx + 2] = 0x00;
+                                outPixels[outDx + 3] = 0xFF;
                             }
                         }
 
@@ -355,11 +355,11 @@ namespace ScreenRecorder.DirectX.Texture
 
         private void InitializeBuffers(Device device)
         {
-            verticesBuffer = new Buffer(device, (Vector3.SizeInBytes + Vector2.SizeInBytes) * 6,
+            _verticesBuffer = new Buffer(device, (Vector3.SizeInBytes + Vector2.SizeInBytes) * 6,
                 ResourceUsage.Dynamic, BindFlags.VertexBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
 
-            vertextBufferBinding =
-                new VertexBufferBinding(verticesBuffer, Vector3.SizeInBytes + Vector2.SizeInBytes, 0);
+            _vertextBufferBinding =
+                new VertexBufferBinding(_verticesBuffer, Vector3.SizeInBytes + Vector2.SizeInBytes, 0);
         }
 
         private void InitializeTexture(Device device, int bitmapWidth, int bitmapHeight,
@@ -380,7 +380,7 @@ namespace ScreenRecorder.DirectX.Texture
             };
 
             Texture = new Texture2D(device, texture2DDescription);
-            bitmapTextureResourceView = new ShaderResourceView(device, Texture);
+            _bitmapTextureResourceView = new ShaderResourceView(device, Texture);
         }
 
         public void Render(DeviceContext deviceContext, int positionX, int positionY, int width, int height)
@@ -421,10 +421,10 @@ namespace ScreenRecorder.DirectX.Texture
                 OldWidth = width;
                 OldHeight = height;
 
-                var left = (positionX / (float)screenWidth * 2.0f) - 1.0f;
-                var top = (-positionY / (float)screenHeight * 2.0f) + 1.0f;
-                var right = (2.0f * ((positionX + (float)OldWidth) / screenWidth)) - 1.0f;
-                var bottom = (2.0f * ((-positionY - (float)OldHeight) / screenHeight)) + 1.0f;
+                var left = (positionX / (float)_screenWidth * 2.0f) - 1.0f;
+                var top = (-positionY / (float)_screenHeight * 2.0f) + 1.0f;
+                var right = (2.0f * ((positionX + (float)OldWidth) / _screenWidth)) - 1.0f;
+                var bottom = (2.0f * ((-positionY - (float)OldHeight) / _screenHeight)) + 1.0f;
 
                 var verticesDataStream = new DataStream((Vector3.SizeInBytes + Vector2.SizeInBytes) * 6, true, true);
                 verticesDataStream.Write(new Vector3(left, top, 0.0f));
@@ -445,11 +445,11 @@ namespace ScreenRecorder.DirectX.Texture
                 verticesDataStream.Write(new Vector3(right, bottom, 0.0f));
                 verticesDataStream.Write(new Vector2(1.0f, 1.0f));
 
-                var dataBox = deviceContext.MapSubresource(verticesBuffer, MapMode.WriteDiscard,
+                var dataBox = deviceContext.MapSubresource(_verticesBuffer, MapMode.WriteDiscard,
                     SharpDX.Direct3D11.MapFlags.None, out var stream);
                 CopyMemory(dataBox.DataPointer, verticesDataStream.DataPointer,
                     (uint)((Vector3.SizeInBytes + Vector2.SizeInBytes) * 6));
-                deviceContext.UnmapSubresource(verticesBuffer, 0);
+                deviceContext.UnmapSubresource(_verticesBuffer, 0);
 
                 verticesDataStream.Close();
                 verticesDataStream.Dispose();
@@ -458,13 +458,13 @@ namespace ScreenRecorder.DirectX.Texture
 
         private void RenderBuffers(DeviceContext deviceContext)
         {
-            deviceContext.InputAssembler.SetVertexBuffers(0, vertextBufferBinding);
+            deviceContext.InputAssembler.SetVertexBuffers(0, _vertextBufferBinding);
             deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
         }
 
         public ShaderResourceView GetTexture()
         {
-            return bitmapTextureResourceView;
+            return _bitmapTextureResourceView;
         }
     }
 }

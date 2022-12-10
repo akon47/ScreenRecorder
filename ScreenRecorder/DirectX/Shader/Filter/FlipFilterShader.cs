@@ -22,30 +22,30 @@ namespace ScreenRecorder.DirectX.Shader.Filter
 
         public bool Enabled => true;
 
-        public bool verticalFlip;
+        private bool _verticalFlip;
 
         public bool VerticalFlip
         {
-            get => verticalFlip;
+            get => _verticalFlip;
             set
             {
-                lock (syncObject)
+                lock (_syncObject)
                 {
-                    SetProperty(ref verticalFlip, value);
+                    SetProperty(ref _verticalFlip, value);
                 }
             }
         }
 
-        public bool horizontalFlip;
+        private bool _horizontalFlip;
 
         public bool HorizontalFlip
         {
-            get => horizontalFlip;
+            get => _horizontalFlip;
             set
             {
-                lock (syncObject)
+                lock (_syncObject)
                 {
-                    SetProperty(ref horizontalFlip, value);
+                    SetProperty(ref _horizontalFlip, value);
                 }
             }
         }
@@ -54,7 +54,7 @@ namespace ScreenRecorder.DirectX.Shader.Filter
 
         #region Private Members
 
-        private readonly string shaderCode =
+        private readonly string _shaderCode =
             @"
 Texture2D Texture : register(t0);
 SamplerState TextureSampler;
@@ -108,13 +108,13 @@ float4 PShader(PSInput input) : SV_Target
 }
 ";
 
-        private InputLayout inputLayout;
-        private ShaderSignature inputSignature;
-        private VertexShader vertexShader;
-        private PixelShader pixelShader;
-        private SamplerState samplerState;
-        private Buffer argsBuffer;
-        private readonly object syncObject = new object();
+        private InputLayout _inputLayout;
+        private ShaderSignature _inputSignature;
+        private VertexShader _vertexShader;
+        private PixelShader _pixelShader;
+        private SamplerState _samplerState;
+        private Buffer _argsBuffer;
+        private readonly object _syncObject = new object();
 
         #endregion
 
@@ -122,15 +122,15 @@ float4 PShader(PSInput input) : SV_Target
 
         private void InitializeShader(Device device)
         {
-            using (var bytecode = ShaderBytecode.Compile(shaderCode, "VShader", "vs_4_0"))
+            using (var bytecode = ShaderBytecode.Compile(_shaderCode, "VShader", "vs_4_0"))
             {
-                inputSignature = ShaderSignature.GetInputSignature(bytecode);
-                vertexShader = new VertexShader(device, bytecode);
+                _inputSignature = ShaderSignature.GetInputSignature(bytecode);
+                _vertexShader = new VertexShader(device, bytecode);
             }
 
-            using (var bytecode = ShaderBytecode.Compile(shaderCode, "PShader", "ps_4_0"))
+            using (var bytecode = ShaderBytecode.Compile(_shaderCode, "PShader", "ps_4_0"))
             {
-                pixelShader = new PixelShader(device, bytecode);
+                _pixelShader = new PixelShader(device, bytecode);
             }
 
             var elements = new[]
@@ -140,12 +140,12 @@ float4 PShader(PSInput input) : SV_Target
                     InputClassification.PerVertexData, 0)
             };
 
-            inputLayout = new InputLayout(device, inputSignature, elements);
+            _inputLayout = new InputLayout(device, _inputSignature, elements);
 
-            argsBuffer = new Buffer(device, 16, ResourceUsage.Dynamic, BindFlags.ConstantBuffer, CpuAccessFlags.Write,
+            _argsBuffer = new Buffer(device, 16, ResourceUsage.Dynamic, BindFlags.ConstantBuffer, CpuAccessFlags.Write,
                 ResourceOptionFlags.None, 0);
 
-            samplerState = new SamplerState(device,
+            _samplerState = new SamplerState(device,
                 new SamplerStateDescription
                 {
                     Filter = SharpDX.Direct3D11.Filter.MinMagMipLinear,
@@ -163,9 +163,9 @@ float4 PShader(PSInput input) : SV_Target
 
         public void Render(DeviceContext deviceContext, ShaderResourceView shaderResourceView, float textureWidth,
             float textureHeight,
-            bool h_flip, bool v_flip)
+            bool hFlip, bool vFlip)
         {
-            SetShaderParameters(deviceContext, shaderResourceView, textureWidth, textureHeight, h_flip, v_flip);
+            SetShaderParameters(deviceContext, shaderResourceView, textureWidth, textureHeight, hFlip, vFlip);
             RenderShader(deviceContext);
 
             if (shaderResourceView != null)
@@ -175,33 +175,33 @@ float4 PShader(PSInput input) : SV_Target
         }
 
 
-        private bool oldHFlip, oldVFlip;
+        private bool _oldHFlip, _oldVFlip;
 
         private void SetShaderParameters(DeviceContext deviceContext, ShaderResourceView shaderResourceView,
             float textureWidth, float textureHeight,
-            bool h_flip, bool v_flip)
+            bool hFlip, bool vFlip)
         {
-            if (h_flip != oldHFlip || v_flip != oldVFlip)
+            if (hFlip != _oldHFlip || vFlip != _oldVFlip)
             {
-                oldHFlip = h_flip;
-                oldVFlip = v_flip;
+                _oldHFlip = hFlip;
+                _oldVFlip = vFlip;
 
-                deviceContext.MapSubresource(argsBuffer, MapMode.WriteDiscard, MapFlags.None, out var stream);
-                stream.Write(h_flip ? 1 : 0);
-                stream.Write(v_flip ? 1 : 0);
-                deviceContext.UnmapSubresource(argsBuffer, 0);
+                deviceContext.MapSubresource(_argsBuffer, MapMode.WriteDiscard, MapFlags.None, out var stream);
+                stream.Write(hFlip ? 1 : 0);
+                stream.Write(vFlip ? 1 : 0);
+                deviceContext.UnmapSubresource(_argsBuffer, 0);
             }
 
-            deviceContext.PixelShader.SetConstantBuffer(0, argsBuffer);
+            deviceContext.PixelShader.SetConstantBuffer(0, _argsBuffer);
             deviceContext.PixelShader.SetShaderResource(0, shaderResourceView);
         }
 
         private void RenderShader(DeviceContext deviceContext)
         {
-            deviceContext.InputAssembler.InputLayout = inputLayout;
-            deviceContext.VertexShader.Set(vertexShader);
-            deviceContext.PixelShader.Set(pixelShader);
-            deviceContext.PixelShader.SetSampler(0, samplerState);
+            deviceContext.InputAssembler.InputLayout = _inputLayout;
+            deviceContext.VertexShader.Set(_vertexShader);
+            deviceContext.PixelShader.Set(_pixelShader);
+            deviceContext.PixelShader.SetSampler(0, _samplerState);
             deviceContext.Draw(6, 0);
         }
 
@@ -212,12 +212,12 @@ float4 PShader(PSInput input) : SV_Target
         public bool Render(DeviceContext deviceContext, ShaderResourceView shaderResourceView, int resourceWidth,
             int resourceHeight)
         {
-            lock (syncObject)
+            lock (_syncObject)
             {
-                if (horizontalFlip || verticalFlip)
+                if (_horizontalFlip || _verticalFlip)
                 {
-                    Render(deviceContext, shaderResourceView, resourceWidth, resourceHeight, horizontalFlip,
-                        verticalFlip);
+                    Render(deviceContext, shaderResourceView, resourceWidth, resourceHeight, _horizontalFlip,
+                        _verticalFlip);
                     return true;
                 }
             }
@@ -227,34 +227,34 @@ float4 PShader(PSInput input) : SV_Target
 
         public void Dispose()
         {
-            if (inputLayout != null)
+            if (_inputLayout != null)
             {
-                inputLayout.Dispose();
+                _inputLayout.Dispose();
             }
 
-            if (inputSignature != null)
+            if (_inputSignature != null)
             {
-                inputSignature.Dispose();
+                _inputSignature.Dispose();
             }
 
-            if (vertexShader != null)
+            if (_vertexShader != null)
             {
-                vertexShader.Dispose();
+                _vertexShader.Dispose();
             }
 
-            if (pixelShader != null)
+            if (_pixelShader != null)
             {
-                pixelShader.Dispose();
+                _pixelShader.Dispose();
             }
 
-            if (samplerState != null)
+            if (_samplerState != null)
             {
-                samplerState.Dispose();
+                _samplerState.Dispose();
             }
 
-            if (argsBuffer != null)
+            if (_argsBuffer != null)
             {
-                argsBuffer.Dispose();
+                _argsBuffer.Dispose();
             }
         }
 

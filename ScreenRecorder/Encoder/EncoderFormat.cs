@@ -4,12 +4,12 @@ namespace ScreenRecorder.Encoder
 {
     public class EncoderFormat : NotifyPropertyBase
     {
-        public static EncoderFormat CreateEncoderFormatByFormatString(string format, string override_name = null)
+        public static EncoderFormat CreateEncoderFormatByFormatString(string format, string overrideName = null)
         {
             MediaFormat.GetFormatInfo(format, out string longName, out string extensions);
             if (!string.IsNullOrWhiteSpace(longName) && !string.IsNullOrWhiteSpace(extensions))
             {
-                EncoderFormat encoderFormat = new EncoderFormat(format) { name = override_name ?? longName, extensions = extensions };
+                EncoderFormat encoderFormat = new EncoderFormat(format) { _name = overrideName ?? longName, _extensions = extensions };
                 return encoderFormat;
             }
             else
@@ -21,25 +21,25 @@ namespace ScreenRecorder.Encoder
             Format = format;
         }
 
-        private string name;
+        private string _name;
         public string Name
         {
-            get => name;
-            private set => SetProperty(ref name, value);
+            get => _name;
+            private set => SetProperty(ref _name, value);
         }
 
-        private string format;
+        private string _format;
         public string Format
         {
-            get => format;
-            private set => SetProperty(ref format, value);
+            get => _format;
+            private set => SetProperty(ref _format, value);
         }
 
-        private string extensions;
+        private string _extensions;
         public string Extensions
         {
-            get => extensions;
-            private set => SetProperty(ref extensions, value);
+            get => _extensions;
+            private set => SetProperty(ref _extensions, value);
         }
     }
 }

@@ -5,137 +5,137 @@ namespace ScreenRecorder.Encoder
 {
     public class CircularBuffer
     {
-        private readonly byte[] buffer;
-        private readonly object lockObject;
-        private int writePosition;
-        private int readPosition;
-        private int byteCount;
+        private readonly byte[] _buffer;
+        private readonly object _lockObject;
+        private int _writePosition;
+        private int _readPosition;
+        private int _byteCount;
 
         public CircularBuffer(int size)
         {
-            buffer = new byte[size];
-            lockObject = new object();
+            _buffer = new byte[size];
+            _lockObject = new object();
         }
 
         public int Write(byte[] data, int offset, int count)
         {
-            lock (lockObject)
+            lock (_lockObject)
             {
                 var bytesWritten = 0;
-                if (count > buffer.Length - byteCount)
+                if (count > _buffer.Length - _byteCount)
                 {
-                    count = buffer.Length - byteCount;
+                    count = _buffer.Length - _byteCount;
                 }
-                int writeToEnd = Math.Min(buffer.Length - writePosition, count);
-                Array.Copy(data, offset, buffer, writePosition, writeToEnd);
-                writePosition += writeToEnd;
-                writePosition %= buffer.Length;
+                int writeToEnd = Math.Min(_buffer.Length - _writePosition, count);
+                Array.Copy(data, offset, _buffer, _writePosition, writeToEnd);
+                _writePosition += writeToEnd;
+                _writePosition %= _buffer.Length;
                 bytesWritten += writeToEnd;
                 if (bytesWritten < count)
                 {
-                    Array.Copy(data, offset + bytesWritten, buffer, writePosition, count - bytesWritten);
-                    writePosition += (count - bytesWritten);
+                    Array.Copy(data, offset + bytesWritten, _buffer, _writePosition, count - bytesWritten);
+                    _writePosition += (count - bytesWritten);
                     bytesWritten = count;
                 }
-                byteCount += bytesWritten;
+                _byteCount += bytesWritten;
                 return bytesWritten;
             }
         }
 
         public int Write(IntPtr data, int offset, int count)
         {
-            lock (lockObject)
+            lock (_lockObject)
             {
                 var bytesWritten = 0;
-                if (count > buffer.Length - byteCount)
+                if (count > _buffer.Length - _byteCount)
                 {
-                    count = buffer.Length - byteCount;
+                    count = _buffer.Length - _byteCount;
                 }
-                int writeToEnd = Math.Min(buffer.Length - writePosition, count);
-                Marshal.Copy(IntPtr.Add(data, offset), buffer, writePosition, writeToEnd);
-                writePosition += writeToEnd;
-                writePosition %= buffer.Length;
+                int writeToEnd = Math.Min(_buffer.Length - _writePosition, count);
+                Marshal.Copy(IntPtr.Add(data, offset), _buffer, _writePosition, writeToEnd);
+                _writePosition += writeToEnd;
+                _writePosition %= _buffer.Length;
                 bytesWritten += writeToEnd;
                 if (bytesWritten < count)
                 {
-                    Marshal.Copy(IntPtr.Add(data, offset + bytesWritten), buffer, writePosition, count - bytesWritten);
-                    writePosition += (count - bytesWritten);
+                    Marshal.Copy(IntPtr.Add(data, offset + bytesWritten), _buffer, _writePosition, count - bytesWritten);
+                    _writePosition += (count - bytesWritten);
                     bytesWritten = count;
                 }
-                byteCount += bytesWritten;
+                _byteCount += bytesWritten;
                 return bytesWritten;
             }
         }
 
         public int Read(byte[] data, int offset, int count)
         {
-            lock (lockObject)
+            lock (_lockObject)
             {
-                if (count > byteCount)
+                if (count > _byteCount)
                 {
-                    count = byteCount;
+                    count = _byteCount;
                 }
                 int bytesRead = 0;
-                int readToEnd = Math.Min(buffer.Length - readPosition, count);
-                Array.Copy(buffer, readPosition, data, offset, readToEnd);
+                int readToEnd = Math.Min(_buffer.Length - _readPosition, count);
+                Array.Copy(_buffer, _readPosition, data, offset, readToEnd);
                 bytesRead += readToEnd;
-                readPosition += readToEnd;
-                readPosition %= buffer.Length;
+                _readPosition += readToEnd;
+                _readPosition %= _buffer.Length;
 
                 if (bytesRead < count)
                 {
-                    Array.Copy(buffer, readPosition, data, offset + bytesRead, count - bytesRead);
-                    readPosition += (count - bytesRead);
+                    Array.Copy(_buffer, _readPosition, data, offset + bytesRead, count - bytesRead);
+                    _readPosition += (count - bytesRead);
                     bytesRead = count;
                 }
 
-                byteCount -= bytesRead;
+                _byteCount -= bytesRead;
                 return bytesRead;
             }
         }
 
         public int Read(IntPtr data, int count)
         {
-            lock (lockObject)
+            lock (_lockObject)
             {
-                if (count > byteCount)
+                if (count > _byteCount)
                 {
-                    count = byteCount;
+                    count = _byteCount;
                 }
                 int bytesRead = 0;
-                int readToEnd = Math.Min(buffer.Length - readPosition, count);
-                Marshal.Copy(buffer, readPosition, data, readToEnd);
+                int readToEnd = Math.Min(_buffer.Length - _readPosition, count);
+                Marshal.Copy(_buffer, _readPosition, data, readToEnd);
                 bytesRead += readToEnd;
-                readPosition += readToEnd;
-                readPosition %= buffer.Length;
+                _readPosition += readToEnd;
+                _readPosition %= _buffer.Length;
 
                 if (bytesRead < count)
                 {
-                    Marshal.Copy(buffer, readPosition, IntPtr.Add(data, bytesRead), count - bytesRead);
-                    readPosition += (count - bytesRead);
+                    Marshal.Copy(_buffer, _readPosition, IntPtr.Add(data, bytesRead), count - bytesRead);
+                    _readPosition += (count - bytesRead);
                     bytesRead = count;
                 }
 
-                byteCount -= bytesRead;
+                _byteCount -= bytesRead;
                 return bytesRead;
             }
         }
 
-        public int MaxLength => buffer.Length;
+        public int MaxLength => _buffer.Length;
         public int Count
         {
             get
             {
-                lock (lockObject)
+                lock (_lockObject)
                 {
-                    return byteCount;
+                    return _byteCount;
                 }
             }
         }
 
         public void Reset()
         {
-            lock (lockObject)
+            lock (_lockObject)
             {
                 ResetInner();
             }
@@ -143,24 +143,24 @@ namespace ScreenRecorder.Encoder
 
         private void ResetInner()
         {
-            byteCount = 0;
-            readPosition = 0;
-            writePosition = 0;
+            _byteCount = 0;
+            _readPosition = 0;
+            _writePosition = 0;
         }
 
         public void Advance(int count)
         {
-            lock (lockObject)
+            lock (_lockObject)
             {
-                if (count >= byteCount)
+                if (count >= _byteCount)
                 {
                     ResetInner();
                 }
                 else
                 {
-                    byteCount -= count;
-                    readPosition += count;
-                    readPosition %= MaxLength;
+                    _byteCount -= count;
+                    _readPosition += count;
+                    _readPosition %= MaxLength;
                 }
             }
         }
@@ -172,16 +172,16 @@ namespace ScreenRecorder.Encoder
 
         public void WriteByte(byte item)
         {
-            lock (lockObject)
+            lock (_lockObject)
             {
-                if ((buffer.Length - byteCount) <= 0)
+                if ((_buffer.Length - _byteCount) <= 0)
                 {
-                    readPosition = (readPosition + 1) % buffer.Length;
-                    byteCount--;
+                    _readPosition = (_readPosition + 1) % _buffer.Length;
+                    _byteCount--;
                 }
-                buffer[writePosition] = item;
-                writePosition = (writePosition + 1) % buffer.Length;
-                byteCount++;
+                _buffer[_writePosition] = item;
+                _writePosition = (_writePosition + 1) % _buffer.Length;
+                _byteCount++;
             }
         }
 

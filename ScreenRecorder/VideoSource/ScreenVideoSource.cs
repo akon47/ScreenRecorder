@@ -16,16 +16,16 @@ namespace ScreenRecorder.VideoSource
 
         public event NewVideoFrameEventHandler NewVideoFrame;
 
-        private Thread workerThread;
-        private ManualResetEvent needToStop;
-        private AutoResetEvent needToReset;
+        private Thread _workerThread;
+        private ManualResetEvent _needToStop;
+        private AutoResetEvent _needToReset;
 
         public ScreenVideoSource(string deviceName, Rect region, bool drawCursor)
         {
-            needToReset = new AutoResetEvent(false);
-            needToStop = new ManualResetEvent(false);
-            workerThread = new Thread(new ParameterizedThreadStart(WorkerThreadHandler)) { Name = "ScreenVideoSource", IsBackground = true };
-            workerThread.Start(new ScreenVideoSourceArguments()
+            _needToReset = new AutoResetEvent(false);
+            _needToStop = new ManualResetEvent(false);
+            _workerThread = new Thread(new ParameterizedThreadStart(WorkerThreadHandler)) { Name = "ScreenVideoSource", IsBackground = true };
+            _workerThread.Start(new ScreenVideoSourceArguments()
             {
                 DeviceName = deviceName,
                 Region = region,
@@ -48,13 +48,13 @@ namespace ScreenRecorder.VideoSource
 
             using (VideoClockEvent videoClockEvent = new VideoClockEvent())
             {
-                while (!needToStop.WaitOne(0, false))
+                while (!_needToStop.WaitOne(0, false))
                 {
                     try
                     {
                         using (DuplicatorCapture displayCapture = new DuplicatorCapture(deviceName, region, drawCursor))
                         {
-                            while (!needToStop.WaitOne(0, false))
+                            while (!_needToStop.WaitOne(0, false))
                             {
                                 if (videoClockEvent.WaitOne(1))
                                 {
@@ -67,18 +67,18 @@ namespace ScreenRecorder.VideoSource
                                     }
                                     catch
                                     {
-                                        needToReset?.Set();
+                                        _needToReset?.Set();
                                     }
                                 }
 
-                                if (needToReset.WaitOne(0, false))
+                                if (_needToReset.WaitOne(0, false))
                                     break;
                             }
                         }
                     }
                     catch
                     {
-                        if (needToStop.WaitOne(1000, false))
+                        if (_needToStop.WaitOne(1000, false))
                             break;
                     }
                 }
@@ -87,23 +87,23 @@ namespace ScreenRecorder.VideoSource
 
         public void Dispose()
         {
-            if (needToStop != null)
+            if (_needToStop != null)
             {
-                needToStop.Set();
+                _needToStop.Set();
             }
-            if (workerThread != null)
+            if (_workerThread != null)
             {
-                if (workerThread.IsAlive && !workerThread.Join(3000))
-                    workerThread.Abort();
-                workerThread = null;
+                if (_workerThread.IsAlive && !_workerThread.Join(3000))
+                    _workerThread.Abort();
+                _workerThread = null;
 
-                if (needToStop != null)
-                    needToStop.Close();
-                needToStop = null;
+                if (_needToStop != null)
+                    _needToStop.Close();
+                _needToStop = null;
             }
-            if (needToReset != null)
-                needToReset.Close();
-            needToReset = null;
+            if (_needToReset != null)
+                _needToReset.Close();
+            _needToReset = null;
         }
     }
 }

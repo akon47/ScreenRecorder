@@ -11,12 +11,12 @@ namespace ScreenRecorder.Region
     public sealed class WindowRegion
     {
         #region Native Methods
-        public static RECT GetWindowRectangle(IntPtr hWnd)
+        public static Rect GetWindowRectangle(IntPtr hWnd)
         {
-            RECT rect;
+            Rect rect;
 
-            int size = Marshal.SizeOf(typeof(RECT));
-            DwmGetWindowAttribute(hWnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out rect, size);
+            int size = Marshal.SizeOf(typeof(Rect));
+            DwmGetWindowAttribute(hWnd, (int)DwmWindowAttribute.DwmwaExtendedFrameBounds, out rect, size);
 
             return rect;
         }
@@ -24,35 +24,35 @@ namespace ScreenRecorder.Region
         [Flags]
         private enum DwmWindowAttribute : uint
         {
-            DWMWA_NCRENDERING_ENABLED = 1,
-            DWMWA_NCRENDERING_POLICY,
-            DWMWA_TRANSITIONS_FORCEDISABLED,
-            DWMWA_ALLOW_NCPAINT,
-            DWMWA_CAPTION_BUTTON_BOUNDS,
-            DWMWA_NONCLIENT_RTL_LAYOUT,
-            DWMWA_FORCE_ICONIC_REPRESENTATION,
-            DWMWA_FLIP3D_POLICY,
-            DWMWA_EXTENDED_FRAME_BOUNDS,
-            DWMWA_HAS_ICONIC_BITMAP,
-            DWMWA_DISALLOW_PEEK,
-            DWMWA_EXCLUDED_FROM_PEEK,
-            DWMWA_CLOAK,
-            DWMWA_CLOAKED,
-            DWMWA_FREEZE_REPRESENTATION,
-            DWMWA_LAST
+            DwmwaNcrenderingEnabled = 1,
+            DwmwaNcrenderingPolicy,
+            DwmwaTransitionsForcedisabled,
+            DwmwaAllowNcpaint,
+            DwmwaCaptionButtonBounds,
+            DwmwaNonclientRtlLayout,
+            DwmwaForceIconicRepresentation,
+            DwmwaFlip3DPolicy,
+            DwmwaExtendedFrameBounds,
+            DwmwaHasIconicBitmap,
+            DwmwaDisallowPeek,
+            DwmwaExcludedFromPeek,
+            DwmwaCloak,
+            DwmwaCloaked,
+            DwmwaFreezeRepresentation,
+            DwmwaLast
         }
 
         [DllImport("dwmapi.dll")]
-        public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out RECT pvAttribute, int cbAttribute);
+        public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out Rect pvAttribute, int cbAttribute);
 
         [DllImport("user32.DLL")]
         public static extern bool IsWindowVisible(IntPtr hWnd);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
+        public static extern bool GetWindowRect(IntPtr hwnd, out Rect lpRect);
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct RECT
+        public struct Rect
         {
             public int Left;        // x position of upper-left corner
             public int Top;         // y position of upper-left corner
@@ -72,7 +72,7 @@ namespace ScreenRecorder.Region
         public static extern bool EnumChildWindows(IntPtr hwnd, WindowEnumProc callback, IntPtr lParam);
         #endregion
 
-        public Rect Region { get; private set; }
+        public System.Windows.Rect Region { get; private set; }
         public IntPtr Hwnd { get; private set; }
 
         /// <summary>
@@ -87,9 +87,9 @@ namespace ScreenRecorder.Region
             {
                 if(IsWindowVisible(hWnd) && !Utils.IsWindowDisplayedOnlyMonitor(hWnd))
                 {
-                    RECT rect = GetWindowRectangle(hWnd);
+                    Rect rect = GetWindowRectangle(hWnd);
 
-                    Rect region = new Rect(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
+                    System.Windows.Rect region = new System.Windows.Rect(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
                     if (region.Height > 16 && region.Width > 16)
                     {
                         windowRegions.Add(new WindowRegion() { Region = region, Hwnd = hWnd });

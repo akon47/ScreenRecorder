@@ -11,71 +11,71 @@ namespace ScreenRecorder.Config
 
     public sealed class ConfigFileSaveWorker : IDisposable
     {
-        private readonly string configFilePath;
-        private readonly IConfigFile configObject;
-        private ManualResetEvent needToStop;
-        private bool requireSaveConfig;
-        private DateTime lastModifiedDateTime;
-        private readonly object syncObject = new object();
-        private Thread workerThread;
+        private readonly string _configFilePath;
+        private readonly IConfigFile _configObject;
+        private ManualResetEvent _needToStop;
+        private bool _requireSaveConfig;
+        private DateTime _lastModifiedDateTime;
+        private readonly object _syncObject = new object();
+        private Thread _workerThread;
 
         public ConfigFileSaveWorker(IConfigFile configObject, string configFilePath)
         {
-            this.configObject = configObject;
-            this.configFilePath = configFilePath;
+            this._configObject = configObject;
+            this._configFilePath = configFilePath;
 
-            lastModifiedDateTime = DateTime.MinValue;
-            needToStop = new ManualResetEvent(false);
-            workerThread = new Thread(SaveWorkerThreadHandler) { Name = "ConfigFileSaveWorker", IsBackground = true };
-            workerThread.Start();
+            _lastModifiedDateTime = DateTime.MinValue;
+            _needToStop = new ManualResetEvent(false);
+            _workerThread = new Thread(SaveWorkerThreadHandler) { Name = "ConfigFileSaveWorker", IsBackground = true };
+            _workerThread.Start();
         }
 
         public void Dispose()
         {
             SaveConfig(true);
 
-            if (needToStop != null)
+            if (_needToStop != null)
             {
-                needToStop.Set();
+                _needToStop.Set();
             }
 
-            if (workerThread != null)
+            if (_workerThread != null)
             {
-                if (workerThread.IsAlive && !workerThread.Join(5000))
+                if (_workerThread.IsAlive && !_workerThread.Join(5000))
                 {
-                    workerThread.Abort();
+                    _workerThread.Abort();
                 }
 
-                workerThread = null;
+                _workerThread = null;
 
-                if (needToStop != null)
+                if (_needToStop != null)
                 {
-                    needToStop.Close();
+                    _needToStop.Close();
                 }
 
-                needToStop = null;
+                _needToStop = null;
             }
         }
 
         public void SetModifiedConfigData()
         {
-            lock (syncObject)
+            lock (_syncObject)
             {
-                lastModifiedDateTime = DateTime.Now;
-                requireSaveConfig = true;
+                _lastModifiedDateTime = DateTime.Now;
+                _requireSaveConfig = true;
             }
         }
 
         private void SaveConfig(bool forced = false)
         {
-            lock (syncObject)
+            lock (_syncObject)
             {
-                if (forced || DateTime.Now.Subtract(lastModifiedDateTime) >= TimeSpan.FromMilliseconds(500))
+                if (forced || DateTime.Now.Subtract(_lastModifiedDateTime) >= TimeSpan.FromMilliseconds(500))
                 {
-                    if (requireSaveConfig)
+                    if (_requireSaveConfig)
                     {
-                        configObject?.Save(configFilePath);
-                        requireSaveConfig = false;
+                        _configObject?.Save(_configFilePath);
+                        _requireSaveConfig = false;
                     }
                 }
             }
@@ -83,7 +83,7 @@ namespace ScreenRecorder.Config
 
         private void SaveWorkerThreadHandler()
         {
-            while (!needToStop.WaitOne(300))
+            while (!_needToStop.WaitOne(300))
             {
                 SaveConfig();
             }

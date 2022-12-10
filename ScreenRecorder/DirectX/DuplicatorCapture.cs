@@ -12,55 +12,57 @@ namespace ScreenRecorder.DirectX
 {
     public sealed class DuplicatorCapture : IDisposable
     {
-        private Output output;
-        private Output1 output1;
-        private SharpDX.Direct3D11.Device device;
-        private SharpDX.Direct3D11.DeviceContext context;
-        private OutputDuplication duplicatedOutput;
-        private Texture2D renderTargetTexture, regionTexture;
-        private RenderTargetView renderTargetView;
+        private Output _output;
+        private Output1 _output1;
+        private SharpDX.Direct3D11.Device _device;
+        private readonly SharpDX.Direct3D11.DeviceContext _context;
+        private OutputDuplication _duplicatedOutput;
+        private Texture2D _renderTargetTexture, _regionTexture;
+        private RenderTargetView _renderTargetView;
 
-        private Texture2D nv12Texture, readableNv12Texture;
-        private NV12Converter nv12Converter;
+        private readonly Texture2D _nv12Texture;
+        private readonly Texture2D _readableNv12Texture;
+        private readonly Nv12Converter _nv12Converter;
 
-        private BitmapTexture cursorTexture;
-        private Texture2D cursorBackgroundTexture;
-        private ShaderResourceView cursorBackgroundShaderResourceView, regionShaderResourceView;
+        private BitmapTexture _cursorTexture;
+        private Texture2D _cursorBackgroundTexture;
+        private ShaderResourceView _cursorBackgroundShaderResourceView, _regionShaderResourceView;
 
-        private SharpDX.Direct3D11.Buffer verticesBuffer;
-        private VertexBufferBinding vertextBufferBinding;
-        private ColorShader colorShader;
-        private CursorShader cursorShader;
-        private IntPtr dataPointer;
+        private readonly SharpDX.Direct3D11.Buffer _verticesBuffer;
+        private readonly VertexBufferBinding _vertextBufferBinding;
+        private ColorShader _colorShader;
+        private CursorShader _cursorShader;
+        private IntPtr _dataPointer;
 
-        private bool drawCursor;
-        private System.Windows.Rect region;
+        private readonly bool _drawCursor;
+        private System.Windows.Rect _region;
 
-        private int oldX = -1, oldY = -1;
-        private int oldWidth = -1, oldHeight = -1;
+        private int _oldX = -1, _oldY = -1;
+        private int _oldWidth = -1, _oldHeight = -1;
 
-        private PointerInfo pointerInfo = new PointerInfo();
-        private int screenWidth, screenHeight;
+        private PointerInfo _pointerInfo = new PointerInfo();
+        private readonly int _screenWidth;
+        private readonly int _screenHeight;
 
         public DuplicatorCapture(string deviceName, System.Windows.Rect region, bool drawCursor)
         {
             if (GetOutputFromDeviceName(deviceName, out Adapter1 adapter, out Output output))
             {
-                this.drawCursor = drawCursor;
-                this.region = System.Windows.Rect.Intersect(region, new System.Windows.Rect(0, 0, Math.Abs(output.Description.DesktopBounds.Right - output.Description.DesktopBounds.Left), Math.Abs(output.Description.DesktopBounds.Bottom - output.Description.DesktopBounds.Top)));
-                this.screenWidth = (int)this.region.Width;
-                this.screenHeight = (int)this.region.Height;
-                this.output = output;
+                _drawCursor = drawCursor;
+                _region = System.Windows.Rect.Intersect(region, new System.Windows.Rect(0, 0, Math.Abs(output.Description.DesktopBounds.Right - output.Description.DesktopBounds.Left), Math.Abs(output.Description.DesktopBounds.Bottom - output.Description.DesktopBounds.Top)));
+                _screenWidth = (int)this._region.Width;
+                _screenHeight = (int)this._region.Height;
+                _output = output;
 
                 try
                 {
                     #region DirectX Device Initialize
-                    device = new SharpDX.Direct3D11.Device(adapter, DeviceCreationFlags.SingleThreaded);
-                    context = device.ImmediateContext;
+                    _device = new SharpDX.Direct3D11.Device(adapter, DeviceCreationFlags.SingleThreaded);
+                    _context = _device.ImmediateContext;
                     Texture2DDescription renderTargetTexture2DDescription = new Texture2DDescription()
                     {
-                        Width = screenWidth,
-                        Height = screenHeight,
+                        Width = _screenWidth,
+                        Height = _screenHeight,
                         MipLevels = 1,
                         ArraySize = 1,
                         Format = Format.B8G8R8A8_UNorm,
@@ -70,8 +72,8 @@ namespace ScreenRecorder.DirectX
                         CpuAccessFlags = CpuAccessFlags.None,
                         OptionFlags = ResourceOptionFlags.None
                     };
-                    renderTargetTexture = new Texture2D(device, renderTargetTexture2DDescription);
-                    renderTargetView = new RenderTargetView(device, renderTargetTexture, new RenderTargetViewDescription()
+                    _renderTargetTexture = new Texture2D(_device, renderTargetTexture2DDescription);
+                    _renderTargetView = new RenderTargetView(_device, _renderTargetTexture, new RenderTargetViewDescription()
                     {
                         Format = renderTargetTexture2DDescription.Format,
                         Dimension = RenderTargetViewDimension.Texture2D,
@@ -80,16 +82,16 @@ namespace ScreenRecorder.DirectX
                     #endregion
 
                     #region DuplicatedOutput Initialize
-                    output1 = output.QueryInterface<Output1>();
-                    duplicatedOutput = output1.DuplicateOutput(device);
+                    _output1 = output.QueryInterface<Output1>();
+                    _duplicatedOutput = _output1.DuplicateOutput(_device);
                     #endregion
 
                     #region Region Texture Initialize
                     // Create Textures for Region Capture
-                    regionTexture = new Texture2D(device, new Texture2DDescription()
+                    _regionTexture = new Texture2D(_device, new Texture2DDescription()
                     {
-                        Width = screenWidth,
-                        Height = screenHeight,
+                        Width = _screenWidth,
+                        Height = _screenHeight,
                         MipLevels = 1,
                         ArraySize = 1,
                         Format = Format.B8G8R8A8_UNorm,
@@ -99,15 +101,15 @@ namespace ScreenRecorder.DirectX
                         CpuAccessFlags = CpuAccessFlags.None,
                         OptionFlags = ResourceOptionFlags.None
                     });
-                    regionShaderResourceView = new ShaderResourceView(device, regionTexture);
+                    _regionShaderResourceView = new ShaderResourceView(_device, _regionTexture);
                     #endregion
 
                     #region NV12 Texture Initialize
                     /// Create resources for converting to NV12 to reduce the amount of transmitted from GPU memory to system memory as much as possible.
                     Texture2DDescription nv12TextureDesc = new Texture2DDescription()
                     {
-                        Width = screenWidth,
-                        Height = screenHeight,
+                        Width = _screenWidth,
+                        Height = _screenHeight,
                         MipLevels = 1,
                         ArraySize = 1,
                         Format = Format.NV12,
@@ -117,29 +119,29 @@ namespace ScreenRecorder.DirectX
                         CpuAccessFlags = CpuAccessFlags.None,
                         OptionFlags = ResourceOptionFlags.None
                     };
-                    nv12Texture = new Texture2D(device, nv12TextureDesc);
+                    _nv12Texture = new Texture2D(_device, nv12TextureDesc);
                     Texture2DDescription readableNv12TextureDesc = nv12TextureDesc;
                     readableNv12TextureDesc.BindFlags = BindFlags.None;
                     readableNv12TextureDesc.Usage = ResourceUsage.Staging;
                     readableNv12TextureDesc.CpuAccessFlags = CpuAccessFlags.Read;
                     readableNv12TextureDesc.SampleDescription = new SampleDescription(1, 0);
                     readableNv12TextureDesc.OptionFlags = ResourceOptionFlags.None;
-                    readableNv12Texture = new Texture2D(device, readableNv12TextureDesc);
+                    _readableNv12Texture = new Texture2D(_device, readableNv12TextureDesc);
 
-                    nv12Converter = new NV12Converter(device, context);
+                    _nv12Converter = new Nv12Converter(_device, _context);
                     #endregion
 
                     #region BlendState
-                    context.OutputMerger.BlendState = CreateAlphaBlendState(device, true);
-                    context.OutputMerger.BlendFactor = new Color4(0.0f, 0.0f, 0.0f, 0.0f);
+                    _context.OutputMerger.BlendState = CreateAlphaBlendState(_device, true);
+                    _context.OutputMerger.BlendFactor = new Color4(0.0f, 0.0f, 0.0f, 0.0f);
                     unchecked
                     {
-                        context.OutputMerger.BlendSampleMask = (int)0xffffffff;
+                        _context.OutputMerger.BlendSampleMask = (int)0xffffffff;
                     }
                     #endregion
 
                     #region Rasterizer Initialize
-                    context.Rasterizer.State = new RasterizerState(device, new RasterizerStateDescription()
+                    _context.Rasterizer.State = new RasterizerState(_device, new RasterizerStateDescription()
                     {
                         IsAntialiasedLineEnabled = false,
                         CullMode = CullMode.None,
@@ -152,31 +154,31 @@ namespace ScreenRecorder.DirectX
                         IsScissorEnabled = false,
                         SlopeScaledDepthBias = 0.0f
                     });
-                    context.Rasterizer.SetViewport(new Viewport(0, 0, screenWidth, screenHeight, 0.0f, 1.0f));
+                    _context.Rasterizer.SetViewport(new Viewport(0, 0, _screenWidth, _screenHeight, 0.0f, 1.0f));
                     #endregion
 
                     #region Shader Initialize
-                    colorShader = new ColorShader();
-                    colorShader.Initialize(device);
+                    _colorShader = new ColorShader();
+                    _colorShader.Initialize(_device);
 
                     if (drawCursor)
                     {
-                        cursorShader = new CursorShader();
-                        cursorShader.Initialize(device);
+                        _cursorShader = new CursorShader();
+                        _cursorShader.Initialize(_device);
                     }
                     #endregion
 
                     #region Initialize Buffers
-                    verticesBuffer = new SharpDX.Direct3D11.Buffer(device, (Vector3.SizeInBytes + Vector2.SizeInBytes) * 6,
+                    _verticesBuffer = new SharpDX.Direct3D11.Buffer(_device, (Vector3.SizeInBytes + Vector2.SizeInBytes) * 6,
                         ResourceUsage.Dynamic, BindFlags.VertexBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
-                    vertextBufferBinding = new VertexBufferBinding(verticesBuffer, Vector3.SizeInBytes + Vector2.SizeInBytes, 0);
+                    _vertextBufferBinding = new VertexBufferBinding(_verticesBuffer, Vector3.SizeInBytes + Vector2.SizeInBytes, 0);
                     #endregion
 
-                    context.OutputMerger.SetTargets(renderTargetView);
-                    context.ClearRenderTargetView(renderTargetView, new Color4(0, 0, 0, 0));
-                    context.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
+                    _context.OutputMerger.SetTargets(_renderTargetView);
+                    _context.ClearRenderTargetView(_renderTargetView, new Color4(0, 0, 0, 0));
+                    _context.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
 
-                    dataPointer = Marshal.AllocHGlobal(screenWidth * screenHeight * 4);
+                    _dataPointer = Marshal.AllocHGlobal(_screenWidth * _screenHeight * 4);
                     return;
                 }
                 catch (Exception ex)
@@ -194,79 +196,81 @@ namespace ScreenRecorder.DirectX
         }
 
         #region Private Methods
-        private bool GetOutputFromDeviceName(string deviceName, out Adapter1 adapter1, out Output output)
+        private bool GetOutputFromDeviceName(string deviceName, out Adapter1 deviceAdapter1, out Output deviceOutput)
         {
-            using (Factory1 factory = new Factory1())
+            using (var factory = new Factory1())
             {
                 int adapterCount = factory.GetAdapterCount1();
                 for (int i = 0; i < adapterCount; i++)
                 {
-                    Adapter1 _adapter = factory.GetAdapter1(i);
-                    int outputCount = _adapter.GetOutputCount();
+                    var adapter = factory.GetAdapter1(i);
+                    int outputCount = adapter.GetOutputCount();
                     if (string.IsNullOrWhiteSpace(deviceName))
                     {
                         deviceName = System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
                     }
                     for (int j = 0; j < outputCount; j++)
                     {
-                        Output _output = _adapter.GetOutput(j);
-                        if (_output.Description.IsAttachedToDesktop && _output.Description.DeviceName.Equals(deviceName))
+                        Output output = adapter.GetOutput(j);
+                        if (output.Description.IsAttachedToDesktop && output.Description.DeviceName.Equals(deviceName))
                         {
-                            output = _output;
-                            adapter1 = _adapter;
+                            deviceOutput = output;
+                            deviceAdapter1 = adapter;
                             return true;
                         }
                         else
                         {
-                            _output.Dispose();
+                            output.Dispose();
                         }
                     }
-                    _adapter.Dispose();
+                    adapter.Dispose();
                 }
             }
 
-            adapter1 = null;
-            output = null;
+            deviceAdapter1 = null;
+            deviceOutput = null;
             return false;
         }
 
         private void UpdateBuffers(DeviceContext deviceContext, int positionX, int positionY, int width, int height)
         {
-            if (positionX != oldX || positionY != oldY || width != oldWidth || height != oldHeight)
+            if (positionX == _oldX && positionY == _oldY && width == _oldWidth && height == _oldHeight)
             {
-                oldX = positionX;
-                oldY = positionY;
-                oldWidth = width;
-                oldHeight = height;
-
-                float left = ((float)positionX / (float)width * 2.0f) - 1.0f;
-                float top = ((float)-positionY / (float)height * 2.0f) + 1.0f;
-                float right = (2.0f * (((float)positionX + (float)oldWidth) / (float)width)) - 1.0f;
-                float bottom = (2.0f * (((float)-positionY - (float)oldHeight) / (float)height)) + 1.0f;
-
-                deviceContext.MapSubresource(verticesBuffer, MapMode.WriteDiscard, SharpDX.Direct3D11.MapFlags.None, out DataStream verticesDataStream);
-                verticesDataStream.Write(new Vector3(left, top, 0.0f));
-                verticesDataStream.Write(new Vector2(0.0f, 0.0f));
-
-                verticesDataStream.Write(new Vector3(right, bottom, 0.0f));
-                verticesDataStream.Write(new Vector2(1.0f, 1.0f));
-
-                verticesDataStream.Write(new Vector3(left, bottom, 0.0f));
-                verticesDataStream.Write(new Vector2(0.0f, 1.0f));
-
-                verticesDataStream.Write(new Vector3(left, top, 0.0f));
-                verticesDataStream.Write(new Vector2(0.0f, 0.0f));
-
-                verticesDataStream.Write(new Vector3(right, top, 0.0f));
-                verticesDataStream.Write(new Vector2(1.0f, 0.0f));
-
-                verticesDataStream.Write(new Vector3(right, bottom, 0.0f));
-                verticesDataStream.Write(new Vector2(1.0f, 1.0f));
-                deviceContext.UnmapSubresource(verticesBuffer, 0);
+                return;
             }
+
+            _oldX = positionX;
+            _oldY = positionY;
+            _oldWidth = width;
+            _oldHeight = height;
+
+            var left = ((float)positionX / (float)width * 2.0f) - 1.0f;
+            var top = ((float)-positionY / (float)height * 2.0f) + 1.0f;
+            var right = (2.0f * (((float)positionX + (float)_oldWidth) / (float)width)) - 1.0f;
+            var bottom = (2.0f * (((float)-positionY - (float)_oldHeight) / (float)height)) + 1.0f;
+
+            deviceContext.MapSubresource(_verticesBuffer, MapMode.WriteDiscard, SharpDX.Direct3D11.MapFlags.None, out DataStream verticesDataStream);
+            verticesDataStream.Write(new Vector3(left, top, 0.0f));
+            verticesDataStream.Write(new Vector2(0.0f, 0.0f));
+
+            verticesDataStream.Write(new Vector3(right, bottom, 0.0f));
+            verticesDataStream.Write(new Vector2(1.0f, 1.0f));
+
+            verticesDataStream.Write(new Vector3(left, bottom, 0.0f));
+            verticesDataStream.Write(new Vector2(0.0f, 1.0f));
+
+            verticesDataStream.Write(new Vector3(left, top, 0.0f));
+            verticesDataStream.Write(new Vector2(0.0f, 0.0f));
+
+            verticesDataStream.Write(new Vector3(right, top, 0.0f));
+            verticesDataStream.Write(new Vector2(1.0f, 0.0f));
+
+            verticesDataStream.Write(new Vector3(right, bottom, 0.0f));
+            verticesDataStream.Write(new Vector2(1.0f, 1.0f));
+            deviceContext.UnmapSubresource(_verticesBuffer, 0);
         }
 
-        private BlendState CreateAlphaBlendState(SharpDX.Direct3D11.Device device, bool blendEnabled)
+        private static BlendState CreateAlphaBlendState(SharpDX.Direct3D11.Device device, bool blendEnabled)
         {
             BlendStateDescription blendStateDescription = new BlendStateDescription()
             {
@@ -293,44 +297,43 @@ namespace ScreenRecorder.DirectX
 
         private void UpdatePointerInfo(OutputDuplicateFrameInformation duplicateFrameInformation, ref PointerInfo pointerInfo)
         {
-            if (duplicateFrameInformation.LastMouseUpdateTime != 0)
+            if (duplicateFrameInformation.LastMouseUpdateTime == 0 || duplicateFrameInformation.PointerShapeBufferSize == 0)
             {
-                if (duplicateFrameInformation.PointerPosition.Visible)
+                return;
+            }
+
+            if (duplicateFrameInformation.PointerPosition.Visible)
+            {
+                pointerInfo.Position = new SharpDX.Point(duplicateFrameInformation.PointerPosition.Position.X, duplicateFrameInformation.PointerPosition.Position.Y);
+                pointerInfo.LastTimeStamp = duplicateFrameInformation.LastMouseUpdateTime;
+                pointerInfo.Visible = duplicateFrameInformation.PointerPosition.Visible;
+            }
+            else
+            {
+                pointerInfo.Visible = false;
+            }
+
+            if (duplicateFrameInformation.PointerShapeBufferSize > pointerInfo.BufferSize)
+            {
+                pointerInfo.PtrShapeBuffer = new byte[duplicateFrameInformation.PointerShapeBufferSize];
+                pointerInfo.BufferSize = duplicateFrameInformation.PointerShapeBufferSize;
+            }
+
+            try
+            {
+                unsafe
                 {
-                    pointerInfo.Position = new SharpDX.Point(duplicateFrameInformation.PointerPosition.Position.X, duplicateFrameInformation.PointerPosition.Position.Y);
-                    pointerInfo.LastTimeStamp = duplicateFrameInformation.LastMouseUpdateTime;
-                    pointerInfo.Visible = duplicateFrameInformation.PointerPosition.Visible;
+                    fixed (byte* ptrShapeBufferPtr = pointerInfo.PtrShapeBuffer)
+                    {
+                        _duplicatedOutput.GetFramePointerShape(duplicateFrameInformation.PointerShapeBufferSize, (IntPtr)ptrShapeBufferPtr, out pointerInfo.BufferSize, out pointerInfo.ShapeInfo);
+                    }
                 }
-                else
+            }
+            catch (SharpDXException ex)
+            {
+                if (ex.ResultCode.Failure)
                 {
-                    pointerInfo.Visible = false;
-                }
 
-                if (duplicateFrameInformation.PointerShapeBufferSize != 0)
-                {
-                    if (duplicateFrameInformation.PointerShapeBufferSize > pointerInfo.BufferSize)
-                    {
-                        pointerInfo.PtrShapeBuffer = new byte[duplicateFrameInformation.PointerShapeBufferSize];
-                        pointerInfo.BufferSize = duplicateFrameInformation.PointerShapeBufferSize;
-                    }
-
-                    try
-                    {
-                        unsafe
-                        {
-                            fixed (byte* ptrShapeBufferPtr = pointerInfo.PtrShapeBuffer)
-                            {
-                                duplicatedOutput.GetFramePointerShape(duplicateFrameInformation.PointerShapeBufferSize, (IntPtr)ptrShapeBufferPtr, out pointerInfo.BufferSize, out pointerInfo.ShapeInfo);
-                            }
-                        }
-                    }
-                    catch (SharpDXException ex)
-                    {
-                        if (ex.ResultCode.Failure)
-                        {
-
-                        }
-                    }
                 }
             }
         }
@@ -344,7 +347,7 @@ namespace ScreenRecorder.DirectX
 
             try
             {
-                Result result = duplicatedOutput.TryAcquireNextFrame(100, out duplicateFrameInformation, out screenResource);
+                Result result = _duplicatedOutput.TryAcquireNextFrame(100, out duplicateFrameInformation, out screenResource);
                 if (result.Success)
                 {
                     try
@@ -352,34 +355,34 @@ namespace ScreenRecorder.DirectX
                         using (Texture2D displayTexture2D = screenResource.QueryInterface<Texture2D>())
                         {
                             // crop
-                            context.CopySubresourceRegion(displayTexture2D, 0,
-                                new ResourceRegion((int)region.Left, (int)region.Top, 0, (int)region.Right, (int)region.Bottom, 1),
-                                regionTexture, 0);
+                            _context.CopySubresourceRegion(displayTexture2D, 0,
+                                new ResourceRegion((int)_region.Left, (int)_region.Top, 0, (int)_region.Right, (int)_region.Bottom, 1),
+                                _regionTexture, 0);
 
-                            if (drawCursor)
+                            if (_drawCursor)
                             {
-                                using (ShaderResourceView shaderResourceView = new ShaderResourceView(device, regionTexture))
+                                using (ShaderResourceView shaderResourceView = new ShaderResourceView(_device, _regionTexture))
                                 {
                                     #region Draw Cursor
-                                    UpdateBuffers(context, 0, 0, screenWidth, screenHeight);
-                                    context.InputAssembler.SetVertexBuffers(0, vertextBufferBinding);
-                                    colorShader.Render(context, shaderResourceView);
+                                    UpdateBuffers(_context, 0, 0, _screenWidth, _screenHeight);
+                                    _context.InputAssembler.SetVertexBuffers(0, _vertextBufferBinding);
+                                    _colorShader.Render(_context, shaderResourceView);
 
-                                    UpdatePointerInfo(duplicateFrameInformation, ref pointerInfo);
+                                    UpdatePointerInfo(duplicateFrameInformation, ref _pointerInfo);
 
-                                    if (pointerInfo.Visible)
+                                    if (_pointerInfo.Visible)
                                     {
-                                        if (cursorTexture == null || cursorTexture.TextureWidth != pointerInfo.ShapeInfo.Width || cursorTexture.TextureHeight != pointerInfo.ShapeInfo.Height)
+                                        if (_cursorTexture == null || _cursorTexture.TextureWidth != _pointerInfo.ShapeInfo.Width || _cursorTexture.TextureHeight != _pointerInfo.ShapeInfo.Height)
                                         {
-                                            cursorTexture?.Dispose();
-                                            cursorTexture = new BitmapTexture(device, screenWidth, screenHeight, pointerInfo.ShapeInfo.Width, pointerInfo.ShapeInfo.Height);
+                                            _cursorTexture?.Dispose();
+                                            _cursorTexture = new BitmapTexture(_device, _screenWidth, _screenHeight, _pointerInfo.ShapeInfo.Width, _pointerInfo.ShapeInfo.Height);
 
-                                            cursorBackgroundTexture?.Dispose();
-                                            cursorBackgroundTexture = new Texture2D(device, new Texture2DDescription()
+                                            _cursorBackgroundTexture?.Dispose();
+                                            _cursorBackgroundTexture = new Texture2D(_device, new Texture2DDescription()
                                             {
                                                 Format = displayTexture2D.Description.Format,
-                                                Width = pointerInfo.ShapeInfo.Width,
-                                                Height = pointerInfo.ShapeInfo.Height,
+                                                Width = _pointerInfo.ShapeInfo.Width,
+                                                Height = _pointerInfo.ShapeInfo.Height,
                                                 CpuAccessFlags = CpuAccessFlags.None,
                                                 Usage = ResourceUsage.Default,
                                                 BindFlags = BindFlags.ShaderResource,
@@ -389,53 +392,53 @@ namespace ScreenRecorder.DirectX
                                                 SampleDescription = new SampleDescription(1, 0)
                                             });
 
-                                            cursorBackgroundShaderResourceView = new ShaderResourceView(device, cursorBackgroundTexture);
+                                            _cursorBackgroundShaderResourceView = new ShaderResourceView(_device, _cursorBackgroundTexture);
                                         }
 
-                                        if (pointerInfo.ShapeInfo.Type != (int)OutputDuplicatePointerShapeType.Color)
+                                        if (_pointerInfo.ShapeInfo.Type != (int)OutputDuplicatePointerShapeType.Color)
                                         {
-                                            context.CopySubresourceRegion(displayTexture2D, 0,
-                                                new ResourceRegion(pointerInfo.Left, pointerInfo.Top, 0, pointerInfo.Right, pointerInfo.Bottom, 1),
-                                                cursorBackgroundTexture, 0);
+                                            _context.CopySubresourceRegion(displayTexture2D, 0,
+                                                new ResourceRegion(_pointerInfo.Left, _pointerInfo.Top, 0, _pointerInfo.Right, _pointerInfo.Bottom, 1),
+                                                _cursorBackgroundTexture, 0);
                                         }
 
                                         unsafe
                                         {
-                                            fixed (byte* ptrShapeBufferPtr = pointerInfo.PtrShapeBuffer)
+                                            fixed (byte* ptrShapeBufferPtr = _pointerInfo.PtrShapeBuffer)
                                             {
-                                                if (pointerInfo.ShapeInfo.Type == (int)OutputDuplicatePointerShapeType.Monochrome)
+                                                if (_pointerInfo.ShapeInfo.Type == (int)OutputDuplicatePointerShapeType.Monochrome)
                                                 {
-                                                    cursorTexture.SetMonochromeTexture(new IntPtr(ptrShapeBufferPtr), pointerInfo.ShapeInfo.Width, pointerInfo.ShapeInfo.Height, pointerInfo.ShapeInfo.Pitch);
+                                                    _cursorTexture.SetMonochromeTexture(new IntPtr(ptrShapeBufferPtr), _pointerInfo.ShapeInfo.Width, _pointerInfo.ShapeInfo.Height, _pointerInfo.ShapeInfo.Pitch);
                                                 }
                                                 else
                                                 {
-                                                    cursorTexture.SetTexture(new IntPtr(ptrShapeBufferPtr), pointerInfo.ShapeInfo.Pitch, pointerInfo.ShapeInfo.Height);
+                                                    _cursorTexture.SetTexture(new IntPtr(ptrShapeBufferPtr), _pointerInfo.ShapeInfo.Pitch, _pointerInfo.ShapeInfo.Height);
                                                 }
                                             }
                                         }
 
-                                        cursorTexture.Render(context, pointerInfo.Position.X - (int)region.X, pointerInfo.Position.Y - (int)region.Y, pointerInfo.ShapeInfo.Width, pointerInfo.ShapeInfo.Height);
-                                        cursorShader.Render(context, cursorTexture.GetTexture(), cursorBackgroundShaderResourceView, (OutputDuplicatePointerShapeType)pointerInfo.ShapeInfo.Type);
+                                        _cursorTexture.Render(_context, _pointerInfo.Position.X - (int)_region.X, _pointerInfo.Position.Y - (int)_region.Y, _pointerInfo.ShapeInfo.Width, _pointerInfo.ShapeInfo.Height);
+                                        _cursorShader.Render(_context, _cursorTexture.GetTexture(), _cursorBackgroundShaderResourceView, (OutputDuplicatePointerShapeType)_pointerInfo.ShapeInfo.Type);
                                     }
                                     #endregion
 
-                                    nv12Converter.Convert(renderTargetTexture, nv12Texture);
+                                    _nv12Converter.Convert(_renderTargetTexture, _nv12Texture);
                                 }
                             }
                             else
                             {
-                                nv12Converter.Convert(regionTexture, nv12Texture);
+                                _nv12Converter.Convert(_regionTexture, _nv12Texture);
                             }
 
-                            context.CopyResource(nv12Texture, readableNv12Texture);
-                            DataBox mapSource = context.MapSubresource(readableNv12Texture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None, out DataStream stream);
-                            width = readableNv12Texture.Description.Width;
-                            height = readableNv12Texture.Description.Height;
+                            _context.CopyResource(_nv12Texture, _readableNv12Texture);
+                            DataBox mapSource = _context.MapSubresource(_readableNv12Texture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None, out DataStream stream);
+                            width = _readableNv12Texture.Description.Width;
+                            height = _readableNv12Texture.Description.Height;
                             stride = mapSource.RowPitch;
-                            dataPointer = this.dataPointer;
+                            dataPointer = this._dataPointer;
                             pixelFormat = MediaEncoder.PixelFormat.NV12;
-                            stream.Read(this.dataPointer, 0, mapSource.SlicePitch);
-                            context.UnmapSubresource(readableNv12Texture, 0);
+                            stream.Read(this._dataPointer, 0, mapSource.SlicePitch);
+                            _context.UnmapSubresource(_readableNv12Texture, 0);
 
                             return true;
                         }
@@ -443,7 +446,7 @@ namespace ScreenRecorder.DirectX
                     finally
                     {
                         screenResource.Dispose();
-                        duplicatedOutput.ReleaseFrame();
+                        _duplicatedOutput.ReleaseFrame();
                     }
                 }
                 else
@@ -464,78 +467,78 @@ namespace ScreenRecorder.DirectX
 
         public void Dispose()
         {
-            if (dataPointer != IntPtr.Zero)
+            if (_dataPointer != IntPtr.Zero)
             {
-                Marshal.FreeHGlobal(dataPointer);
-                dataPointer = IntPtr.Zero;
+                Marshal.FreeHGlobal(_dataPointer);
+                _dataPointer = IntPtr.Zero;
             }
-            if (!context?.IsDisposed ?? false)
+            if (!_context?.IsDisposed ?? false)
             {
-                context.ClearState();
-                context.Flush();
-                context.Dispose();
+                _context.ClearState();
+                _context.Flush();
+                _context.Dispose();
             }
-            if (!verticesBuffer?.IsDisposed ?? false)
+            if (!_verticesBuffer?.IsDisposed ?? false)
             {
-                verticesBuffer.Dispose();
-            }
-
-            colorShader?.Dispose();
-            colorShader = null;
-
-            cursorTexture?.Dispose();
-            cursorTexture = null;
-
-            cursorBackgroundShaderResourceView?.Dispose();
-            cursorBackgroundShaderResourceView = null;
-
-            cursorBackgroundTexture?.Dispose();
-            cursorBackgroundTexture = null;
-
-            cursorShader?.Dispose();
-            cursorShader = null;
-
-            if (!regionShaderResourceView?.IsDisposed ?? false)
-            {
-                regionShaderResourceView?.Dispose();
-                regionShaderResourceView = null;
+                _verticesBuffer.Dispose();
             }
 
-            if (!regionTexture?.IsDisposed ?? false)
+            _colorShader?.Dispose();
+            _colorShader = null;
+
+            _cursorTexture?.Dispose();
+            _cursorTexture = null;
+
+            _cursorBackgroundShaderResourceView?.Dispose();
+            _cursorBackgroundShaderResourceView = null;
+
+            _cursorBackgroundTexture?.Dispose();
+            _cursorBackgroundTexture = null;
+
+            _cursorShader?.Dispose();
+            _cursorShader = null;
+
+            if (!_regionShaderResourceView?.IsDisposed ?? false)
             {
-                regionTexture?.Dispose();
-                regionTexture = null;
+                _regionShaderResourceView?.Dispose();
+                _regionShaderResourceView = null;
             }
 
-            if (!renderTargetView?.IsDisposed ?? false)
+            if (!_regionTexture?.IsDisposed ?? false)
             {
-                renderTargetView.Dispose();
-                renderTargetView = null;
+                _regionTexture?.Dispose();
+                _regionTexture = null;
             }
-            if (!renderTargetTexture?.IsDisposed ?? false)
+
+            if (!_renderTargetView?.IsDisposed ?? false)
             {
-                renderTargetTexture.Dispose();
-                renderTargetTexture = null;
+                _renderTargetView.Dispose();
+                _renderTargetView = null;
             }
-            if (!duplicatedOutput?.IsDisposed ?? false)
+            if (!_renderTargetTexture?.IsDisposed ?? false)
             {
-                duplicatedOutput.Dispose();
-                duplicatedOutput = null;
+                _renderTargetTexture.Dispose();
+                _renderTargetTexture = null;
             }
-            if (!output1?.IsDisposed ?? false)
+            if (!_duplicatedOutput?.IsDisposed ?? false)
             {
-                output1.Dispose();
-                output1 = null;
+                _duplicatedOutput.Dispose();
+                _duplicatedOutput = null;
             }
-            if (!output?.IsDisposed ?? false)
+            if (!_output1?.IsDisposed ?? false)
             {
-                output.Dispose();
-                output = null;
+                _output1.Dispose();
+                _output1 = null;
             }
-            if (!device?.IsDisposed ?? false)
+            if (!_output?.IsDisposed ?? false)
             {
-                device.Dispose();
-                device = null;
+                _output.Dispose();
+                _output = null;
+            }
+            if (!_device?.IsDisposed ?? false)
+            {
+                _device.Dispose();
+                _device = null;
             }
         }
         #endregion

@@ -101,7 +101,7 @@ namespace ScreenRecorder.DirectX
         {
             get
             {
-                return string.Format("{0}: {1}x{2} @ {3},{4}{5}", AdapterDescription, Width, Height, Left, Top, IsPrimary ? $" ({ScreenRecorder.Properties.Resources.PrimaryDisplay})" : "");
+                return $"{AdapterDescription}: {Width}x{Height} @ {Left},{Top}{(IsPrimary ? $" ({ScreenRecorder.Properties.Resources.PrimaryDisplay})" : "")}";
             }
         }
     }

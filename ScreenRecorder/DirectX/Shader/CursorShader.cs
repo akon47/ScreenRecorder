@@ -11,7 +11,7 @@ namespace ScreenRecorder.DirectX.Shader
 {
     public class CursorShader : IDisposable
     {
-        private readonly string shaderCode =
+        private readonly string _shaderCode =
             @"
 Texture2D Texture : register(t0);
 Texture2D BackgroundTexture : register(t1);
@@ -61,23 +61,23 @@ float4 PShader(PSInput input) : SV_Target
 }
 ";
 
-        private Buffer argsBuffer;
-        private InputLayout inputLayout;
-        private ShaderSignature inputSignature;
+        private Buffer _argsBuffer;
+        private InputLayout _inputLayout;
+        private ShaderSignature _inputSignature;
 
-        private int oldOutputDuplicatePointerShapeType = -1;
-        private PixelShader pixelShader;
-        private SamplerState samplerState;
-        private VertexShader vertexShader;
+        private int _oldOutputDuplicatePointerShapeType = -1;
+        private PixelShader _pixelShader;
+        private SamplerState _samplerState;
+        private VertexShader _vertexShader;
 
         public void Dispose()
         {
-            inputLayout?.Dispose();
-            inputSignature?.Dispose();
-            vertexShader?.Dispose();
-            pixelShader?.Dispose();
-            samplerState?.Dispose();
-            argsBuffer?.Dispose();
+            _inputLayout?.Dispose();
+            _inputSignature?.Dispose();
+            _vertexShader?.Dispose();
+            _pixelShader?.Dispose();
+            _samplerState?.Dispose();
+            _argsBuffer?.Dispose();
         }
 
         public void Initialize(Device device)
@@ -87,15 +87,15 @@ float4 PShader(PSInput input) : SV_Target
 
         private void InitializeShader(Device device)
         {
-            using (var bytecode = ShaderBytecode.Compile(shaderCode, "VShader", "vs_4_0"))
+            using (var bytecode = ShaderBytecode.Compile(_shaderCode, "VShader", "vs_4_0"))
             {
-                inputSignature = ShaderSignature.GetInputSignature(bytecode);
-                vertexShader = new VertexShader(device, bytecode);
+                _inputSignature = ShaderSignature.GetInputSignature(bytecode);
+                _vertexShader = new VertexShader(device, bytecode);
             }
 
-            using (var bytecode = ShaderBytecode.Compile(shaderCode, "PShader", "ps_4_0"))
+            using (var bytecode = ShaderBytecode.Compile(_shaderCode, "PShader", "ps_4_0"))
             {
-                pixelShader = new PixelShader(device, bytecode);
+                _pixelShader = new PixelShader(device, bytecode);
             }
 
             var elements = new[]
@@ -105,12 +105,12 @@ float4 PShader(PSInput input) : SV_Target
                     InputClassification.PerVertexData, 0)
             };
 
-            inputLayout = new InputLayout(device, inputSignature, elements);
+            _inputLayout = new InputLayout(device, _inputSignature, elements);
 
-            argsBuffer = new Buffer(device, 32, ResourceUsage.Dynamic, BindFlags.ConstantBuffer, CpuAccessFlags.Write,
+            _argsBuffer = new Buffer(device, 32, ResourceUsage.Dynamic, BindFlags.ConstantBuffer, CpuAccessFlags.Write,
                 ResourceOptionFlags.None, 0);
 
-            samplerState = new SamplerState(device,
+            _samplerState = new SamplerState(device,
                 new SamplerStateDescription
                 {
                     Filter = SharpDX.Direct3D11.Filter.MinMagMipLinear,
@@ -149,16 +149,16 @@ float4 PShader(PSInput input) : SV_Target
             ShaderResourceView backgroundShaderResourceView,
             OutputDuplicatePointerShapeType outputDuplicatePointerShapeType)
         {
-            if (oldOutputDuplicatePointerShapeType != (int)outputDuplicatePointerShapeType)
+            if (_oldOutputDuplicatePointerShapeType != (int)outputDuplicatePointerShapeType)
             {
-                oldOutputDuplicatePointerShapeType = (int)outputDuplicatePointerShapeType;
+                _oldOutputDuplicatePointerShapeType = (int)outputDuplicatePointerShapeType;
 
-                deviceContext.MapSubresource(argsBuffer, MapMode.WriteDiscard, MapFlags.None, out var dataStream);
-                dataStream.Write(oldOutputDuplicatePointerShapeType);
-                deviceContext.UnmapSubresource(argsBuffer, 0);
+                deviceContext.MapSubresource(_argsBuffer, MapMode.WriteDiscard, MapFlags.None, out var dataStream);
+                dataStream.Write(_oldOutputDuplicatePointerShapeType);
+                deviceContext.UnmapSubresource(_argsBuffer, 0);
             }
 
-            deviceContext.PixelShader.SetConstantBuffer(0, argsBuffer);
+            deviceContext.PixelShader.SetConstantBuffer(0, _argsBuffer);
 
             if (cursorShaderResourceView != null)
             {
@@ -173,10 +173,10 @@ float4 PShader(PSInput input) : SV_Target
 
         private void RenderShader(DeviceContext deviceContext)
         {
-            deviceContext.InputAssembler.InputLayout = inputLayout;
-            deviceContext.VertexShader.Set(vertexShader);
-            deviceContext.PixelShader.Set(pixelShader);
-            deviceContext.PixelShader.SetSampler(0, samplerState);
+            deviceContext.InputAssembler.InputLayout = _inputLayout;
+            deviceContext.VertexShader.Set(_vertexShader);
+            deviceContext.PixelShader.Set(_pixelShader);
+            deviceContext.PixelShader.SetSampler(0, _samplerState);
             deviceContext.Draw(6, 0);
         }
     }

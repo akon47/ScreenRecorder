@@ -18,7 +18,7 @@ namespace ScreenRecorder.DirectX.Shader.Filter
     /// </summary>
     public class ChromaKeyFilterShader : IDisposable
     {
-        private readonly string shaderCode =
+        private readonly string _shaderCode =
             @"
 Texture2D Texture : register(t0);
 SamplerState TextureSampler;
@@ -99,53 +99,53 @@ float4 PShader(PSInput input) : SV_Target
 }
 ";
 
-        private Buffer argsBuffer;
-        private InputLayout inputLayout;
-        private ShaderSignature inputSignature;
-        private int oldKeyRed = -1, oldKeyGreen = -1, oldKeyBlue = -1;
+        private Buffer _argsBuffer;
+        private InputLayout _inputLayout;
+        private ShaderSignature _inputSignature;
+        private int _oldKeyRed = -1, _oldKeyGreen = -1, _oldKeyBlue = -1;
 
-        private float oldOpacity = -1,
-            oldContrast = -1,
-            oldBrightness = -1,
-            oldGamma = -1,
-            oldSimilarity = -1,
-            oldSmoothness = -1,
-            oldSpill = -1;
+        private float _oldOpacity = -1,
+            _oldContrast = -1,
+            _oldBrightness = -1,
+            _oldGamma = -1,
+            _oldSimilarity = -1,
+            _oldSmoothness = -1,
+            _oldSpill = -1;
 
-        private PixelShader pixelShader;
-        private SamplerState samplerState;
-        private VertexShader vertexShader;
+        private PixelShader _pixelShader;
+        private SamplerState _samplerState;
+        private VertexShader _vertexShader;
 
         public void Dispose()
         {
-            if (inputLayout != null)
+            if (_inputLayout != null)
             {
-                inputLayout.Dispose();
+                _inputLayout.Dispose();
             }
 
-            if (inputSignature != null)
+            if (_inputSignature != null)
             {
-                inputSignature.Dispose();
+                _inputSignature.Dispose();
             }
 
-            if (vertexShader != null)
+            if (_vertexShader != null)
             {
-                vertexShader.Dispose();
+                _vertexShader.Dispose();
             }
 
-            if (pixelShader != null)
+            if (_pixelShader != null)
             {
-                pixelShader.Dispose();
+                _pixelShader.Dispose();
             }
 
-            if (samplerState != null)
+            if (_samplerState != null)
             {
-                samplerState.Dispose();
+                _samplerState.Dispose();
             }
 
-            if (argsBuffer != null)
+            if (_argsBuffer != null)
             {
-                argsBuffer.Dispose();
+                _argsBuffer.Dispose();
             }
         }
 
@@ -156,15 +156,15 @@ float4 PShader(PSInput input) : SV_Target
 
         private void InitializeShader(Device device)
         {
-            using (var bytecode = ShaderBytecode.Compile(shaderCode, "VShader", "vs_4_0"))
+            using (var bytecode = ShaderBytecode.Compile(_shaderCode, "VShader", "vs_4_0"))
             {
-                inputSignature = ShaderSignature.GetInputSignature(bytecode);
-                vertexShader = new VertexShader(device, bytecode);
+                _inputSignature = ShaderSignature.GetInputSignature(bytecode);
+                _vertexShader = new VertexShader(device, bytecode);
             }
 
-            using (var bytecode = ShaderBytecode.Compile(shaderCode, "PShader", "ps_4_0"))
+            using (var bytecode = ShaderBytecode.Compile(_shaderCode, "PShader", "ps_4_0"))
             {
-                pixelShader = new PixelShader(device, bytecode);
+                _pixelShader = new PixelShader(device, bytecode);
             }
 
             var elements = new[]
@@ -174,12 +174,12 @@ float4 PShader(PSInput input) : SV_Target
                     InputClassification.PerVertexData, 0)
             };
 
-            inputLayout = new InputLayout(device, inputSignature, elements);
+            _inputLayout = new InputLayout(device, _inputSignature, elements);
 
-            argsBuffer = new Buffer(device, 64, ResourceUsage.Dynamic, BindFlags.ConstantBuffer, CpuAccessFlags.Write,
+            _argsBuffer = new Buffer(device, 64, ResourceUsage.Dynamic, BindFlags.ConstantBuffer, CpuAccessFlags.Write,
                 ResourceOptionFlags.None, 0);
 
-            samplerState = new SamplerState(device,
+            _samplerState = new SamplerState(device,
                 new SamplerStateDescription
                 {
                     Filter = SharpDX.Direct3D11.Filter.MinMagMipLinear,
@@ -197,11 +197,11 @@ float4 PShader(PSInput input) : SV_Target
 
         public void Render(DeviceContext deviceContext, ShaderResourceView shaderResourceView, float textureWidth,
             float textureHeight,
-            float opacity, float contrast, float brightness, float gamma, int key_red, int key_green, int key_blue,
+            float opacity, float contrast, float brightness, float gamma, int keyRed, int keyGreen, int keyBlue,
             float similarity, float smoothness, float spill)
         {
             SetShaderParameters(deviceContext, shaderResourceView, textureWidth, textureHeight, opacity, contrast,
-                brightness, gamma, key_red, key_green, key_blue, similarity, smoothness, spill);
+                brightness, gamma, keyRed, keyGreen, keyBlue, similarity, smoothness, spill);
             RenderShader(deviceContext);
         }
 
@@ -224,80 +224,80 @@ float4 PShader(PSInput input) : SV_Target
 
         private void SetShaderParameters(DeviceContext deviceContext, ShaderResourceView shaderResourceView,
             float textureWidth, float textureHeight,
-            float opacity, float contrast, float brightness, float gamma, int key_red, int key_green, int key_blue,
+            float opacity, float contrast, float brightness, float gamma, int keyRed, int keyGreen, int keyBlue,
             float similarity, float smoothness, float spill)
         {
-            if (opacity != oldOpacity || contrast != oldContrast || brightness != oldBrightness || gamma != oldGamma ||
-                key_red != oldKeyRed || key_green != oldKeyGreen || key_blue != oldKeyBlue ||
-                similarity != oldSimilarity || smoothness != oldSmoothness || spill != oldSpill)
+            if (opacity != _oldOpacity || contrast != _oldContrast || brightness != _oldBrightness || gamma != _oldGamma ||
+                keyRed != _oldKeyRed || keyGreen != _oldKeyGreen || keyBlue != _oldKeyBlue ||
+                similarity != _oldSimilarity || smoothness != _oldSmoothness || spill != _oldSpill)
             {
-                oldOpacity = opacity;
-                oldContrast = contrast;
-                oldBrightness = brightness;
-                oldGamma = gamma;
-                oldSimilarity = similarity;
-                oldSmoothness = smoothness;
-                oldSpill = spill;
+                _oldOpacity = opacity;
+                _oldContrast = contrast;
+                _oldBrightness = brightness;
+                _oldGamma = gamma;
+                _oldSimilarity = similarity;
+                _oldSmoothness = smoothness;
+                _oldSpill = spill;
 
-                if (key_red < 0)
+                if (keyRed < 0)
                 {
-                    key_red = 0;
+                    keyRed = 0;
                 }
-                else if (key_red > 255)
+                else if (keyRed > 255)
                 {
-                    key_red = 255;
-                }
-
-                if (key_green < 0)
-                {
-                    key_green = 0;
-                }
-                else if (key_green > 255)
-                {
-                    key_green = 255;
+                    keyRed = 255;
                 }
 
-                if (key_blue < 0)
+                if (keyGreen < 0)
                 {
-                    key_blue = 0;
+                    keyGreen = 0;
                 }
-                else if (key_blue > 255)
+                else if (keyGreen > 255)
                 {
-                    key_blue = 255;
+                    keyGreen = 255;
                 }
 
-                oldKeyRed = key_red;
-                oldKeyGreen = key_green;
-                oldKeyBlue = key_blue;
+                if (keyBlue < 0)
+                {
+                    keyBlue = 0;
+                }
+                else if (keyBlue > 255)
+                {
+                    keyBlue = 255;
+                }
 
-                var key_color = ((uint)key_red << 16) | ((uint)key_green << 8) | ((uint)key_blue << 0);
-                vec4_from_rgba_srgb(out var key_rgb, key_color | 0xFF000000);
+                _oldKeyRed = keyRed;
+                _oldKeyGreen = keyGreen;
+                _oldKeyBlue = keyBlue;
+
+                var keyColor = ((uint)keyRed << 16) | ((uint)keyGreen << 8) | ((uint)keyBlue << 0);
+                vec4_from_rgba_srgb(out var keyRgb, keyColor | 0xFF000000);
                 var cb = new Vector4(-0.100644f, -0.338572f, 0.439216f, 0.501961f);
                 var cr = new Vector4(0.439216f, -0.398942f, -0.040274f, 0.501961f);
-                deviceContext.MapSubresource(argsBuffer, MapMode.WriteDiscard, MapFlags.None, out var stream);
+                deviceContext.MapSubresource(_argsBuffer, MapMode.WriteDiscard, MapFlags.None, out var stream);
                 stream.Write(opacity);
                 stream.Write(contrast);
                 stream.Write(brightness);
                 stream.Write(gamma);
-                stream.Write(new Vector2(Vector4.Dot(key_rgb, cb), Vector4.Dot(key_rgb, cr)));
+                stream.Write(new Vector2(Vector4.Dot(keyRgb, cb), Vector4.Dot(keyRgb, cr)));
                 stream.Write(new Vector2(1.0f / textureWidth, 1.0f / textureHeight));
                 stream.Write(similarity);
                 stream.Write(smoothness);
                 stream.Write(spill);
-                deviceContext.UnmapSubresource(argsBuffer, 0);
+                deviceContext.UnmapSubresource(_argsBuffer, 0);
             }
 
-            deviceContext.PixelShader.SetConstantBuffer(0, argsBuffer);
+            deviceContext.PixelShader.SetConstantBuffer(0, _argsBuffer);
 
             deviceContext.PixelShader.SetShaderResource(0, shaderResourceView);
         }
 
         private void RenderShader(DeviceContext deviceContext)
         {
-            deviceContext.InputAssembler.InputLayout = inputLayout;
-            deviceContext.VertexShader.Set(vertexShader);
-            deviceContext.PixelShader.Set(pixelShader);
-            deviceContext.PixelShader.SetSampler(0, samplerState);
+            deviceContext.InputAssembler.InputLayout = _inputLayout;
+            deviceContext.VertexShader.Set(_vertexShader);
+            deviceContext.PixelShader.Set(_pixelShader);
+            deviceContext.PixelShader.SetSampler(0, _samplerState);
             deviceContext.Draw(6, 0);
         }
     }

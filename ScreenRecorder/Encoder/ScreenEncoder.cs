@@ -14,12 +14,12 @@ namespace ScreenRecorder.Encoder
     /// </summary>
     public class ScreenEncoder : Encoder
     {
-        private ScreenVideoSource screenVideoSource;
+        private ScreenVideoSource _screenVideoSource;
 
-        private AudioMixer audioMixer;
-        private LoopbackAudioSource loopbackAudioSource;
-        private AudioCaptureSource audioCaptureSource;
-        private Utils.ThreadExecutionState? oldSleepState;
+        private AudioMixer _audioMixer;
+        private LoopbackAudioSource _loopbackAudioSource;
+        private AudioCaptureSource _audioCaptureSource;
+        private Utils.ThreadExecutionState? _oldSleepState;
 
         public ScreenEncoder()
         {
@@ -32,15 +32,15 @@ namespace ScreenRecorder.Encoder
                 return;
 
             // to be on the safe side
-            Debug.Assert(screenVideoSource == null);
-            Debug.Assert(loopbackAudioSource == null);
-            Debug.Assert(audioCaptureSource == null);
-            Debug.Assert(audioMixer == null);
+            Debug.Assert(_screenVideoSource == null);
+            Debug.Assert(_loopbackAudioSource == null);
+            Debug.Assert(_audioCaptureSource == null);
+            Debug.Assert(_audioMixer == null);
             ScreenEncoder_EncoderStopped(this, null);
 
             // prevent power saving during capture
-            if (!oldSleepState.HasValue)
-                oldSleepState = Utils.DisableSleep();
+            if (!_oldSleepState.HasValue)
+                _oldSleepState = Utils.DisableSleep();
 
             MonitorInfo monitorInfo = MonitorInfo.GetActiveMonitorInfos()?.FirstOrDefault(x => x.DeviceName.Equals(deviceName));
             if (monitorInfo == null)
@@ -48,22 +48,22 @@ namespace ScreenRecorder.Encoder
                 throw new ArgumentException($"{deviceName} is not exist");
             }
 
-            screenVideoSource = new ScreenVideoSource(deviceName, region, drawCursor);
+            _screenVideoSource = new ScreenVideoSource(deviceName, region, drawCursor);
 
 
-            loopbackAudioSource = new LoopbackAudioSource();
-            IAudioSource audioSource = loopbackAudioSource;
+            _loopbackAudioSource = new LoopbackAudioSource();
+            IAudioSource audioSource = _loopbackAudioSource;
             if (recordMicrophone)
             {
-                audioCaptureSource = new AudioCaptureSource();
-                audioMixer = new AudioMixer(loopbackAudioSource, audioCaptureSource);
-                audioSource = audioMixer;
+                _audioCaptureSource = new AudioCaptureSource();
+                _audioMixer = new AudioMixer(_loopbackAudioSource, _audioCaptureSource);
+                audioSource = _audioMixer;
             }
             try
             {
                 Rect validRegion = Rect.Intersect(region, new Rect(0, 0, monitorInfo.Width, monitorInfo.Height));
                 base.Start(format, url,
-                    screenVideoSource, videoCodec, videoBitrate, new VideoSize((int)validRegion.Width, (int)validRegion.Height),
+                    _screenVideoSource, videoCodec, videoBitrate, new VideoSize((int)validRegion.Width, (int)validRegion.Height),
                     audioSource, audioCodec, audioBitrate);
             }
             catch (Exception ex)
@@ -76,24 +76,24 @@ namespace ScreenRecorder.Encoder
 
         private void ScreenEncoder_EncoderStopped(object sender, EncoderStoppedEventArgs eventArgs)
         {
-            screenVideoSource?.Dispose();
-            screenVideoSource = null;
+            _screenVideoSource?.Dispose();
+            _screenVideoSource = null;
 
-            audioMixer?.Dispose();
-            audioMixer = null;
+            _audioMixer?.Dispose();
+            _audioMixer = null;
 
-            loopbackAudioSource?.Dispose();
-            loopbackAudioSource = null;
+            _loopbackAudioSource?.Dispose();
+            _loopbackAudioSource = null;
 
-            audioCaptureSource?.Dispose();
-            audioCaptureSource = null;
+            _audioCaptureSource?.Dispose();
+            _audioCaptureSource = null;
 
             if (eventArgs != null)
             {
-                if (oldSleepState.HasValue)
+                if (_oldSleepState.HasValue)
                 {
-                    Utils.SetThreadExecutionState(oldSleepState.Value);
-                    oldSleepState = null; ;
+                    Utils.SetThreadExecutionState(_oldSleepState.Value);
+                    _oldSleepState = null; ;
                 }
             }
         }
@@ -104,10 +104,10 @@ namespace ScreenRecorder.Encoder
             {
                 base.Dispose(disposing);
                 this.EncoderStopped -= ScreenEncoder_EncoderStopped;
-                if (oldSleepState.HasValue)
+                if (_oldSleepState.HasValue)
                 {
-                    Utils.SetThreadExecutionState(oldSleepState.Value);
-                    oldSleepState = null;
+                    Utils.SetThreadExecutionState(_oldSleepState.Value);
+                    _oldSleepState = null;
                 }
             }
         }

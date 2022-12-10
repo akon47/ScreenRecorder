@@ -8,11 +8,12 @@ namespace ScreenRecorder.Encoder
 {
     public abstract class EncoderCodec : NotifyPropertyBase
     {
-        protected string name;
+        private string _name;
+
         public string Name
         {
-            get => name;
-            set => SetProperty(ref name, value);
+            get => _name;
+            protected set => SetProperty(ref _name, value);
         }
     }
 }

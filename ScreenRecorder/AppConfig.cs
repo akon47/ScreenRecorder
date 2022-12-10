@@ -10,48 +10,48 @@ namespace ScreenRecorder
     public sealed class AppConfig : NotifyPropertyBase, IConfigFile, IDisposable
     {
         #region Constructors
-        private static volatile AppConfig instance;
-        private static object syncRoot = new object();
+        private static volatile AppConfig _instance;
+        private static object _syncRoot = new object();
         public static AppConfig Instance
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    lock (syncRoot)
+                    lock (_syncRoot)
                     {
-                        if (instance == null)
+                        if (_instance == null)
                         {
-                            instance = new AppConfig();
+                            _instance = new AppConfig();
                         }
                     }
                 }
 
-                return instance;
+                return _instance;
             }
         }
 
-        private readonly string ConfigFilePath = System.IO.Path.Combine(AppConstants.AppDataFolderPath, "config");
+        private readonly string _configFilePath = System.IO.Path.Combine(AppConstants.AppDataFolderPath, "config");
 
-        private object SyncObject = new object();
-        private ConfigFileSaveWorker configFileSaveWorker;
-        private volatile bool isDisposed = false;
+        private object _syncObject = new object();
+        private ConfigFileSaveWorker _configFileSaveWorker;
+        private volatile bool _isDisposed = false;
 
         private AppConfig()
         {
             try
             {
-                Load(ConfigFilePath);
+                Load(_configFilePath);
             }
             catch { }
 
             Validation();
 
-            configFileSaveWorker = new ConfigFileSaveWorker(this, ConfigFilePath);
+            _configFileSaveWorker = new ConfigFileSaveWorker(this, _configFilePath);
 
             this.PropertyChanged += (s, e) =>
             {
-                configFileSaveWorker?.SetModifiedConfigData();
+                _configFileSaveWorker?.SetModifiedConfigData();
             };
         }
         #endregion
@@ -59,7 +59,7 @@ namespace ScreenRecorder
         #region IConfigFile
         public void Save(string filePath)
         {
-            lock (SyncObject)
+            lock (_syncObject)
             {
                 Dictionary<string, string> config = new Dictionary<string, string>();
                 config.Add(nameof(ScreenCaptureMonitor), ScreenCaptureMonitor);
@@ -91,7 +91,7 @@ namespace ScreenRecorder
 
         public void Load(string filePath)
         {
-            lock (SyncObject)
+            lock (_syncObject)
             {
                 Dictionary<string, string> config = Config.Config.LoadFromFile(filePath, true);
 
@@ -179,116 +179,116 @@ namespace ScreenRecorder
         #region Properties
 
         #region Window
-        private double windowLeft;
+        private double _windowLeft;
         public double WindowLeft
         {
-            get => Math.Max(0, windowLeft);
-            set => SetProperty(ref windowLeft, value);
+            get => Math.Max(0, _windowLeft);
+            set => SetProperty(ref _windowLeft, value);
         }
 
-        private double windowTop;
+        private double _windowTop;
         public double WindowTop
         {
-            get => Math.Max(0, windowTop);
-            set => SetProperty(ref windowTop, value);
+            get => Math.Max(0, _windowTop);
+            set => SetProperty(ref _windowTop, value);
         }
         #endregion
 
         #region Record
-        private string selectedRecordFormat;
+        private string _selectedRecordFormat;
         public string SelectedRecordFormat
         {
-            get => selectedRecordFormat;
-            set => SetProperty(ref selectedRecordFormat, value);
+            get => _selectedRecordFormat;
+            set => SetProperty(ref _selectedRecordFormat, value);
         }
 
-        private VideoCodec selectedRecordVideoCodec;
+        private VideoCodec _selectedRecordVideoCodec;
         public VideoCodec SelectedRecordVideoCodec
         {
-            get => selectedRecordVideoCodec;
-            set => SetProperty(ref selectedRecordVideoCodec, value);
+            get => _selectedRecordVideoCodec;
+            set => SetProperty(ref _selectedRecordVideoCodec, value);
         }
 
-        private AudioCodec selectedRecordAudioCodec;
+        private AudioCodec _selectedRecordAudioCodec;
         public AudioCodec SelectedRecordAudioCodec
         {
-            get => selectedRecordAudioCodec;
-            set => SetProperty(ref selectedRecordAudioCodec, value);
+            get => _selectedRecordAudioCodec;
+            set => SetProperty(ref _selectedRecordAudioCodec, value);
         }
 
-        private int selectedRecordVideoBitrate;
+        private int _selectedRecordVideoBitrate;
         public int SelectedRecordVideoBitrate
         {
-            get => selectedRecordVideoBitrate;
-            set => SetProperty(ref selectedRecordVideoBitrate, value);
+            get => _selectedRecordVideoBitrate;
+            set => SetProperty(ref _selectedRecordVideoBitrate, value);
         }
 
-        private int selectedRecordAudioBitrate;
+        private int _selectedRecordAudioBitrate;
         public int SelectedRecordAudioBitrate
         {
-            get => selectedRecordAudioBitrate;
-            set => SetProperty(ref selectedRecordAudioBitrate, value);
+            get => _selectedRecordAudioBitrate;
+            set => SetProperty(ref _selectedRecordAudioBitrate, value);
         }
 
-        private int selectedRecordFrameRate;
+        private int _selectedRecordFrameRate;
         public int SelectedRecordFrameRate
         {
-            get => selectedRecordFrameRate;
-            set => SetProperty(ref selectedRecordFrameRate, value);
+            get => _selectedRecordFrameRate;
+            set => SetProperty(ref _selectedRecordFrameRate, value);
         }
 
-        private string recordDirectory;
+        private string _recordDirectory;
         public string RecordDirectory
         {
-            get => recordDirectory;
-            set => SetProperty(ref recordDirectory, value);
+            get => _recordDirectory;
+            set => SetProperty(ref _recordDirectory, value);
         }
 
-        private RegionSelectionMode regionSelectionMode;
+        private RegionSelectionMode _regionSelectionMode;
         public RegionSelectionMode RegionSelectionMode
         {
-            get => regionSelectionMode;
-            set => SetProperty(ref regionSelectionMode, value);
+            get => _regionSelectionMode;
+            set => SetProperty(ref _regionSelectionMode, value);
         }
 
-        private bool excludeFromCapture;
+        private bool _excludeFromCapture;
         public bool ExcludeFromCapture
         {
-            get => excludeFromCapture;
-            set => SetProperty(ref excludeFromCapture, value);
+            get => _excludeFromCapture;
+            set => SetProperty(ref _excludeFromCapture, value);
         }
         #endregion
 
         #region ScreenCapture
-        private string screenCaptureMonitor;
+        private string _screenCaptureMonitor;
         public string ScreenCaptureMonitor
         {
-            get => screenCaptureMonitor;
-            set => SetProperty(ref screenCaptureMonitor, value);
+            get => _screenCaptureMonitor;
+            set => SetProperty(ref _screenCaptureMonitor, value);
         }
 
-        private bool screenCaptureCursorVisible;
+        private bool _screenCaptureCursorVisible;
         public bool ScreenCaptureCursorVisible
         {
-            get => screenCaptureCursorVisible;
-            set => SetProperty(ref screenCaptureCursorVisible, value);
+            get => _screenCaptureCursorVisible;
+            set => SetProperty(ref _screenCaptureCursorVisible, value);
         }
         #endregion
 
         #region Audio
-        private bool recordMicrophone;
+        private bool _recordMicrophone;
         public bool RecordMicrophone
         {
-            get => recordMicrophone;
-            set => SetProperty(ref recordMicrophone, value);
+            get => _recordMicrophone;
+            set => SetProperty(ref _recordMicrophone, value);
         }
         #endregion
 
-        private bool advancedSettings;
+        private bool _advancedSettings;
         public bool AdvancedSettings
         {
-            get => advancedSettings;
-            set => SetProperty(ref advancedSettings, value);
+            get => _advancedSettings;
+            set => SetProperty(ref _advancedSettings, value);
         }
 
         #endregion
@@ -297,15 +297,15 @@ namespace ScreenRecorder
         {
             try
             {
-                lock (SyncObject)
+                lock (_syncObject)
                 {
-                    if (isDisposed)
+                    if (_isDisposed)
                         return;
 
-                    configFileSaveWorker?.Dispose();
-                    configFileSaveWorker = null;
+                    _configFileSaveWorker?.Dispose();
+                    _configFileSaveWorker = null;
 
-                    isDisposed = true;
+                    _isDisposed = true;
                 }
             }
             catch { }

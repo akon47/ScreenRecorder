@@ -9,17 +9,17 @@ namespace ScreenRecorder.Encoder
 {
     public class EncoderAudioCodec : EncoderCodec
     {
-        private AudioCodec audioCodec;
+        private AudioCodec _audioCodec;
         public AudioCodec AudioCodec
         {
-            get => audioCodec;
-            set => SetProperty(ref audioCodec, value);
+            get => _audioCodec;
+            set => SetProperty(ref _audioCodec, value);
         }
 
         public EncoderAudioCodec(AudioCodec audioCodec, string name)
         {
-            this.audioCodec = audioCodec;
-            this.name = name;
+            this._audioCodec = audioCodec;
+            Name = name;
         }
     }
 }

@@ -12,34 +12,34 @@ namespace ScreenRecorder
     public sealed class AppCommands : IConfig, IConfigFile, IDisposable
     {
         #region Constructor
-        private static volatile AppCommands instance;
-        private static object syncRoot = new object();
+        private static volatile AppCommands _instance;
+        private static object _syncRoot = new object();
         public static AppCommands Instance
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    lock (syncRoot)
+                    lock (_syncRoot)
                     {
-                        if (instance == null)
+                        if (_instance == null)
                         {
-                            instance = new AppCommands();
+                            _instance = new AppCommands();
                         }
                     }
                 }
 
-                return instance;
+                return _instance;
             }
         }
 
-        private readonly string ConfigFilePath = System.IO.Path.Combine(AppConstants.AppDataFolderPath, "commands");
-        private ConfigFileSaveWorker configFileSaveWorker;
-        private volatile bool isDisposed = false;
+        private readonly string _configFilePath = System.IO.Path.Combine(AppConstants.AppDataFolderPath, "commands");
+        private ConfigFileSaveWorker _configFileSaveWorker;
+        private volatile bool _isDisposed = false;
 
         private AppCommands()
         {
-            Load(ConfigFilePath);
+            Load(_configFilePath);
 
             foreach (var propertyInfo in this.GetType().GetProperties())
             {
@@ -50,7 +50,7 @@ namespace ScreenRecorder
                     {
                         command.WhenChanged(() =>
                         {
-                            configFileSaveWorker?.SetModifiedConfigData();
+                            _configFileSaveWorker?.SetModifiedConfigData();
                         },
                         nameof(DelegateCommand.KeyGesture));
                     }
@@ -60,7 +60,7 @@ namespace ScreenRecorder
             // then use globalhotkey
             //EventManager.RegisterClassHandler(typeof(Window), System.Windows.Input.Keyboard.PreviewKeyDownEvent, new KeyEventHandler(PreviewKeyDown), true);
 
-            configFileSaveWorker = new ConfigFileSaveWorker(this, ConfigFilePath);
+            _configFileSaveWorker = new ConfigFileSaveWorker(this, _configFilePath);
         }
 
         private void PreviewKeyDown(object sender, KeyEventArgs e)
@@ -167,32 +167,32 @@ namespace ScreenRecorder
 
         public void Dispose()
         {
-            if (isDisposed)
+            if (_isDisposed)
                 return;
 
-            configFileSaveWorker?.Dispose();
-            configFileSaveWorker = null;
+            _configFileSaveWorker?.Dispose();
+            _configFileSaveWorker = null;
 
-            isDisposed = true;
+            _isDisposed = true;
         }
         #endregion
 
         #region Private Command Fields
-        private DelegateCommand startScreenRecordCommand;
-        private DelegateCommand pauseScreenRecordCommand;
-        private DelegateCommand stopScreenRecordCommand;
-        private DelegateCommand openFolderInWindowExplorerCommand;
-        private DelegateCommand openRecordDirecotryCommand;
-        private DelegateCommand selectRecordDirectory;
+        private DelegateCommand _startScreenRecordCommand;
+        private DelegateCommand _pauseScreenRecordCommand;
+        private DelegateCommand _stopScreenRecordCommand;
+        private DelegateCommand _openFolderInWindowExplorerCommand;
+        private DelegateCommand _openRecordDirecotryCommand;
+        private DelegateCommand _selectRecordDirectory;
 
-        private DelegateCommand openShortcutSettingsCommand;
+        private DelegateCommand _openShortcutSettingsCommand;
 
-        private DelegateCommand windowCloseCommand;
+        private DelegateCommand _windowCloseCommand;
         #endregion
 
         #region Record Commands
-        public DelegateCommand StartScreenRecordCommand => startScreenRecordCommand ??
-            (startScreenRecordCommand = new DelegateCommand(o =>
+        public DelegateCommand StartScreenRecordCommand => _startScreenRecordCommand ??
+            (_startScreenRecordCommand = new DelegateCommand(o =>
             {
                 if (AppManager.Instance.ScreenEncoder.Status == Encoder.EncoderStatus.Stop)
                 {
@@ -305,8 +305,8 @@ namespace ScreenRecorder
                 }
             }));
 
-        public DelegateCommand PauseScreenRecordCommand => pauseScreenRecordCommand ??
-            (pauseScreenRecordCommand = new DelegateCommand(o =>
+        public DelegateCommand PauseScreenRecordCommand => _pauseScreenRecordCommand ??
+            (_pauseScreenRecordCommand = new DelegateCommand(o =>
             {
                 if (AppManager.Instance.ScreenEncoder.Status == Encoder.EncoderStatus.Start)
                 {
@@ -314,8 +314,8 @@ namespace ScreenRecorder
                 }
             }));
 
-        public DelegateCommand StopScreenRecordCommand => stopScreenRecordCommand ??
-            (stopScreenRecordCommand = new DelegateCommand(o =>
+        public DelegateCommand StopScreenRecordCommand => _stopScreenRecordCommand ??
+            (_stopScreenRecordCommand = new DelegateCommand(o =>
             {
                 if (AppManager.Instance.ScreenEncoder.Status != Encoder.EncoderStatus.Stop)
                 {
@@ -323,8 +323,8 @@ namespace ScreenRecorder
                 }
             }));
 
-        public DelegateCommand SelectRecordDirectory => selectRecordDirectory ??
-            (selectRecordDirectory = new DelegateCommand(o =>
+        public DelegateCommand SelectRecordDirectory => _selectRecordDirectory ??
+            (_selectRecordDirectory = new DelegateCommand(o =>
             {
                 System.Windows.Forms.FolderBrowserDialog folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
                 folderBrowserDialog.Description = ScreenRecorder.Properties.Resources.SetsTheRecordingPath;
@@ -335,8 +335,8 @@ namespace ScreenRecorder
                 }
             }));
 
-        public DelegateCommand OpenRecordDirecotryCommand => openRecordDirecotryCommand ??
-            (openRecordDirecotryCommand = new DelegateCommand(o =>
+        public DelegateCommand OpenRecordDirecotryCommand => _openRecordDirecotryCommand ??
+            (_openRecordDirecotryCommand = new DelegateCommand(o =>
             {
                 try
                 {
@@ -358,8 +358,8 @@ namespace ScreenRecorder
         #endregion
 
         #region Common Commands
-        public DelegateCommand OpenFolderInWindowExplorerCommand => openFolderInWindowExplorerCommand ??
-            (openFolderInWindowExplorerCommand = new DelegateCommand(o =>
+        public DelegateCommand OpenFolderInWindowExplorerCommand => _openFolderInWindowExplorerCommand ??
+            (_openFolderInWindowExplorerCommand = new DelegateCommand(o =>
             {
                 if (o is string folder)
                 {
@@ -380,8 +380,8 @@ namespace ScreenRecorder
         #endregion
 
         #region Shortcut Commands
-        public DelegateCommand OpenShortcutSettingsCommand => openShortcutSettingsCommand ??
-            (openShortcutSettingsCommand = new DelegateCommand(o =>
+        public DelegateCommand OpenShortcutSettingsCommand => _openShortcutSettingsCommand ??
+            (_openShortcutSettingsCommand = new DelegateCommand(o =>
             {
                 try
                 {
@@ -398,8 +398,8 @@ namespace ScreenRecorder
         #endregion
 
         #region Window Commands
-        public DelegateCommand WindowCloseCommand => windowCloseCommand ??
-            (windowCloseCommand = new DelegateCommand(o =>
+        public DelegateCommand WindowCloseCommand => _windowCloseCommand ??
+            (_windowCloseCommand = new DelegateCommand(o =>
             {
                 if (o is Window window)
                 {

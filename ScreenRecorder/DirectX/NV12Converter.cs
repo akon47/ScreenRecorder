@@ -5,58 +5,58 @@ using SharpDX.DXGI;
 
 namespace ScreenRecorder.DirectX
 {
-    public class NV12Converter : IDisposable
+    public class Nv12Converter : IDisposable
     {
-        private VideoDevice videoDevice;
-        private VideoContext videoContext;
-        private VideoProcessor processor;
-        private VideoProcessorEnumerator enumerator;
-        private Texture2DDescription inDesc, outDesc;
-        private Dictionary<Texture2D, VideoProcessorOutputView> viewMap = new Dictionary<Texture2D, VideoProcessorOutputView>();
+        private VideoDevice _videoDevice;
+        private VideoContext _videoContext;
+        private VideoProcessor _processor;
+        private VideoProcessorEnumerator _enumerator;
+        private Texture2DDescription _inDesc, _outDesc;
+        private Dictionary<Texture2D, VideoProcessorOutputView> _viewMap = new Dictionary<Texture2D, VideoProcessorOutputView>();
 
-        public NV12Converter(SharpDX.Direct3D11.Device device, DeviceContext deviceContext)
+        public Nv12Converter(SharpDX.Direct3D11.Device device, DeviceContext deviceContext)
         {
-            videoDevice = device.QueryInterface<VideoDevice>();
-            videoContext = deviceContext.QueryInterface<VideoContext>();
+            _videoDevice = device.QueryInterface<VideoDevice>();
+            _videoContext = deviceContext.QueryInterface<VideoContext>();
         }
 
         public void Convert(Texture2D input, Texture2D output)
         {
-            var _inDesc = input.Description;
-            var _outDesc = output.Description;
-            if (processor != null)
+            var inDesc = input.Description;
+            var outDesc = output.Description;
+            if (_processor != null)
             {
-                if (_inDesc.Width != inDesc.Width ||
-                    _inDesc.Height != inDesc.Height ||
-                    _outDesc.Width != outDesc.Width ||
-                    _outDesc.Height != outDesc.Height)
+                if (inDesc.Width != this._inDesc.Width ||
+                    inDesc.Height != this._inDesc.Height ||
+                    outDesc.Width != this._outDesc.Width ||
+                    outDesc.Height != this._outDesc.Height)
                 {
-                    processor.Dispose();
-                    processor = null;
+                    _processor.Dispose();
+                    _processor = null;
 
-                    enumerator.Dispose();
-                    enumerator = null;
+                    _enumerator.Dispose();
+                    _enumerator = null;
                 }
             }
 
-            if (processor == null)
+            if (_processor == null)
             {
-                inDesc = _inDesc;
-                outDesc = _outDesc;
+                this._inDesc = inDesc;
+                this._outDesc = outDesc;
                 VideoProcessorContentDescription contentDesc = new VideoProcessorContentDescription()
                 {
                     InputFrameFormat = VideoFrameFormat.Progressive,
                     InputFrameRate = new Rational(1, 1),
-                    InputWidth = inDesc.Width,
-                    InputHeight = inDesc.Height,
+                    InputWidth = this._inDesc.Width,
+                    InputHeight = this._inDesc.Height,
                     OutputFrameRate = new Rational(1, 1),
-                    OutputWidth = outDesc.Width,
-                    OutputHeight = outDesc.Height,
+                    OutputWidth = this._outDesc.Width,
+                    OutputHeight = this._outDesc.Height,
                     Usage = VideoUsage.PlaybackNormal
                 };
-                videoDevice.CreateVideoProcessorEnumerator(ref contentDesc, out enumerator);
-                videoDevice.CreateVideoProcessor(enumerator, 0, out processor);
-                videoContext.VideoProcessorSetOutputColorSpace(processor, new VideoProcessorColorSpace()
+                _videoDevice.CreateVideoProcessorEnumerator(ref contentDesc, out _enumerator);
+                _videoDevice.CreateVideoProcessor(_enumerator, 0, out _processor);
+                _videoContext.VideoProcessorSetOutputColorSpace(_processor, new VideoProcessorColorSpace()
                 {
                     Usage = true,
                     RgbRange = false,
@@ -66,9 +66,9 @@ namespace ScreenRecorder.DirectX
                 });
 
                 var bounds = Utils.ComputeUniformBounds(
-                    new System.Windows.Rect(0, 0, outDesc.Width, outDesc.Height),
-                    new System.Windows.Size(inDesc.Width, inDesc.Height));
-                videoContext.VideoProcessorSetStreamDestRect(processor, 0, new SharpDX.Mathematics.Interop.RawBool(true), new SharpDX.Mathematics.Interop.RawRectangle((int)bounds.Left, (int)bounds.Top, (int)bounds.Right, (int)bounds.Bottom));
+                    new System.Windows.Rect(0, 0, this._outDesc.Width, this._outDesc.Height),
+                    new System.Windows.Size(this._inDesc.Width, this._inDesc.Height));
+                _videoContext.VideoProcessorSetStreamDestRect(_processor, 0, new SharpDX.Mathematics.Interop.RawBool(true), new SharpDX.Mathematics.Interop.RawRectangle((int)bounds.Left, (int)bounds.Top, (int)bounds.Right, (int)bounds.Bottom));
             }
 
             VideoProcessorInputViewDescription inputViewDesc = new VideoProcessorInputViewDescription()
@@ -79,18 +79,18 @@ namespace ScreenRecorder.DirectX
             };
 
             VideoProcessorInputView inputView;
-            videoDevice.CreateVideoProcessorInputView(input, enumerator, inputViewDesc, out inputView);
+            _videoDevice.CreateVideoProcessorInputView(input, _enumerator, inputViewDesc, out inputView);
 
             VideoProcessorOutputView outputView;
-            if (!viewMap.ContainsKey(output))
+            if (!_viewMap.ContainsKey(output))
             {
                 VideoProcessorOutputViewDescription outputViewDesc = new VideoProcessorOutputViewDescription() { Dimension = VpovDimension.Texture2D };
-                videoDevice.CreateVideoProcessorOutputView(output, enumerator, outputViewDesc, out outputView);
-                viewMap.Add(output, outputView);
+                _videoDevice.CreateVideoProcessorOutputView(output, _enumerator, outputViewDesc, out outputView);
+                _viewMap.Add(output, outputView);
             }
             else
             {
-                outputView = viewMap[output];
+                outputView = _viewMap[output];
             }
 
             VideoProcessorStream stream = new VideoProcessorStream()
@@ -105,29 +105,29 @@ namespace ScreenRecorder.DirectX
                 PpFutureSurfaces = null
             };
 
-            videoContext.VideoProcessorBlt(processor, outputView, 0, 1, new VideoProcessorStream[] { stream });
+            _videoContext.VideoProcessorBlt(_processor, outputView, 0, 1, new VideoProcessorStream[] { stream });
             inputView.Dispose();
         }
 
         public void Dispose()
         {
-            foreach (var pair in viewMap)
+            foreach (var pair in _viewMap)
             {
                 pair.Value.Dispose();
             }
-            viewMap.Clear();
+            _viewMap.Clear();
 
-            processor?.Dispose();
-            processor = null;
+            _processor?.Dispose();
+            _processor = null;
 
-            enumerator?.Dispose();
-            enumerator = null;
+            _enumerator?.Dispose();
+            _enumerator = null;
 
-            videoContext?.Dispose();
-            videoContext = null;
+            _videoContext?.Dispose();
+            _videoContext = null;
 
-            videoDevice?.Dispose();
-            videoDevice = null;
+            _videoDevice?.Dispose();
+            _videoDevice = null;
         }
     }
 }

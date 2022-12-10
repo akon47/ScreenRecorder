@@ -13,27 +13,27 @@ namespace ScreenRecorder.Command
 {
     public class DelegateCommand : NotifyPropertyBase, ICommand, IShortcut, IConfig
     {
-        private GlobalHotKey globalHotKey;
+        private GlobalHotKey _globalHotKey;
 
         #region Property backing fields
 
-        private readonly object SyncLock = new object();
-        private readonly Func<object, bool> m_CanExecute;
-        private readonly Action<object> ExecuteAction;
-        private bool m_IsExecuting;
+        private readonly object _syncLock = new object();
+        private readonly Func<object, bool> _mCanExecute;
+        private readonly Action<object> _executeAction;
+        private bool _mIsExecuting;
 
         #region Constructors
 
         public DelegateCommand(Action<object> execute, Func<object, bool> canExecute, KeyGesture keyGesture = null)
         {
             var callback = execute ?? throw new ArgumentNullException(nameof(execute));
-            m_CanExecute = canExecute;
+            _mCanExecute = canExecute;
 
-            ExecuteAction = parameter =>
+            _executeAction = parameter =>
             {
                 try
                 {
-                    var canExecuteAction = m_CanExecute?.Invoke(parameter) ?? true;
+                    var canExecuteAction = _mCanExecute?.Invoke(parameter) ?? true;
 
                     if (canExecuteAction)
                     {
@@ -43,7 +43,7 @@ namespace ScreenRecorder.Command
                 catch { }
             };
 
-            this.keyGesture = keyGesture;
+            this._keyGesture = keyGesture;
         }
 
         public DelegateCommand(Action<object> execute)
@@ -71,40 +71,40 @@ namespace ScreenRecorder.Command
         {
             get
             {
-                lock (SyncLock)
+                lock (_syncLock)
                 {
-                    return m_IsExecuting;
+                    return _mIsExecuting;
                 }
             }
             private set
             {
-                lock (SyncLock)
+                lock (_syncLock)
                 {
-                    m_IsExecuting = value;
+                    _mIsExecuting = value;
                 }
             }
         }
 
-        private KeyGesture keyGesture;
+        private KeyGesture _keyGesture;
 
         public KeyGesture KeyGesture
         {
-            get => keyGesture;
+            get => _keyGesture;
             set
             {
-                if (SetProperty(ref keyGesture, value))
+                if (SetProperty(ref _keyGesture, value))
                 {
                     NotifyPropertyChanged(nameof(KeyGestureString), nameof(Key), nameof(Modifiers));
 
-                    if (keyGesture != null)
+                    if (_keyGesture != null)
                     {
-                        globalHotKey?.Dispose();
-                        globalHotKey = new GlobalHotKey(this);
+                        _globalHotKey?.Dispose();
+                        _globalHotKey = new GlobalHotKey(this);
                     }
                     else
                     {
-                        globalHotKey?.Dispose();
-                        globalHotKey = null;
+                        _globalHotKey?.Dispose();
+                        _globalHotKey = null;
                     }
                 }
             }
@@ -114,13 +114,13 @@ namespace ScreenRecorder.Command
         {
             get
             {
-                if (keyGesture != null)
+                if (_keyGesture != null)
                 {
                     return string.Format("{0}{1}{2}{3}",
-                        keyGesture.Modifiers.HasFlag(ModifierKeys.Control) ? "Ctrl+" : string.Empty,
-                        keyGesture.Modifiers.HasFlag(ModifierKeys.Shift) ? "Shift+" : string.Empty,
-                        keyGesture.Modifiers.HasFlag(ModifierKeys.Alt) ? "Alt+" : string.Empty,
-                        KeyToString(keyGesture.Key));
+                        _keyGesture.Modifiers.HasFlag(ModifierKeys.Control) ? "Ctrl+" : string.Empty,
+                        _keyGesture.Modifiers.HasFlag(ModifierKeys.Shift) ? "Shift+" : string.Empty,
+                        _keyGesture.Modifiers.HasFlag(ModifierKeys.Alt) ? "Alt+" : string.Empty,
+                        KeyToString(_keyGesture.Key));
                 }
 
                 return null;
@@ -131,9 +131,9 @@ namespace ScreenRecorder.Command
         {
             get
             {
-                if (keyGesture != null)
+                if (_keyGesture != null)
                 {
-                    return keyGesture.Key;
+                    return _keyGesture.Key;
                 }
 
                 return Key.None;
@@ -144,9 +144,9 @@ namespace ScreenRecorder.Command
         {
             get
             {
-                if (keyGesture != null)
+                if (_keyGesture != null)
                 {
-                    return keyGesture.Modifiers;
+                    return _keyGesture.Modifiers;
                 }
 
                 return ModifierKeys.None;
@@ -279,7 +279,7 @@ namespace ScreenRecorder.Command
 
             try
             {
-                return m_CanExecute == null || m_CanExecute(parameter);
+                return _mCanExecute == null || _mCanExecute(parameter);
             }
             catch
             {
@@ -330,7 +330,7 @@ namespace ScreenRecorder.Command
                 try
                 {
                     IsExecuting = true;
-                    await Application.Current.Dispatcher.BeginInvoke(ExecuteAction, DispatcherPriority.Normal,
+                    await Application.Current.Dispatcher.BeginInvoke(_executeAction, DispatcherPriority.Normal,
                         parameter);
                 }
                 catch (Exception ex)

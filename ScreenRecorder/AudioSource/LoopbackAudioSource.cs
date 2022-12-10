@@ -10,42 +10,42 @@ namespace ScreenRecorder.AudioSource
 {
     public sealed class LoopbackAudioSource : IAudioSource, IDisposable
     {
-        private ManualResetEvent needToStop;
-        private int sampleRate, channels, bitsPerSample;
+        private ManualResetEvent _needToStop;
+        private int _sampleRate, _channels, _bitsPerSample;
 
-        private Thread workerThread;
+        private Thread _workerThread;
 
         public LoopbackAudioSource()
         {
-            needToStop = new ManualResetEvent(false);
-            workerThread = new Thread(WorkerThreadHandler) { Name = "LoopbackAudioSource", IsBackground = true };
-            workerThread.Start();
+            _needToStop = new ManualResetEvent(false);
+            _workerThread = new Thread(WorkerThreadHandler) { Name = "LoopbackAudioSource", IsBackground = true };
+            _workerThread.Start();
         }
 
         public event NewAudioPacketEventHandler NewAudioPacket;
 
         public void Dispose()
         {
-            if (needToStop != null)
+            if (_needToStop != null)
             {
-                needToStop.Set();
+                _needToStop.Set();
             }
 
-            if (workerThread != null)
+            if (_workerThread != null)
             {
-                if (workerThread.IsAlive && !workerThread.Join(1000))
+                if (_workerThread.IsAlive && !_workerThread.Join(1000))
                 {
-                    workerThread.Abort();
+                    _workerThread.Abort();
                 }
 
-                workerThread = null;
+                _workerThread = null;
 
-                if (needToStop != null)
+                if (_needToStop != null)
                 {
-                    needToStop.Close();
+                    _needToStop.Close();
                 }
 
-                needToStop = null;
+                _needToStop = null;
             }
         }
 
@@ -53,7 +53,7 @@ namespace ScreenRecorder.AudioSource
         {
             WasapiLoopbackCapture waveIn = null;
 
-            while (!needToStop.WaitOne(0, false))
+            while (!_needToStop.WaitOne(0, false))
             {
                 using (var enumerator = new MMDeviceEnumerator())
                 {
@@ -61,22 +61,22 @@ namespace ScreenRecorder.AudioSource
                     var notificationClient = new NotificationClient(ref needToReset);
                     enumerator.RegisterEndpointNotificationCallback(notificationClient);
 
-                    while (!needToStop.WaitOne(100, false))
+                    while (!_needToStop.WaitOne(100, false))
                     {
                         try
                         {
                             if (waveIn == null)
                             {
                                 waveIn = new WasapiLoopbackCapture();
-                                sampleRate = waveIn.WaveFormat.SampleRate;
-                                channels = waveIn.WaveFormat.Channels;
-                                bitsPerSample = waveIn.WaveFormat.BitsPerSample;
+                                _sampleRate = waveIn.WaveFormat.SampleRate;
+                                _channels = waveIn.WaveFormat.Channels;
+                                _bitsPerSample = waveIn.WaveFormat.BitsPerSample;
                                 waveIn.DataAvailable += WaveIn_DataAvailable;
                                 waveIn.StartRecording();
                             }
                             else
                             {
-                                if (needToStop.WaitOne(100))
+                                if (_needToStop.WaitOne(100))
                                 {
                                     break;
                                 }
@@ -84,11 +84,11 @@ namespace ScreenRecorder.AudioSource
                         }
                         catch
                         {
-                            needToStop.WaitOne(500);
+                            _needToStop.WaitOne(500);
                             break;
                         }
 
-                        if (needToReset.WaitOne(0, false) || needToStop.WaitOne(1))
+                        if (needToReset.WaitOne(0, false) || _needToStop.WaitOne(1))
                         {
                             break;
                         }
@@ -116,7 +116,7 @@ namespace ScreenRecorder.AudioSource
         {
             if ((e?.BytesRecorded ?? 0) > 0)
             {
-                var samples = e.BytesRecorded / ((bitsPerSample + 7) / 8) / channels;
+                var samples = e.BytesRecorded / ((_bitsPerSample + 7) / 8) / _channels;
 
                 var convertedSamples = Marshal.AllocHGlobal(e.BytesRecorded / 2);
                 unsafe
@@ -131,7 +131,7 @@ namespace ScreenRecorder.AudioSource
                             *dest++ = (short)(*src++ * 32767.0f);
                         }
 
-                        var eventArgs = new NewAudioPacketEventArgs(sampleRate, channels, SampleFormat.S16, samples,
+                        var eventArgs = new NewAudioPacketEventArgs(_sampleRate, _channels, SampleFormat.S16, samples,
                             convertedSamples);
                         NewAudioPacket?.Invoke(this, eventArgs);
                     }
@@ -143,11 +143,11 @@ namespace ScreenRecorder.AudioSource
 
         private class NotificationClient : IMMNotificationClient
         {
-            private readonly AutoResetEvent needToReset;
+            private readonly AutoResetEvent _needToReset;
 
-            public NotificationClient(ref AutoResetEvent _needToReset)
+            public NotificationClient(ref AutoResetEvent needToReset)
             {
-                needToReset = _needToReset;
+                this._needToReset = needToReset;
             }
 
             void IMMNotificationClient.OnDeviceStateChanged(string deviceId, DeviceState newState)
@@ -164,7 +164,7 @@ namespace ScreenRecorder.AudioSource
             {
                 if (flow == DataFlow.Render && role == Role.Console)
                 {
-                    needToReset?.Set();
+                    _needToReset?.Set();
                 }
             }
 

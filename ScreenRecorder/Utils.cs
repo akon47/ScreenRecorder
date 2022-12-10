@@ -22,7 +22,10 @@ namespace ScreenRecorder
             {
                 return Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
             }
-            finally { DeleteObject(handle); }
+            finally
+            {
+                DeleteObject(handle);
+            }
         }
 
         public static TimeSpan VideoFramesCountToTimeSpan(ulong videoFramesCount)
@@ -32,13 +35,13 @@ namespace ScreenRecorder
 
         public static string VideoFramesCountToStringTime(ulong videoFramesCount)
         {
-            ulong totalSecond = (ulong)(videoFramesCount / (double)VideoClockEvent.Framerate);
-            ulong hour = totalSecond / 3600;
-            ulong minute = totalSecond % 3600 / 60;
-            ulong second = totalSecond % 3600 % 60;
-            ulong frames = videoFramesCount % (ulong)VideoClockEvent.Framerate;
+            var totalSecond = (ulong)(videoFramesCount / (double)VideoClockEvent.Framerate);
+            var hour = totalSecond / 3600;
+            var minute = totalSecond % 3600 / 60;
+            var second = totalSecond % 3600 % 60;
+            var frames = videoFramesCount % (ulong)VideoClockEvent.Framerate;
 
-            if(VideoClockEvent.Framerate >= 100)
+            if (VideoClockEvent.Framerate >= 100)
             {
                 return $"{hour:00}:{minute:00}:{second:00}.{frames:000}";
             }
@@ -151,33 +154,33 @@ namespace ScreenRecorder
         public enum ThreadExecutionState : uint
         {
             /// <summary>
-            /// Enables away mode. This value must be specified with <see cref="ES_CONTINUOUS"/>.
+            /// Enables away mode. This value must be specified with <see cref="EsContinuous"/>.
             /// Away mode should be used only by media-recording and media-distribution applications that must perform critical background 
             /// processing on desktop computers while the computer appears to be sleeping.
             /// </summary>
-            ES_AWAYMODE_REQUIRED = 0x00000040,
+            EsAwaymodeRequired = 0x00000040,
 
             /// <summary>
-            /// Informs the system that the state being set should remain in effect until the next call that uses <see cref="ES_CONTINUOUS"/> 
+            /// Informs the system that the state being set should remain in effect until the next call that uses <see cref="EsContinuous"/> 
             /// and one of the other state flags is cleared.
             /// </summary>
-            ES_CONTINUOUS = 0x80000000,
+            EsContinuous = 0x80000000,
 
             /// <summary>
             /// Forces the display to be on by resetting the display idle timer.
             /// </summary>
-            ES_DISPLAY_REQUIRED = 0x00000002,
+            EsDisplayRequired = 0x00000002,
 
             /// <summary>
             /// Forces the system to be in the working state by resetting the system idle timer.
             /// </summary>
-            ES_SYSTEM_REQUIRED = 0x00000001,
+            EsSystemRequired = 0x00000001,
 
             /// <summary>
-            /// This value is not supported. If <see cref="ES_USER_PRESENT"/> is combined with other values, the call will fail and none of the 
+            /// This value is not supported. If <see cref="EsUserPresent"/> is combined with other values, the call will fail and none of the 
             /// specified states will be set.
             /// </summary>
-            ES_USER_PRESENT = 0x00000004
+            EsUserPresent = 0x00000004
         }
 
         [DllImport("kernel32.dll", EntryPoint = "SetThreadExecutionState", CharSet = CharSet.Auto, SetLastError = true)]
@@ -190,7 +193,7 @@ namespace ScreenRecorder
 
         public static ThreadExecutionState DisableSleep()
         {
-            return SetThreadExecutionStateInternal(ThreadExecutionState.ES_CONTINUOUS | ThreadExecutionState.ES_SYSTEM_REQUIRED | ThreadExecutionState.ES_DISPLAY_REQUIRED);
+            return SetThreadExecutionStateInternal(ThreadExecutionState.EsContinuous | ThreadExecutionState.EsSystemRequired | ThreadExecutionState.EsDisplayRequired);
         }
 
         public static void ExitProgram(bool shutDown)

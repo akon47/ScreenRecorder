@@ -11,91 +11,91 @@ namespace ScreenRecorder
     public sealed class AppManager : NotifyPropertyBase, IDisposable
     {
         #region Constructors
-        private static volatile AppManager instance;
-        private static object syncRoot = new object();
+        private static volatile AppManager _instance;
+        private static object _syncRoot = new object();
         public static AppManager Instance
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    lock (syncRoot)
+                    lock (_syncRoot)
                     {
-                        if (instance == null)
+                        if (_instance == null)
                         {
-                            instance = new AppManager();
+                            _instance = new AppManager();
                         }
                     }
                 }
 
-                return instance;
+                return _instance;
             }
         }
 
         private AppManager() { }
         #endregion
 
-        private bool isInitialized = false;
+        private bool _isInitialized = false;
         public bool IsInitialized
         {
-            get => isInitialized;
-            private set => SetProperty(ref isInitialized, value);
+            get => _isInitialized;
+            private set => SetProperty(ref _isInitialized, value);
         }
 
-        private ScreenEncoder screenEncoder;
+        private ScreenEncoder _screenEncoder;
         public ScreenEncoder ScreenEncoder
         {
-            get => screenEncoder;
-            private set => SetProperty(ref screenEncoder, value);
+            get => _screenEncoder;
+            private set => SetProperty(ref _screenEncoder, value);
         }
 
-        private string encodeTime;
+        private string _encodeTime;
         public string EncodeTime
         {
-            get => encodeTime;
-            private set => SetProperty(ref encodeTime, value);
+            get => _encodeTime;
+            private set => SetProperty(ref _encodeTime, value);
         }
 
-        private EncoderFormat[] encoderFormats;
+        private EncoderFormat[] _encoderFormats;
         public EncoderFormat[] EncoderFormats
         {
-            get => encoderFormats;
-            private set => SetProperty(ref encoderFormats, value);
+            get => _encoderFormats;
+            private set => SetProperty(ref _encoderFormats, value);
         }
 
-        private EncoderVideoCodec[] encoderVideoCodecs;
+        private EncoderVideoCodec[] _encoderVideoCodecs;
         public EncoderVideoCodec[] EncoderVideoCodecs
         {
-            get => encoderVideoCodecs;
-            private set => SetProperty(ref encoderVideoCodecs, value);
+            get => _encoderVideoCodecs;
+            private set => SetProperty(ref _encoderVideoCodecs, value);
         }
 
-        private EncoderAudioCodec[] encoderAudioCodecs;
+        private EncoderAudioCodec[] _encoderAudioCodecs;
         public EncoderAudioCodec[] EncoderAudioCodecs
         {
-            get => encoderAudioCodecs;
-            private set => SetProperty(ref encoderAudioCodecs, value);
+            get => _encoderAudioCodecs;
+            private set => SetProperty(ref _encoderAudioCodecs, value);
         }
 
-        private ICaptureTarget[] captureTargets;
+        private ICaptureTarget[] _captureTargets;
         public ICaptureTarget[] CaptureTargets
         {
-            get => captureTargets;
-            private set => SetProperty(ref captureTargets, value);
+            get => _captureTargets;
+            private set => SetProperty(ref _captureTargets, value);
         }
 
-        private bool notSupportedHwH264 = true;
+        private bool _notSupportedHwH264 = true;
         public bool NotSupportedHwH264
         {
-            get => notSupportedHwH264;
-            private set => SetProperty(ref notSupportedHwH264, value);
+            get => _notSupportedHwH264;
+            private set => SetProperty(ref _notSupportedHwH264, value);
         }
 
-        private bool notSupportedHwHevc = true;
+        private bool _notSupportedHwHevc = true;
         public bool NotSupportedHwHevc
         {
-            get => notSupportedHwHevc;
-            private set => SetProperty(ref notSupportedHwHevc, value);
+            get => _notSupportedHwHevc;
+            private set => SetProperty(ref _notSupportedHwHevc, value);
         }
 
         public void Initialize()
@@ -150,7 +150,7 @@ namespace ScreenRecorder
 
         private void CompositionTarget_Rendering(object sender, EventArgs e)
         {
-            EncodeTime = Utils.VideoFramesCountToStringTime(screenEncoder.VideoFramesCount);
+            EncodeTime = Utils.VideoFramesCountToStringTime(_screenEncoder.VideoFramesCount);
         }
 
         public void Dispose()
@@ -158,8 +158,8 @@ namespace ScreenRecorder
             if (!IsInitialized)
                 return;
 
-            screenEncoder?.Dispose();
-            screenEncoder = null;
+            _screenEncoder?.Dispose();
+            _screenEncoder = null;
 
             CompositionTarget.Rendering -= CompositionTarget_Rendering;
 
