@@ -11,7 +11,8 @@ namespace ScreenRecorder
     {
         #region Constructors
         private static volatile AppConfig _instance;
-        private static object _syncRoot = new object();
+        private static readonly object _syncRoot = new object();
+
         public static AppConfig Instance
         {
             get
@@ -33,7 +34,7 @@ namespace ScreenRecorder
 
         private readonly string _configFilePath = System.IO.Path.Combine(AppConstants.AppDataFolderPath, "config");
 
-        private object _syncObject = new object();
+        private readonly object _syncObject = new object();
         private ConfigFileSaveWorker _configFileSaveWorker;
         private volatile bool _isDisposed = false;
 
@@ -61,7 +62,7 @@ namespace ScreenRecorder
         {
             lock (_syncObject)
             {
-                Dictionary<string, string> config = new Dictionary<string, string>();
+                var config = new Dictionary<string, string>();
                 config.Add(nameof(ScreenCaptureMonitor), ScreenCaptureMonitor);
                 config.Add(nameof(ScreenCaptureCursorVisible), ScreenCaptureCursorVisible.ToString());
 
@@ -93,7 +94,7 @@ namespace ScreenRecorder
         {
             lock (_syncObject)
             {
-                Dictionary<string, string> config = Config.Config.LoadFromFile(filePath, true);
+                var config = Config.Config.LoadFromFile(filePath, true);
 
                 if (config != null)
                 {

@@ -12,8 +12,10 @@ namespace ScreenRecorder
     public sealed class AppCommands : IConfig, IConfigFile, IDisposable
     {
         #region Constructor
+
         private static volatile AppCommands _instance;
-        private static object _syncRoot = new object();
+        private static readonly object _syncRoot = new object();
+
         public static AppCommands Instance
         {
             get
@@ -72,7 +74,7 @@ namespace ScreenRecorder
                 if (propertyInfo.PropertyType == typeof(DelegateCommand))
                 {
                     var command = propertyInfo.GetValue(this, null) as DelegateCommand;
-                    if (command != null && command.KeyGesture != null)
+                    if (command?.KeyGesture != null)
                     {
                         if (Keyboard.Modifiers.HasFlag(command.Modifiers) && key == command.Key)
                         {
@@ -82,6 +84,7 @@ namespace ScreenRecorder
                 }
             }
         }
+
         #endregion
 
         #region IConfig
@@ -152,6 +155,7 @@ namespace ScreenRecorder
         #endregion
 
         #region IConfigFile
+
         public void Save(string filePath)
         {
             Config.Config.SaveToFile(filePath, this.SaveConfig());
@@ -161,9 +165,11 @@ namespace ScreenRecorder
         {
             this.LoadConfig(Config.Config.LoadFromFile(filePath, true));
         }
+
         #endregion
 
         #region IDisposable
+
 
         public void Dispose()
         {
@@ -175,6 +181,7 @@ namespace ScreenRecorder
 
             _isDisposed = true;
         }
+
         #endregion
 
         #region Private Command Fields
@@ -398,6 +405,7 @@ namespace ScreenRecorder
         #endregion
 
         #region Window Commands
+
         public DelegateCommand WindowCloseCommand => _windowCloseCommand ??
             (_windowCloseCommand = new DelegateCommand(o =>
             {
@@ -409,6 +417,7 @@ namespace ScreenRecorder
             {
                 return o is Window;
             }));
+
         #endregion
     }
 }

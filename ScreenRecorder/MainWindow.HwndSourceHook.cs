@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Interop;
 
 namespace ScreenRecorder
@@ -26,7 +25,7 @@ namespace ScreenRecorder
         {
             base.OnSourceInitialized(e);
 
-            HwndSource source = (HwndSource)HwndSource.FromVisual((Window)this);
+            var source = (HwndSource)HwndSource.FromVisual((Window)this);
             source.AddHook(new HwndSourceHook(WndProc));
             _windowHandle = source.Handle;
 

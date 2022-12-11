@@ -12,7 +12,7 @@ namespace ScreenRecorder.DirectX
         private VideoProcessor _processor;
         private VideoProcessorEnumerator _enumerator;
         private Texture2DDescription _inDesc, _outDesc;
-        private Dictionary<Texture2D, VideoProcessorOutputView> _viewMap = new Dictionary<Texture2D, VideoProcessorOutputView>();
+        private readonly Dictionary<Texture2D, VideoProcessorOutputView> _viewMap = new Dictionary<Texture2D, VideoProcessorOutputView>();
 
         public Nv12Converter(SharpDX.Direct3D11.Device device, DeviceContext deviceContext)
         {
@@ -41,9 +41,9 @@ namespace ScreenRecorder.DirectX
 
             if (_processor == null)
             {
-                this._inDesc = inDesc;
-                this._outDesc = outDesc;
-                VideoProcessorContentDescription contentDesc = new VideoProcessorContentDescription()
+                _inDesc = inDesc;
+                _outDesc = outDesc;
+                var contentDesc = new VideoProcessorContentDescription()
                 {
                     InputFrameFormat = VideoFrameFormat.Progressive,
                     InputFrameRate = new Rational(1, 1),
@@ -71,7 +71,7 @@ namespace ScreenRecorder.DirectX
                 _videoContext.VideoProcessorSetStreamDestRect(_processor, 0, new SharpDX.Mathematics.Interop.RawBool(true), new SharpDX.Mathematics.Interop.RawRectangle((int)bounds.Left, (int)bounds.Top, (int)bounds.Right, (int)bounds.Bottom));
             }
 
-            VideoProcessorInputViewDescription inputViewDesc = new VideoProcessorInputViewDescription()
+            var inputViewDesc = new VideoProcessorInputViewDescription()
             {
                 FourCC = 0,
                 Dimension = VpivDimension.Texture2D,
@@ -105,7 +105,7 @@ namespace ScreenRecorder.DirectX
                 PpFutureSurfaces = null
             };
 
-            _videoContext.VideoProcessorBlt(_processor, outputView, 0, 1, new VideoProcessorStream[] { stream });
+            _videoContext.VideoProcessorBlt(_processor, outputView, 0, 1, new[] { stream });
             inputView.Dispose();
         }
 

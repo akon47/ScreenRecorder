@@ -36,8 +36,8 @@ namespace ScreenRecorder.VideoSource
         private void WorkerThreadHandler(object argument)
         {
             string deviceName = null;
-            bool drawCursor = true;
-            Rect region = new Rect(0, 0, double.MaxValue, double.MaxValue);
+            var drawCursor = true;
+            var region = new Rect(0, 0, double.MaxValue, double.MaxValue);
 
             if (argument is ScreenVideoSourceArguments screenVideoSourceArguments)
             {
@@ -46,13 +46,13 @@ namespace ScreenRecorder.VideoSource
                 region = screenVideoSourceArguments.Region;
             }
 
-            using (VideoClockEvent videoClockEvent = new VideoClockEvent())
+            using (var videoClockEvent = new VideoClockEvent())
             {
                 while (!_needToStop.WaitOne(0, false))
                 {
                     try
                     {
-                        using (DuplicatorCapture displayCapture = new DuplicatorCapture(deviceName, region, drawCursor))
+                        using (var displayCapture = new DuplicatorCapture(deviceName, region, drawCursor))
                         {
                             while (!_needToStop.WaitOne(0, false))
                             {
@@ -87,22 +87,18 @@ namespace ScreenRecorder.VideoSource
 
         public void Dispose()
         {
-            if (_needToStop != null)
-            {
-                _needToStop.Set();
-            }
+            _needToStop?.Set();
             if (_workerThread != null)
             {
                 if (_workerThread.IsAlive && !_workerThread.Join(3000))
                     _workerThread.Abort();
                 _workerThread = null;
 
-                if (_needToStop != null)
-                    _needToStop.Close();
+                _needToStop?.Close();
                 _needToStop = null;
             }
-            if (_needToReset != null)
-                _needToReset.Close();
+
+            _needToReset?.Close();
             _needToReset = null;
         }
     }

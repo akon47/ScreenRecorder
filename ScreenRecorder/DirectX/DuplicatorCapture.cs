@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using ScreenRecorder.DirectX.Shader;
 using ScreenRecorder.DirectX.Texture;
