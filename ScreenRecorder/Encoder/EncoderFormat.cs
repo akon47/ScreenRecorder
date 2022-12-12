@@ -6,14 +6,14 @@ namespace ScreenRecorder.Encoder
     {
         public static EncoderFormat CreateEncoderFormatByFormatString(string format, string overrideName = null)
         {
-            MediaFormat.GetFormatInfo(format, out string longName, out string extensions);
+            MediaFormat.GetFormatInfo(format, out var longName, out var extensions);
             if (!string.IsNullOrWhiteSpace(longName) && !string.IsNullOrWhiteSpace(extensions))
             {
                 EncoderFormat encoderFormat = new EncoderFormat(format) { _name = overrideName ?? longName, _extensions = extensions };
                 return encoderFormat;
             }
-            else
-                return null;
+
+            return null;
         }
 
         private EncoderFormat(string format)

@@ -11,19 +11,19 @@ namespace ScreenRecorder.VideoSource
 
     public class NewVideoFrameEventArgs : EventArgs
     {
-        public int Width { get; private set; }
-        public int Height { get; private set; }
-        public int Stride { get; private set; }
-        public IntPtr DataPointer { get; private set; }
-        public PixelFormat PixelFormat { get; private set; }
+        public int Width { get; }
+        public int Height { get; }
+        public int Stride { get; }
+        public IntPtr DataPointer { get; }
+        public PixelFormat PixelFormat { get; }
 
         public NewVideoFrameEventArgs(int width, int height, int stride, IntPtr dataPointer, PixelFormat pixelFormat)
         {
-            this.Width = width;
-            this.Height = height;
-            this.Stride = stride;
-            this.DataPointer = dataPointer;
-            this.PixelFormat = pixelFormat;
+            Width = width;
+            Height = height;
+            Stride = stride;
+            DataPointer = dataPointer;
+            PixelFormat = pixelFormat;
         }
     }
 }

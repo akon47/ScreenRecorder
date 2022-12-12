@@ -170,7 +170,6 @@ namespace ScreenRecorder
 
         #region IDisposable
 
-
         public void Dispose()
         {
             if (_isDisposed)
@@ -413,10 +412,7 @@ namespace ScreenRecorder
                 {
                     window.Close();
                 }
-            }, o =>
-            {
-                return o is Window;
-            }));
+            }, o => o is Window));
 
         #endregion
     }

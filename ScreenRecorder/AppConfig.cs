@@ -58,6 +58,7 @@ namespace ScreenRecorder
         #endregion
 
         #region IConfigFile
+
         public void Save(string filePath)
         {
             lock (_syncObject)
@@ -149,6 +150,7 @@ namespace ScreenRecorder
 
             RecordMicrophone = false;
         }
+
         #endregion
 
         public void Validation()

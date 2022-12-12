@@ -10,6 +10,7 @@ namespace ScreenRecorder.Encoder
     public class EncoderAudioCodec : EncoderCodec
     {
         private AudioCodec _audioCodec;
+
         public AudioCodec AudioCodec
         {
             get => _audioCodec;
@@ -18,7 +19,7 @@ namespace ScreenRecorder.Encoder
 
         public EncoderAudioCodec(AudioCodec audioCodec, string name)
         {
-            this._audioCodec = audioCodec;
+            _audioCodec = audioCodec;
             Name = name;
         }
     }

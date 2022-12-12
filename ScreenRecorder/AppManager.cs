@@ -10,8 +10,10 @@ namespace ScreenRecorder
     public sealed class AppManager : NotifyPropertyBase, IDisposable
     {
         #region Constructors
+
         private static volatile AppManager _instance;
         private static object _syncRoot = new object();
+
         public static AppManager Instance
         {
             get
@@ -32,9 +34,13 @@ namespace ScreenRecorder
         }
 
         private AppManager() { }
+
         #endregion
 
+        #region Bindable Properties
+
         private bool _isInitialized = false;
+
         public bool IsInitialized
         {
             get => _isInitialized;
@@ -42,6 +48,7 @@ namespace ScreenRecorder
         }
 
         private ScreenEncoder _screenEncoder;
+
         public ScreenEncoder ScreenEncoder
         {
             get => _screenEncoder;
@@ -49,6 +56,7 @@ namespace ScreenRecorder
         }
 
         private string _encodeTime;
+
         public string EncodeTime
         {
             get => _encodeTime;
@@ -56,6 +64,7 @@ namespace ScreenRecorder
         }
 
         private EncoderFormat[] _encoderFormats;
+
         public EncoderFormat[] EncoderFormats
         {
             get => _encoderFormats;
@@ -63,6 +72,7 @@ namespace ScreenRecorder
         }
 
         private EncoderVideoCodec[] _encoderVideoCodecs;
+
         public EncoderVideoCodec[] EncoderVideoCodecs
         {
             get => _encoderVideoCodecs;
@@ -70,6 +80,7 @@ namespace ScreenRecorder
         }
 
         private EncoderAudioCodec[] _encoderAudioCodecs;
+
         public EncoderAudioCodec[] EncoderAudioCodecs
         {
             get => _encoderAudioCodecs;
@@ -77,6 +88,7 @@ namespace ScreenRecorder
         }
 
         private ICaptureTarget[] _captureTargets;
+
         public ICaptureTarget[] CaptureTargets
         {
             get => _captureTargets;
@@ -84,6 +96,7 @@ namespace ScreenRecorder
         }
 
         private bool _notSupportedHwH264 = true;
+
         public bool NotSupportedHwH264
         {
             get => _notSupportedHwH264;
@@ -91,11 +104,16 @@ namespace ScreenRecorder
         }
 
         private bool _notSupportedHwHevc = true;
+
         public bool NotSupportedHwHevc
         {
             get => _notSupportedHwHevc;
             private set => SetProperty(ref _notSupportedHwHevc, value);
         }
+
+        #endregion
+
+        #region Helpers
 
         public void Initialize()
         {
@@ -164,5 +182,7 @@ namespace ScreenRecorder
 
             IsInitialized = false;
         }
+
+        #endregion
     }
 }

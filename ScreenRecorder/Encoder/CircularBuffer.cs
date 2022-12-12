@@ -5,17 +5,27 @@ namespace ScreenRecorder.Encoder
 {
     public class CircularBuffer
     {
+        #region Fields
+
         private readonly byte[] _buffer;
         private readonly object _lockObject;
         private int _writePosition;
         private int _readPosition;
         private int _byteCount;
 
+        #endregion
+
+        #region Constructors
+
         public CircularBuffer(int size)
         {
             _buffer = new byte[size];
             _lockObject = new object();
         }
+
+        #endregion
+
+        #region Helpers
 
         public int Write(byte[] data, int offset, int count)
         {
@@ -26,7 +36,7 @@ namespace ScreenRecorder.Encoder
                 {
                     count = _buffer.Length - _byteCount;
                 }
-                int writeToEnd = Math.Min(_buffer.Length - _writePosition, count);
+                var writeToEnd = Math.Min(_buffer.Length - _writePosition, count);
                 Array.Copy(data, offset, _buffer, _writePosition, writeToEnd);
                 _writePosition += writeToEnd;
                 _writePosition %= _buffer.Length;
@@ -51,7 +61,7 @@ namespace ScreenRecorder.Encoder
                 {
                     count = _buffer.Length - _byteCount;
                 }
-                int writeToEnd = Math.Min(_buffer.Length - _writePosition, count);
+                var writeToEnd = Math.Min(_buffer.Length - _writePosition, count);
                 Marshal.Copy(IntPtr.Add(data, offset), _buffer, _writePosition, writeToEnd);
                 _writePosition += writeToEnd;
                 _writePosition %= _buffer.Length;
@@ -75,8 +85,8 @@ namespace ScreenRecorder.Encoder
                 {
                     count = _byteCount;
                 }
-                int bytesRead = 0;
-                int readToEnd = Math.Min(_buffer.Length - _readPosition, count);
+                var bytesRead = 0;
+                var readToEnd = Math.Min(_buffer.Length - _readPosition, count);
                 Array.Copy(_buffer, _readPosition, data, offset, readToEnd);
                 bytesRead += readToEnd;
                 _readPosition += readToEnd;
@@ -102,8 +112,8 @@ namespace ScreenRecorder.Encoder
                 {
                     count = _byteCount;
                 }
-                int bytesRead = 0;
-                int readToEnd = Math.Min(_buffer.Length - _readPosition, count);
+                var bytesRead = 0;
+                var readToEnd = Math.Min(_buffer.Length - _readPosition, count);
                 Marshal.Copy(_buffer, _readPosition, data, readToEnd);
                 bytesRead += readToEnd;
                 _readPosition += readToEnd;
@@ -187,12 +197,14 @@ namespace ScreenRecorder.Encoder
 
         public int ReadByte()
         {
-            byte[] data = new byte[1];
+            var data = new byte[1];
             if (Read(data, 0, 1) == 1)
             {
                 return data[0];
             }
             return -1;
         }
+
+        #endregion
     }
 }

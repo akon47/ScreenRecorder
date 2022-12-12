@@ -13,10 +13,15 @@ namespace ScreenRecorder.Region
             get { return (RegionSelectionMode)GetValue(RegionSelectionModeProperty); }
             set { SetValue(RegionSelectionModeProperty, value); }
         }
-        public static readonly DependencyProperty RegionSelectionModeProperty =
-            DependencyProperty.Register("RegionSelectionMode", typeof(RegionSelectionMode), typeof(RegionSelector),
-            new FrameworkPropertyMetadata(RegionSelectionMode.WindowRegion, FrameworkPropertyMetadataOptions.AffectsRender,
-                new PropertyChangedCallback(OnRegionSelectionModePropertyChanged)));
+
+        public static readonly DependencyProperty RegionSelectionModeProperty = DependencyProperty.Register
+        (
+            name: "RegionSelectionMode",
+            propertyType: typeof(RegionSelectionMode),
+            ownerType: typeof(RegionSelector),
+            typeMetadata: new FrameworkPropertyMetadata(RegionSelectionMode.WindowRegion, FrameworkPropertyMetadataOptions.AffectsRender, OnRegionSelectionModePropertyChanged)
+        );
+
         private static void OnRegionSelectionModePropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
         {
             if (source is RegionSelector regionSelector)
@@ -44,8 +49,6 @@ namespace ScreenRecorder.Region
             _screens = System.Windows.Forms.Screen.AllScreens;
             _windowRegions = WindowRegion.GetWindowRegions();
         }
-
-
 
         #region Mouse Event Handlers
 
@@ -155,28 +158,30 @@ namespace ScreenRecorder.Region
         #endregion
 
         #region OnRender
-        private Pen _selectorPen = new Pen(Brushes.White, 2);
-        private Brush _dimBrush = new SolidColorBrush(Color.FromArgb(150, 0, 0, 0));
+
+        private readonly Pen _selectorPen = new Pen(Brushes.White, 2);
+        private readonly Brush _dimBrush = new SolidColorBrush(Color.FromArgb(150, 0, 0, 0));
+
         protected override void OnRender(DrawingContext dc)
         {
             if (!_selectionStarted)
                 return;
 
-            Rect bounds = new Rect(0, 0, ActualWidth, ActualHeight);
+            var bounds = new Rect(0, 0, ActualWidth, ActualHeight);
 
             dc.DrawRectangle(Brushes.Transparent, null, bounds);
 
-            PathGeometry pathGeometry = new PathGeometry();
+            var pathGeometry = new PathGeometry();
             pathGeometry.AddGeometry(new RectangleGeometry(bounds));
             switch (RegionSelectionMode)
             {
                 case RegionSelectionMode.UserRegion:
-                    Rect userRegion = GetUserRegion();
+                    var userRegion = GetUserRegion();
                     pathGeometry.AddGeometry(new RectangleGeometry(userRegion));
                     dc.DrawRectangle(null, _selectorPen, userRegion);
                     break;
                 case RegionSelectionMode.WindowRegion:
-                    Rect windowRegion = Rect.Intersect(GetDeviceRegion(_selectedTargetDevice), _selectedTargetBounds);
+                    var windowRegion = Rect.Intersect(GetDeviceRegion(_selectedTargetDevice), _selectedTargetBounds);
                     pathGeometry.AddGeometry(new RectangleGeometry(windowRegion));
                     dc.DrawRectangle(null, _selectorPen, windowRegion);
                     break;
@@ -187,6 +192,7 @@ namespace ScreenRecorder.Region
             }
             dc.DrawGeometry(_dimBrush, null, pathGeometry);
         }
+
         #endregion
 
         #region Private Methods
@@ -194,7 +200,7 @@ namespace ScreenRecorder.Region
         private Rect GetScreenBounds(string deviceName)
         {
             var screen = _screens.FirstOrDefault(s => s.DeviceName == deviceName);
-            if(screen != null)
+            if (screen != null)
             {
                 return new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
             }
@@ -206,7 +212,7 @@ namespace ScreenRecorder.Region
 
         private Rect GetUserRegion()
         {
-            Rect selectorRegion = new Rect((int)Math.Min(_downPoint.X, _movePoint.X), (int)Math.Min(_downPoint.Y, _movePoint.Y), (int)Math.Abs(_downPoint.X - _movePoint.X), (int)Math.Abs(_downPoint.Y - _movePoint.Y));
+            var selectorRegion = new Rect((int)Math.Min(_downPoint.X, _movePoint.X), (int)Math.Min(_downPoint.Y, _movePoint.Y), (int)Math.Abs(_downPoint.X - _movePoint.X), (int)Math.Abs(_downPoint.Y - _movePoint.Y));
             return Rect.Intersect(GetDeviceRegion(_selectedTargetDevice), selectorRegion);
         }
 
@@ -217,10 +223,8 @@ namespace ScreenRecorder.Region
             {
                 return new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
             }
-            else
-            {
-                return Rect.Empty;
-            }
+
+            return Rect.Empty;
         }
         #endregion
 

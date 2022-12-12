@@ -6,10 +6,10 @@ namespace ScreenRecorder.VideoSource
     {
         public static VideoSize Parse(string s, VideoSize defaultVideoSize)
         {
-            if (!string.IsNullOrWhiteSpace(s))
+            if (string.IsNullOrWhiteSpace(s) == false)
             {
                 string[] values = s.Split(new char[] { 'x' }, StringSplitOptions.RemoveEmptyEntries);
-                if (values.Length >= 2 && int.TryParse(values[0], out int width) && int.TryParse(values[1], out int height))
+                if (values.Length >= 2 && int.TryParse(values[0], out var width) && int.TryParse(values[1], out var height))
                 {
                     return new VideoSize(width, height);
                 }
@@ -32,8 +32,8 @@ namespace ScreenRecorder.VideoSource
                 return false;
 
             VideoSize comp = (VideoSize)obj;
-            return (comp.Width == this.Width) &&
-                   (comp.Height == this.Height);
+            return (comp.Width == Width) &&
+                   (comp.Height == Height);
         }
 
         public override int GetHashCode()

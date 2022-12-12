@@ -20,7 +20,7 @@ namespace ScreenRecorder.Command
         private readonly object _syncLock = new object();
         private readonly Func<object, bool> _mCanExecute;
         private readonly Action<object> _executeAction;
-        private bool _mIsExecuting;
+        private bool _isExecuting;
 
         #region Constructors
 
@@ -43,7 +43,7 @@ namespace ScreenRecorder.Command
                 catch { }
             };
 
-            this._keyGesture = keyGesture;
+            _keyGesture = keyGesture;
         }
 
         public DelegateCommand(Action<object> execute)
@@ -73,14 +73,14 @@ namespace ScreenRecorder.Command
             {
                 lock (_syncLock)
                 {
-                    return _mIsExecuting;
+                    return _isExecuting;
                 }
             }
             private set
             {
                 lock (_syncLock)
                 {
-                    _mIsExecuting = value;
+                    _isExecuting = value;
                 }
             }
         }
