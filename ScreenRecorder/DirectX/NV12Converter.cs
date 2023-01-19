@@ -26,10 +26,10 @@ namespace ScreenRecorder.DirectX
             var outDesc = output.Description;
             if (_processor != null)
             {
-                if (inDesc.Width != this._inDesc.Width ||
-                    inDesc.Height != this._inDesc.Height ||
-                    outDesc.Width != this._outDesc.Width ||
-                    outDesc.Height != this._outDesc.Height)
+                if (inDesc.Width != _inDesc.Width ||
+                    inDesc.Height != _inDesc.Height ||
+                    outDesc.Width != _outDesc.Width ||
+                    outDesc.Height != _outDesc.Height)
                 {
                     _processor.Dispose();
                     _processor = null;
@@ -47,11 +47,11 @@ namespace ScreenRecorder.DirectX
                 {
                     InputFrameFormat = VideoFrameFormat.Progressive,
                     InputFrameRate = new Rational(1, 1),
-                    InputWidth = this._inDesc.Width,
-                    InputHeight = this._inDesc.Height,
+                    InputWidth = _inDesc.Width,
+                    InputHeight = _inDesc.Height,
                     OutputFrameRate = new Rational(1, 1),
-                    OutputWidth = this._outDesc.Width,
-                    OutputHeight = this._outDesc.Height,
+                    OutputWidth = _outDesc.Width,
+                    OutputHeight = _outDesc.Height,
                     Usage = VideoUsage.PlaybackNormal
                 };
                 _videoDevice.CreateVideoProcessorEnumerator(ref contentDesc, out _enumerator);

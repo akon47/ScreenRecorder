@@ -4,6 +4,7 @@ using MediaEncoder;
 namespace ScreenRecorder.VideoSource
 {
     public delegate void NewVideoFrameEventHandler(object sender, NewVideoFrameEventArgs eventArgs);
+
     public interface IVideoSource
     {
         event NewVideoFrameEventHandler NewVideoFrame;
@@ -11,11 +12,7 @@ namespace ScreenRecorder.VideoSource
 
     public class NewVideoFrameEventArgs : EventArgs
     {
-        public int Width { get; }
-        public int Height { get; }
-        public int Stride { get; }
-        public IntPtr DataPointer { get; }
-        public PixelFormat PixelFormat { get; }
+        #region Constructors
 
         public NewVideoFrameEventArgs(int width, int height, int stride, IntPtr dataPointer, PixelFormat pixelFormat)
         {
@@ -25,5 +22,22 @@ namespace ScreenRecorder.VideoSource
             DataPointer = dataPointer;
             PixelFormat = pixelFormat;
         }
+
+        #endregion
+
+
+        #region Properties
+
+        public int Width { get; }
+
+        public int Height { get; }
+
+        public int Stride { get; }
+
+        public IntPtr DataPointer { get; }
+
+        public PixelFormat PixelFormat { get; }
+
+        #endregion
     }
 }

@@ -2,8 +2,53 @@
 
 namespace ScreenRecorder.VideoSource
 {
+    /// <summary>
+    /// Video Size Data Model
+    /// </summary>
     public class VideoSize
     {
+        #region Constructors
+
+        public VideoSize(int width, int height)
+        {
+            Width = width;
+            Height = height;
+        }
+
+        #endregion
+
+
+        #region Properties
+
+        public int Width { get; }
+
+        public int Height { get; }
+
+        #endregion
+
+
+        #region Helpers
+
+        public override bool Equals(object obj)
+        {
+            if (obj is VideoSize videoSize)
+            {
+                return (videoSize.Width == Width) && (videoSize.Height == Height);
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return (Width ^ Height);
+        }
+
+        public override string ToString()
+        {
+            return $"{Width} x {Height}";
+        }
+
         public static VideoSize Parse(string s, VideoSize defaultVideoSize)
         {
             if (string.IsNullOrWhiteSpace(s) == false)
@@ -17,33 +62,6 @@ namespace ScreenRecorder.VideoSource
             return defaultVideoSize;
         }
 
-        public int Width { get; }
-        public int Height { get; }
-
-        public VideoSize(int width, int height)
-        {
-            Width = width;
-            Height = height;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (!(obj is VideoSize))
-                return false;
-
-            VideoSize comp = (VideoSize)obj;
-            return (comp.Width == Width) &&
-                   (comp.Height == Height);
-        }
-
-        public override int GetHashCode()
-        {
-            return (Width ^ Height);
-        }
-
-        public override string ToString()
-        {
-            return $"{Width} x {Height}";
-        }
+        #endregion
     }
 }

@@ -10,8 +10,9 @@ namespace ScreenRecorder
     public sealed class AppConfig : NotifyPropertyBase, IConfigFile, IDisposable
     {
         #region Constructors
+
         private static volatile AppConfig _instance;
-        private static readonly object _syncRoot = new object();
+        private static readonly object SyncRoot = new object();
 
         public static AppConfig Instance
         {
@@ -19,7 +20,7 @@ namespace ScreenRecorder
             {
                 if (_instance == null)
                 {
-                    lock (_syncRoot)
+                    lock (SyncRoot)
                     {
                         if (_instance == null)
                         {
@@ -55,7 +56,9 @@ namespace ScreenRecorder
                 _configFileSaveWorker?.SetModifiedConfigData();
             };
         }
+
         #endregion
+
 
         #region IConfigFile
 
@@ -153,7 +156,240 @@ namespace ScreenRecorder
 
         #endregion
 
-        public void Validation()
+
+        #region Properties
+
+        #region Window
+        private double _windowLeft;
+        public double WindowLeft
+        {
+            get => Math.Max(0, _windowLeft);
+            set => SetProperty(ref _windowLeft, value);
+        }
+
+        private double _windowTop;
+        public double WindowTop
+        {
+            get => Math.Max(0, _windowTop);
+            set => SetProperty(ref _windowTop, value);
+        }
+        #endregion
+
+
+        #region Record
+
+        private string _selectedRecordFormat;
+
+        public string SelectedRecordFormat
+        {
+            get => _selectedRecordFormat;
+            set => SetProperty(ref _selectedRecordFormat, value);
+        }
+
+
+        private VideoCodec _selectedRecordVideoCodec;
+
+        public VideoCodec SelectedRecordVideoCodec
+        {
+            get => _selectedRecordVideoCodec;
+            set => SetProperty(ref _selectedRecordVideoCodec, value);
+        }
+
+
+        private AudioCodec _selectedRecordAudioCodec;
+
+        public AudioCodec SelectedRecordAudioCodec
+        {
+            get => _selectedRecordAudioCodec;
+            set => SetProperty(ref _selectedRecordAudioCodec, value);
+        }
+
+
+        private IEnumerable<int> _videoBitrates;
+
+        public IEnumerable<int> VideoBitrates
+        {
+            get
+            {
+                if (_videoBitrates == null)
+                {
+                    _videoBitrates = new int[]
+                    {
+                        1000000,
+                        2000000,
+                        3000000,
+                        4000000,
+                        5000000,
+                        6000000,
+                        7000000,
+                        8000000,
+                        9000000,
+                        10000000,
+                        15000000,
+                        20000000,
+                        30000000,
+                    };
+                }
+
+                return _videoBitrates;
+            }
+        }
+
+
+        private int _selectedRecordVideoBitrate;
+
+        public int SelectedRecordVideoBitrate
+        {
+            get => _selectedRecordVideoBitrate;
+            set => SetProperty(ref _selectedRecordVideoBitrate, value);
+        }
+
+
+        private IEnumerable<int> _audioBitrates;
+
+        public IEnumerable<int> AudioBitrates
+        {
+            get
+            {
+                if (_audioBitrates == null)
+                {
+                    _audioBitrates = new int[]
+                    {
+                        64000,
+                        128000,
+                        160000,
+                        192000,
+                        320000,
+                    };
+                }
+
+                return _audioBitrates;
+            }
+        }
+
+
+        private int _selectedRecordAudioBitrate;
+
+        public int SelectedRecordAudioBitrate
+        {
+            get => _selectedRecordAudioBitrate;
+            set => SetProperty(ref _selectedRecordAudioBitrate, value);
+        }
+
+
+        private IEnumerable<int> _recordFramerates;
+
+        public IEnumerable<int> RecordFramerates
+        {
+            get
+            {
+                if (_recordFramerates == null)
+                {
+                    _recordFramerates = new int[]
+                    {
+                        15,
+                        24,
+                        25,
+                        30,
+                        48,
+                        50,
+                        60,
+                        120,
+                        144,
+                    };
+                }
+
+                return _recordFramerates;
+            }
+        }
+
+
+        private int _selectedRecordFrameRate;
+
+        public int SelectedRecordFrameRate
+        {
+            get => _selectedRecordFrameRate;
+            set => SetProperty(ref _selectedRecordFrameRate, value);
+        }
+
+
+        private string _recordDirectory;
+
+        public string RecordDirectory
+        {
+            get => _recordDirectory;
+            set => SetProperty(ref _recordDirectory, value);
+        }
+
+
+        private RegionSelectionMode _regionSelectionMode;
+
+        public RegionSelectionMode RegionSelectionMode
+        {
+            get => _regionSelectionMode;
+            set => SetProperty(ref _regionSelectionMode, value);
+        }
+
+
+        private bool _excludeFromCapture;
+
+        public bool ExcludeFromCapture
+        {
+            get => _excludeFromCapture;
+            set => SetProperty(ref _excludeFromCapture, value);
+        }
+
+        #endregion
+
+
+        #region ScreenCapture
+
+        private string _screenCaptureMonitor;
+
+        public string ScreenCaptureMonitor
+        {
+            get => _screenCaptureMonitor;
+            set => SetProperty(ref _screenCaptureMonitor, value);
+        }
+
+
+        private bool _screenCaptureCursorVisible;
+
+        public bool ScreenCaptureCursorVisible
+        {
+            get => _screenCaptureCursorVisible;
+            set => SetProperty(ref _screenCaptureCursorVisible, value);
+        }
+
+        #endregion
+
+
+        #region Audio
+
+        private bool _recordMicrophone;
+
+        public bool RecordMicrophone
+        {
+            get => _recordMicrophone;
+            set => SetProperty(ref _recordMicrophone, value);
+        }
+
+        #endregion
+
+        private bool _advancedSettings;
+
+        public bool AdvancedSettings
+        {
+            get => _advancedSettings;
+            set => SetProperty(ref _advancedSettings, value);
+        }
+
+        #endregion
+
+
+        #region Helpers
+
+        private void Validation()
         {
             lock (this)
             {
@@ -179,123 +415,6 @@ namespace ScreenRecorder
             }
         }
 
-        #region Properties
-
-        #region Window
-        private double _windowLeft;
-        public double WindowLeft
-        {
-            get => Math.Max(0, _windowLeft);
-            set => SetProperty(ref _windowLeft, value);
-        }
-
-        private double _windowTop;
-        public double WindowTop
-        {
-            get => Math.Max(0, _windowTop);
-            set => SetProperty(ref _windowTop, value);
-        }
-        #endregion
-
-        #region Record
-        private string _selectedRecordFormat;
-        public string SelectedRecordFormat
-        {
-            get => _selectedRecordFormat;
-            set => SetProperty(ref _selectedRecordFormat, value);
-        }
-
-        private VideoCodec _selectedRecordVideoCodec;
-        public VideoCodec SelectedRecordVideoCodec
-        {
-            get => _selectedRecordVideoCodec;
-            set => SetProperty(ref _selectedRecordVideoCodec, value);
-        }
-
-        private AudioCodec _selectedRecordAudioCodec;
-        public AudioCodec SelectedRecordAudioCodec
-        {
-            get => _selectedRecordAudioCodec;
-            set => SetProperty(ref _selectedRecordAudioCodec, value);
-        }
-
-        private int _selectedRecordVideoBitrate;
-        public int SelectedRecordVideoBitrate
-        {
-            get => _selectedRecordVideoBitrate;
-            set => SetProperty(ref _selectedRecordVideoBitrate, value);
-        }
-
-        private int _selectedRecordAudioBitrate;
-        public int SelectedRecordAudioBitrate
-        {
-            get => _selectedRecordAudioBitrate;
-            set => SetProperty(ref _selectedRecordAudioBitrate, value);
-        }
-
-        private int _selectedRecordFrameRate;
-        public int SelectedRecordFrameRate
-        {
-            get => _selectedRecordFrameRate;
-            set => SetProperty(ref _selectedRecordFrameRate, value);
-        }
-
-        private string _recordDirectory;
-        public string RecordDirectory
-        {
-            get => _recordDirectory;
-            set => SetProperty(ref _recordDirectory, value);
-        }
-
-        private RegionSelectionMode _regionSelectionMode;
-        public RegionSelectionMode RegionSelectionMode
-        {
-            get => _regionSelectionMode;
-            set => SetProperty(ref _regionSelectionMode, value);
-        }
-
-        private bool _excludeFromCapture;
-        public bool ExcludeFromCapture
-        {
-            get => _excludeFromCapture;
-            set => SetProperty(ref _excludeFromCapture, value);
-        }
-        #endregion
-
-        #region ScreenCapture
-        private string _screenCaptureMonitor;
-        public string ScreenCaptureMonitor
-        {
-            get => _screenCaptureMonitor;
-            set => SetProperty(ref _screenCaptureMonitor, value);
-        }
-
-        private bool _screenCaptureCursorVisible;
-        public bool ScreenCaptureCursorVisible
-        {
-            get => _screenCaptureCursorVisible;
-            set => SetProperty(ref _screenCaptureCursorVisible, value);
-        }
-        #endregion
-
-        #region Audio
-        private bool _recordMicrophone;
-        public bool RecordMicrophone
-        {
-            get => _recordMicrophone;
-            set => SetProperty(ref _recordMicrophone, value);
-        }
-        #endregion
-
-        private bool _advancedSettings;
-        public bool AdvancedSettings
-        {
-            get => _advancedSettings;
-            set => SetProperty(ref _advancedSettings, value);
-        }
-
-        #endregion
-
         public void Dispose()
         {
             try
@@ -313,5 +432,7 @@ namespace ScreenRecorder
             }
             catch { }
         }
+
+        #endregion
     }
 }

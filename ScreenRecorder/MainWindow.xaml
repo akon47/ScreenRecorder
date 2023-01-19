@@ -201,6 +201,14 @@
             <Setter Property="Focusable" Value="False" />
         </Style>
 
+        <DataTemplate x:Key="BitrateDataTemplate">
+            <TextBlock Text="{Binding Converter={StaticResource BitrateFormatter}}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="FramerateDataTemplate">
+            <TextBlock Text="{Binding StringFormat={}{0} fps}" />
+        </DataTemplate>
+
     </Window.Resources>
 
     <Border
@@ -619,30 +627,10 @@
                                                 Grid.Column="1"
                                                 Grid.Row="2"
                                                 Margin="3"
-                                                Name="comboBox_videoBitrate"
+                                                ItemTemplate="{StaticResource BitrateDataTemplate}"
+                                                ItemsSource="{Binding Source={x:Static local:AppConfig.Instance}, Path=VideoBitrates}"
                                                 SelectedItem="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoBitrate, Mode=TwoWay}"
-                                                >
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Converter={StaticResource BitrateFormatter}}" />
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                                <ComboBox.Items>
-                                                    <sys:Int32>1000000</sys:Int32>
-                                                    <sys:Int32>2000000</sys:Int32>
-                                                    <sys:Int32>3000000</sys:Int32>
-                                                    <sys:Int32>4000000</sys:Int32>
-                                                    <sys:Int32>5000000</sys:Int32>
-                                                    <sys:Int32>6000000</sys:Int32>
-                                                    <sys:Int32>7000000</sys:Int32>
-                                                    <sys:Int32>8000000</sys:Int32>
-                                                    <sys:Int32>9000000</sys:Int32>
-                                                    <sys:Int32>10000000</sys:Int32>
-                                                    <sys:Int32>15000000</sys:Int32>
-                                                    <sys:Int32>20000000</sys:Int32>
-                                                    <sys:Int32>30000000</sys:Int32>
-                                                </ComboBox.Items>
-                                            </ComboBox>
+                                                />
                                             <ComboBox
                                                 Grid.Column="1"
                                                 Grid.Row="3"
@@ -657,47 +645,25 @@
                                                 Grid.Column="1"
                                                 Grid.Row="4"
                                                 Margin="3"
+                                                ItemTemplate="{StaticResource BitrateDataTemplate}"
+                                                ItemsSource="{Binding Source={x:Static local:AppConfig.Instance}, Path=AudioBitrates}"
                                                 SelectedItem="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordAudioBitrate, Mode=TwoWay}"
-                                                >
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Converter={StaticResource BitrateFormatter}}" />
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                                <ComboBox.Items>
-                                                    <sys:Int32>64000</sys:Int32>
-                                                    <sys:Int32>128000</sys:Int32>
-                                                    <sys:Int32>160000</sys:Int32>
-                                                    <sys:Int32>192000</sys:Int32>
-                                                    <sys:Int32>320000</sys:Int32>
-                                                </ComboBox.Items>
-                                            </ComboBox>
+                                                />
                                             <ComboBox
                                                 Grid.Column="1"
                                                 Grid.Row="5"
                                                 Margin="3"
+                                                ItemTemplate="{StaticResource FramerateDataTemplate}"
+                                                ItemsSource="{Binding Source={x:Static local:AppConfig.Instance}, Path=RecordFramerates}"
                                                 SelectedItem="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordFrameRate, Mode=TwoWay}"
-                                                ItemStringFormat="0 fps"
-                                                >
-                                                <ComboBox.Items>
-                                                    <sys:Int32>15</sys:Int32>
-                                                    <sys:Int32>24</sys:Int32>
-                                                    <sys:Int32>25</sys:Int32>
-                                                    <sys:Int32>30</sys:Int32>
-                                                    <sys:Int32>48</sys:Int32>
-                                                    <sys:Int32>50</sys:Int32>
-                                                    <sys:Int32>60</sys:Int32>
-                                                    <sys:Int32>120</sys:Int32>
-                                                    <sys:Int32>144</sys:Int32>
-                                                </ComboBox.Items>
-                                            </ComboBox>
+                                                />
                                             <Grid
                                                 Grid.Column="1"
                                                 Grid.Row="6"
                                                 Margin="3"
                                                 >
                                                 <ComboBox
-                                                    Name="comboBox_captureDisplay"
+                                                    Name="ComboBoxCaptureDisplay"
                                                     ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=CaptureTargets, Mode=OneWay}"
                                                     SelectedValuePath="DeviceName"
                                                     DisplayMemberPath="Description"
@@ -714,7 +680,7 @@
                                                         <Style TargetType="{x:Type TextBlock}">
                                                             <Setter Property="Visibility" Value="Hidden" />
                                                             <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding Path=SelectedIndex, ElementName=comboBox_captureDisplay, Mode=OneWay}" Value="-1">
+                                                                <DataTrigger Binding="{Binding Path=SelectedIndex, ElementName=ComboBoxCaptureDisplay, Mode=OneWay}" Value="-1">
                                                                     <Setter Property="Visibility" Value="Visible" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
