@@ -46,9 +46,9 @@ It is a simple recording program with the ability to record the screen.
 - Graphics: Compatible with DirectX 11 or later
   - If you want to use **NVENC H.264**, you need **GTX 600** series or higher
   - If you want to use **NVENC HEVC**, you need **GTX 950** series or higher
-  - The minimum required Nvidia driver for NVENC is **471.41** or newer
+  - The minimum required Nvidia driver for NVENC is **522.25** or newer
 - Space required: 110MB
-- Microsoft .Net Framework 4.8
+- Microsoft .Net Framework 4.8.1
 
 ## 📚 References
 - [Softpedia review of v1.0.4](https://www.softpedia.com/get/Multimedia/Video/Video-Recording/ScreenRecorder-K.shtml)
@@ -56,9 +56,9 @@ It is a simple recording program with the ability to record the screen.
 
 ## 👨‍💻 Build
 
-- Visual Studio 2019 or newer
+- Visual Studio 2022 or newer
 - Windows 10 64bit or newer
-- Microsoft .Net Framework 4.8
+- Microsoft .Net Framework 4.8.1
 
 The MediaEncoder project uses a shared ffmpeg library that [BtbN](https://github.com/BtbN/FFmpeg-Builds) builds and deploys.
 

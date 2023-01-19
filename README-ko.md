@@ -45,9 +45,9 @@
 - 그래픽: DirectX 11 또는 그 이상과 호환되는 그래픽카드
   - **NVENC H.264**를 사용하려면 **GTX 600** 시리즈 이상이 필요합니다
   - **NVENC HEVC**를 사용하려면 **GTX 950** 시리즈 이상이 필요합니다
-  - NVENC에 필요한 최소 Nvidia 드라이버는 **471.41** 이상입니다
+  - NVENC에 필요한 최소 Nvidia 드라이버는 **522.25** 이상입니다
 - 필요한 공간: 약 110MB
-- Microsoft .Net Framework 4.8
+- Microsoft .Net Framework 4.8.1
 
 ## 📚 레퍼런스
 - [v1.0.4 버전에 대한 소프트피디아 에디터의 리뷰](https://www.softpedia.com/get/Multimedia/Video/Video-Recording/ScreenRecorder-K.shtml)
@@ -55,9 +55,9 @@
 - [유튜버 ODORIZZI 리뷰](https://www.youtube.com/watch?v=_GoPhpy4Q44)
 ## 👨‍💻 빌드
 
-- Visual Studio 2019 or newer
+- Visual Studio 2022 or newer
 - Windows 10 or newer
-- Microsoft .Net Framework 4.8
+- Microsoft .Net Framework 4.8.1
 
 MediaEncoder 프로젝트에서는 [BtbN](https://github.com/BtbN/FFmpeg-Builds) 에서 빌드하고 배포하는 shared ffmpeg 라이브러리를 사용합니다.   
 

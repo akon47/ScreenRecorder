@@ -393,7 +393,7 @@
                     Grid.Row="1"
                     >
                     <ToggleButton
-                        Name="recordSetting"
+                        Name="RecordSetting"
                         Style="{StaticResource VoidToggleButtonStyle}"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
@@ -404,7 +404,7 @@
                         />
                     <Popup
                         StaysOpen="False"
-                        IsOpen="{Binding Path=IsChecked, ElementName=recordSetting, Mode=TwoWay}"
+                        IsOpen="{Binding Path=IsChecked, ElementName=RecordSetting, Mode=TwoWay}"
                         Placement="Bottom"
                         behaviors:PopupBehavior.DisplayedOnlyMonitor="True"
                         >
