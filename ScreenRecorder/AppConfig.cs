@@ -285,7 +285,7 @@ namespace ScreenRecorder
             {
                 if (_recordFramerates == null)
                 {
-                    _recordFramerates = new int[]
+                    _recordFramerates = new[]
                     {
                         15,
                         24,

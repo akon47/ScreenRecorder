@@ -14,7 +14,7 @@ namespace ScreenRecorder.DirectX
         private Output _output;
         private Output1 _output1;
         private SharpDX.Direct3D11.Device _device;
-        private readonly SharpDX.Direct3D11.DeviceContext _context;
+        private readonly DeviceContext _context;
         private OutputDuplication _duplicatedOutput;
         private Texture2D _renderTargetTexture, _regionTexture;
         private RenderTargetView _renderTargetView;
@@ -28,7 +28,7 @@ namespace ScreenRecorder.DirectX
         private ShaderResourceView _cursorBackgroundShaderResourceView, _regionShaderResourceView;
 
         private readonly SharpDX.Direct3D11.Buffer _verticesBuffer;
-        private readonly VertexBufferBinding _vertextBufferBinding;
+        private readonly VertexBufferBinding _vertexBufferBinding;
         private ColorShader _colorShader;
         private CursorShader _cursorShader;
         private IntPtr _dataPointer;
@@ -49,8 +49,8 @@ namespace ScreenRecorder.DirectX
             {
                 _drawCursor = drawCursor;
                 _region = System.Windows.Rect.Intersect(region, new System.Windows.Rect(0, 0, Math.Abs(output.Description.DesktopBounds.Right - output.Description.DesktopBounds.Left), Math.Abs(output.Description.DesktopBounds.Bottom - output.Description.DesktopBounds.Top)));
-                _screenWidth = (int)this._region.Width;
-                _screenHeight = (int)this._region.Height;
+                _screenWidth = (int)_region.Width;
+                _screenHeight = (int)_region.Height;
                 _output = output;
 
                 try
@@ -170,7 +170,7 @@ namespace ScreenRecorder.DirectX
                     #region Initialize Buffers
                     _verticesBuffer = new SharpDX.Direct3D11.Buffer(_device, (Vector3.SizeInBytes + Vector2.SizeInBytes) * 6,
                         ResourceUsage.Dynamic, BindFlags.VertexBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
-                    _vertextBufferBinding = new VertexBufferBinding(_verticesBuffer, Vector3.SizeInBytes + Vector2.SizeInBytes, 0);
+                    _vertexBufferBinding = new VertexBufferBinding(_verticesBuffer, Vector3.SizeInBytes + Vector2.SizeInBytes, 0);
                     #endregion
 
                     _context.OutputMerger.SetTargets(_renderTargetView);
@@ -180,10 +180,10 @@ namespace ScreenRecorder.DirectX
                     _dataPointer = Marshal.AllocHGlobal(_screenWidth * _screenHeight * 4);
                     return;
                 }
-                catch (Exception ex)
+                catch
                 {
                     Dispose();
-                    throw ex;
+                    throw;
                 }
                 finally
                 {
@@ -364,7 +364,7 @@ namespace ScreenRecorder.DirectX
                                 {
                                     #region Draw Cursor
                                     UpdateBuffers(_context, 0, 0, _screenWidth, _screenHeight);
-                                    _context.InputAssembler.SetVertexBuffers(0, _vertextBufferBinding);
+                                    _context.InputAssembler.SetVertexBuffers(0, _vertexBufferBinding);
                                     _colorShader.Render(_context, shaderResourceView);
 
                                     UpdatePointerInfo(duplicateFrameInformation, ref _pointerInfo);
