@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:local="clr-namespace:ScreenRecorder"
-    xmlns:mediaEncoder="clr-namespace:MediaEncoder;assembly=MediaEncoder"
+    xmlns:mediaEncoder="clr-namespace:MediaEncoder;assembly=ScreenRecorder.Engine"
     xmlns:properties="clr-namespace:ScreenRecorder.Properties"
     xmlns:behaviors="clr-namespace:ScreenRecorder.Behaviors"
     mc:Ignorable="d"

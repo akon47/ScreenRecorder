@@ -2,12 +2,13 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using ScreenRecorder.DirectX;
 using ScreenRecorder.Encoder;
 
 namespace ScreenRecorder
 {
-    public sealed class AppManager : NotifyPropertyBase, IDisposable
+    public sealed class AppManager : ObservableObject, IDisposable
     {
         #region Constructors
 

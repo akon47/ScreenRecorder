@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
 using MediaEncoder;
 using ScreenRecorder.Config;
 using ScreenRecorder.Region;
 
 namespace ScreenRecorder
 {
-    public sealed class AppConfig : NotifyPropertyBase, IConfigFile, IDisposable
+    public sealed class AppConfig : ObservableObject, IConfigFile, IDisposable
     {
         #region Constructors
 

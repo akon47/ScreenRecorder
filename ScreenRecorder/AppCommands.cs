@@ -51,11 +51,11 @@ namespace ScreenRecorder
                 {
                     if (propertyInfo.GetValue(this, null) is DelegateCommand command)
                     {
-                        command.WhenChanged(() =>
+                        command.PropertyChanged += (s, e) =>
                         {
-                            _configFileSaveWorker?.SetModifiedConfigData();
-                        },
-                        nameof(DelegateCommand.KeyGesture));
+                            if (e.PropertyName == nameof(DelegateCommand.KeyGesture))
+                                _configFileSaveWorker?.SetModifiedConfigData();
+                        };
                     }
                 }
             }

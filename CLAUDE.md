@@ -58,7 +58,7 @@ Update the boxes as work lands. (Detailed phased plan is produced separately; th
 
 Sequenced to de-risk early: scaffold, then the **highest-risk encode/mux core FIRST behind a headless console harness**, then capture, audio, UI wiring, installer, CI.
 
-- [ ] P0 — Scaffold: SDK-style 2-project split (.NET 9), remove `MediaEncoder.vcxproj` + `Setup.vdproj`, `packages.config`→`PackageReference`, `Directory.Build.props`; shell builds & launches
+- [x] P0 — Scaffold: SDK-style 2-project split (.NET 9), removed `MediaEncoder.vcxproj` + `Setup.vdproj` from the solution, `packages.config`→`PackageReference`, `Directory.Build.props`; `NotifyPropertyBase`→`ObservableObject`, `DelegateCommand` rebased, `VideoClockEvent` removed (engine `FrameRateProvider` placeholder), `Thread.Abort`→`Join`. Solution builds clean (0 warn/0 err); WPF shell launches and renders the 240×72 toolbar on .NET 9 (recording stubbed). Legacy engine folders kept on disk, excluded from build, as P1–P3 porting reference.
 - [ ] P1 — **Encode/mux core on FFmpeg.AutoGen (HIGHEST RISK — headless first)**: port FFmpeg video/audio encoders + container + `Recorder` 3-thread orchestrator + `UnmanagedBufferPool`; console harness feeds synthetic NV12 + sine PCM → valid mp4(H264/AAC), then all formats/codecs, HW probe (`IsEncoderUsable`)
 - [ ] P2 — Capture: WGC + Vortice + VideoProcessor NV12 (monitor/named-display/region crop + **real window capture** via `CreateForWindow`; cursor toggle via `IsCursorCaptureEnabled`)
 - [ ] P3 — Audio: NAudio → WASAPI (loopback + mic + mix/resample + device hot-swap)

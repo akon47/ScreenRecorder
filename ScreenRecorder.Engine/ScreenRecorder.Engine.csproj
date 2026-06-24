@@ -2,18 +2,27 @@
 
   <!--
     ScreenRecorder.Engine — headless capture / audio / encode library.
-    No WPF references. Filled in across P1 (encode/mux), P2 (WGC capture),
-    P3 (WASAPI audio). Public contract for the WPF shell lives here (P0-2).
+    P0: public contract + stubs the WPF shell binds to (codecs, formats, capture targets,
+    Encoder/ScreenEncoder facade). Real implementations land across P1 (FFmpeg.AutoGen
+    encode/mux), P2 (WGC + Vortice capture, NV12), P3 (WASAPI audio).
+    Namespaces are kept identical to the legacy assemblies (MediaEncoder, ScreenRecorder.*)
+    so the shell's call sites and XAML resolve with minimal edits.
   -->
   <PropertyGroup>
     <TargetFramework>net9.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
+    <RootNamespace>ScreenRecorder</RootNamespace>
+    <AssemblyName>ScreenRecorder.Engine</AssemblyName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <UseWindowsForms>false</UseWindowsForms>
-    <UseWPF>false</UseWPF>
+    <Nullable>disable</Nullable>
+    <!-- System.Windows.Rect (encoder/monitor geometry) needs WPF; Screen enumeration needs WinForms. -->
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- MVVM base (ObservableObject / SetProperty) for the encoder data wrappers. -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <!-- Direct3D 11 / DXGI / shader compile — the SharpDX successor (P2 capture, NV12). -->
     <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
     <PackageReference Include="Vortice.DXGI" Version="3.8.3" />
