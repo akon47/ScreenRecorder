@@ -1,0 +1,21 @@
+<Project>
+
+  <!--
+    Shared MSBuild properties for the modernization (.NET 9) projects.
+    Guarded by UsingMicrosoftNETSdk so the legacy non-SDK ScreenRecorder.csproj
+    and the C++ MediaEncoder.vcxproj (still present during the migration) are
+    untouched. Remove the guard once the legacy projects are gone.
+  -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' == 'true'">
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <Company>kimhwan</Company>
+    <Product>Screen Recorder</Product>
+    <Authors>kimhwan</Authors>
+    <Copyright>Copyright © kimhwan</Copyright>
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+
+</Project>

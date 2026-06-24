@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    ScreenRecorder.Engine — headless capture / audio / encode library.
+    No WPF references. Filled in across P1 (encode/mux), P2 (WGC capture),
+    P3 (WASAPI audio). Public contract for the WPF shell lives here (P0-2).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseWindowsForms>false</UseWindowsForms>
+    <UseWPF>false</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Direct3D 11 / DXGI / shader compile — the SharpDX successor (P2 capture, NV12). -->
+    <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
+    <PackageReference Include="Vortice.DXGI" Version="3.8.3" />
+    <PackageReference Include="Vortice.D3DCompiler" Version="3.8.3" />
+    <!-- Managed FFmpeg bindings — replaces the C++/CLI MediaEncoder (P1 encode/mux). -->
+    <PackageReference Include="FFmpeg.AutoGen" Version="8.1.0" />
+    <!-- WASAPI capture (P3 audio). -->
+    <PackageReference Include="NAudio" Version="2.3.0" />
+  </ItemGroup>
+
+</Project>
