@@ -15,6 +15,39 @@ namespace ScreenRecorder.EncoderHarness
         {
             ffmpeg.RootPath = AppContext.BaseDirectory;
 
+            if (Array.Exists(args, a => a.Equals("--wgc-check", StringComparison.OrdinalIgnoreCase)))
+            {
+                Console.WriteLine("WGC GraphicsCaptureSession.IsSupported: " + Windows.Graphics.Capture.GraphicsCaptureSession.IsSupported());
+                Console.WriteLine("WGC projection available (compiled against Windows.Graphics.Capture).");
+                return 0;
+            }
+
+            if (Array.Exists(args, a => a.Equals("--wgc-item", StringComparison.OrdinalIgnoreCase)))
+            {
+                using var dev = new ScreenRecorder.DirectX.Direct3D11Device();
+                Console.WriteLine("D3D11 device created. FeatureLevel=" + dev.FeatureLevel);
+                var winrt = ScreenRecorder.DirectX.WgcInterop.CreateWinRtDevice(dev.Device);
+                Console.WriteLine("WinRT IDirect3DDevice bridged: " + (winrt != null));
+                var mon = ScreenRecorder.DirectX.MonitorInfo.GetPrimaryMonitorInfo();
+                Console.WriteLine($"Primary monitor: {mon.DeviceName} {mon.Width}x{mon.Height}");
+                var hmon = ScreenRecorder.DirectX.DisplayHelper.GetMonitorHandleFromDeviceName(mon.DeviceName);
+                Console.WriteLine("HMONITOR: 0x" + hmon.ToString("X"));
+                var item = ScreenRecorder.DirectX.WgcInterop.CreateItemForMonitor(hmon);
+                Console.WriteLine($"GraphicsCaptureItem.Size: {item.Size.Width}x{item.Size.Height}");
+                Console.WriteLine(item.Size.Width == mon.Width && item.Size.Height == mon.Height
+                    ? "OK: item size matches monitor." : "WARN: item size differs from monitor.");
+                return 0;
+            }
+
+            if (Array.Exists(args, a => a.Equals("--screen", StringComparison.OrdinalIgnoreCase)))
+            {
+                var so = ParseArgs(args);
+                string png = Path.ChangeExtension(so.Output, ".png");
+                MediaEncoder.MediaWriter.CheckHardwareCodec();
+                return ScreenCaptureSmoke.Run(so.Seconds, so.Fps, so.Output, png, cursor: true,
+                    resolveHw: (codec, hw) => MediaEncoder.MediaWriter.IsSupportedNvencH264() ? HwAccel.Nvenc : HwAccel.Software);
+            }
+
             var opt = ParseArgs(args);
 
             PrintEnvironment();
@@ -196,11 +229,23 @@ namespace ScreenRecorder.EncoderHarness
         {
             var o = new Options();
             var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < args.Length - 1; i += 2)
-                map[args[i].TrimStart('-')] = args[i + 1];
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (!args[i].StartsWith("--", StringComparison.Ordinal))
+                    continue;
+                string key = args[i].TrimStart('-');
+                if (i + 1 < args.Length && !args[i + 1].StartsWith("--", StringComparison.Ordinal))
+                {
+                    map[key] = args[i + 1];
+                    i++;
+                }
+                else
+                {
+                    map[key] = "true"; // value-less flag
+                }
+            }
 
-            foreach (var a in args)
-                if (a.Equals("--smoke", StringComparison.OrdinalIgnoreCase)) o.SmokeOnly = true;
+            if (map.ContainsKey("smoke")) o.SmokeOnly = true;
 
             if (map.TryGetValue("seconds", out var s)) o.Seconds = int.Parse(s);
             if (map.TryGetValue("fps", out var f)) o.Fps = int.Parse(f);

@@ -33,6 +33,11 @@
     <PackageReference Include="NAudio" Version="2.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Lets the headless test harness drive internal capture/interop types directly. -->
+    <InternalsVisibleTo Include="ScreenRecorder.EncoderHarness" />
+  </ItemGroup>
+
   <!--
     Native FFmpeg 8.x shared DLLs (not committed; see Externals\ffmpeg\README.md). Copied next to
     the consuming executable's output so ffmpeg.RootPath = AppContext.BaseDirectory finds them.
