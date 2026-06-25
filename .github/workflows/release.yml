@@ -1,0 +1,53 @@
+name: Release
+
+# Build the NSIS installer and publish a GitHub Release when a version tag (X.Y.Z) is pushed.
+# WIP branch commits never trigger this — only bare version tags do.
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write   # GITHUB_TOKEN creates the Release
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      # FFmpeg 8.1 shared DLLs are not committed (gitignored). Fetch the 5 we ship.
+      - name: Fetch FFmpeg shared libraries
+        shell: pwsh
+        run: |
+          $url = 'https://github.com/GyanD/codexffmpeg/releases/download/8.1/ffmpeg-8.1-full_build-shared.zip'
+          Invoke-WebRequest -Uri $url -OutFile ffmpeg.zip
+          Expand-Archive -Path ffmpeg.zip -DestinationPath ffmpeg_tmp -Force
+          $bin = (Get-ChildItem ffmpeg_tmp -Recurse -Directory -Filter bin | Select-Object -First 1).FullName
+          $dst = 'Externals\ffmpeg\win-x64'
+          New-Item -ItemType Directory -Force $dst | Out-Null
+          foreach ($n in 'avcodec-62','avformat-62','avutil-60','swresample-6','swscale-9') {
+            Copy-Item (Join-Path $bin "$n.dll") $dst -Force
+          }
+          Write-Host "FFmpeg DLLs:" (Get-ChildItem $dst -Name)
+
+      - name: Install NSIS
+        shell: pwsh
+        run: choco install nsis -y --no-progress
+
+      # build_setup.bat: dotnet publish (self-contained win-x64) -> regenerate NSI file list -> makensis.
+      - name: Build installer
+        shell: cmd
+        run: call Installers\build_setup.bat ${{ github.ref_name }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          files: dist/ScreenRecorder_Setup.exe
+          generate_release_notes: true
