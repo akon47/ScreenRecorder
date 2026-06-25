@@ -1,7 +1,6 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MediaEncoder;
-using ScreenRecorder.AudioSource;
 using ScreenRecorder.VideoSource;
 
 namespace ScreenRecorder.Encoder
@@ -113,7 +112,7 @@ namespace ScreenRecorder.Encoder
 
         #region Lifecycle
 
-        public void Start(string format, string url, IVideoSource videoSource, VideoCodec videoCodec, int videoBitrate, VideoSize videoSize, IAudioSource audioSource, AudioCodec audioCodec, int audioBitrate)
+        public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, VideoSize videoSize, AudioCodec audioCodec, int audioBitrate)
         {
             if (IsRunning)
                 return;
@@ -122,7 +121,8 @@ namespace ScreenRecorder.Encoder
             Status = EncoderStatus.Start;
             OnEncoderFirstStarting();
 
-            // P0 stub: no worker thread, no MediaWriter. Real capture+encode lands in P1–P3.
+            // P0/P3 stub: the facade only drives the bindable state machine. P4 wires it to the
+            // real Recorder + ScreenVideoSource (P2) + WasapiAudioSource (P3).
         }
 
         public void Resume()

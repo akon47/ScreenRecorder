@@ -125,5 +125,72 @@ namespace ScreenRecorder.EncoderHarness
         {
             return ffmpeg.avcodec_get_name(id) ?? id.ToString();
         }
+
+        /// <summary>Decodes the audio stream and returns (rms, peak) over all samples in [0,1].</summary>
+        public static (double Rms, double Peak) MeasureAudioRms(string path)
+        {
+            AVFormatContext* fmt = null;
+            if (ffmpeg.avformat_open_input(&fmt, path, null, null) < 0)
+                return (0, 0);
+
+            double sumSq = 0, peak = 0;
+            long n = 0;
+            try
+            {
+                ffmpeg.avformat_find_stream_info(fmt, null);
+                int aIndex = -1;
+                for (int i = 0; i < fmt->nb_streams; i++)
+                    if (fmt->streams[i]->codecpar->codec_type == AVMediaType.AVMEDIA_TYPE_AUDIO) { aIndex = i; break; }
+                if (aIndex < 0)
+                    return (0, 0);
+
+                AVCodecParameters* par = fmt->streams[aIndex]->codecpar;
+                AVCodec* dec = ffmpeg.avcodec_find_decoder(par->codec_id);
+                AVCodecContext* dctx = ffmpeg.avcodec_alloc_context3(dec);
+                ffmpeg.avcodec_parameters_to_context(dctx, par);
+                ffmpeg.avcodec_open2(dctx, dec, null);
+
+                AVFrame* frame = ffmpeg.av_frame_alloc();
+                AVPacket* packet = ffmpeg.av_packet_alloc();
+                int channels = par->ch_layout.nb_channels;
+
+                while (ffmpeg.av_read_frame(fmt, packet) >= 0)
+                {
+                    if (packet->stream_index == aIndex && ffmpeg.avcodec_send_packet(dctx, packet) >= 0)
+                    {
+                        while (ffmpeg.avcodec_receive_frame(dctx, frame) >= 0)
+                        {
+                            var sampleFmt = (AVSampleFormat)frame->format;
+                            bool planar = ffmpeg.av_sample_fmt_is_planar(sampleFmt) != 0;
+                            int samples = frame->nb_samples;
+                            for (int ch = 0; ch < channels; ch++)
+                            {
+                                float* data = planar ? (float*)frame->data[(uint)ch] : (float*)frame->data[0];
+                                for (int s = 0; s < samples; s++)
+                                {
+                                    float v = planar ? data[s] : data[s * channels + ch];
+                                    double a = Math.Abs(v);
+                                    if (a > peak) peak = a;
+                                    sumSq += (double)v * v;
+                                    n++;
+                                }
+                            }
+                        }
+                    }
+                    ffmpeg.av_packet_unref(packet);
+                }
+
+                ffmpeg.av_frame_free(&frame);
+                ffmpeg.av_packet_free(&packet);
+                ffmpeg.avcodec_free_context(&dctx);
+            }
+            finally
+            {
+                ffmpeg.avformat_close_input(&fmt);
+            }
+
+            double rms = n > 0 ? Math.Sqrt(sumSq / n) : 0;
+            return (rms, peak);
+        }
     }
 }

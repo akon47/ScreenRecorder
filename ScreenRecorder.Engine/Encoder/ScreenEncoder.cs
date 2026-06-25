@@ -33,8 +33,8 @@ namespace ScreenRecorder.Encoder
 
             Rect validRegion = Rect.Intersect(region, new Rect(0, 0, monitorInfo.Width, monitorInfo.Height));
             base.Start(format, url,
-                null, videoCodec, videoBitrate, new VideoSize((int)validRegion.Width, (int)validRegion.Height),
-                null, audioCodec, audioBitrate);
+                videoCodec, videoBitrate, new VideoSize((int)validRegion.Width, (int)validRegion.Height),
+                audioCodec, audioBitrate);
         }
 
         private void ScreenEncoder_EncoderStopped(object sender, EncoderStoppedEventArgs eventArgs)

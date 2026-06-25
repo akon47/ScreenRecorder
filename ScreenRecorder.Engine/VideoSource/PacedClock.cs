@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
-using System.Runtime.Intrinsics.X86;
 using System.Threading;
+using ScreenRecorder.Encoder;
 
 namespace ScreenRecorder.VideoSource
 {
@@ -37,7 +37,7 @@ namespace ScreenRecorder.VideoSource
                 _onTick(_t0 + k * _interval, k, false);
 
                 long target = lastFrameTicks + _interval;
-                if (SleepToTicks(target, ct))
+                if (QpcSleep.SleepToTicks(target, ct))
                 {
                     k++;
                     lastFrameTicks = target;
@@ -56,29 +56,5 @@ namespace ScreenRecorder.VideoSource
             }
         }
 
-        /// <summary>Hybrid coarse-sleep + busy-spin to the exact QPC target. Returns true if it waited.</summary>
-        private static bool SleepToTicks(long targetTicks, CancellationToken ct)
-        {
-            long now = Stopwatch.GetTimestamp();
-            bool waited = now < targetTicks;
-            if (!waited)
-                return false;
-
-            int ms = (int)((targetTicks - now) * 1000.0 / Stopwatch.Frequency);
-            if (ms > 1)
-                Thread.Sleep(ms - 1);
-
-            while (Stopwatch.GetTimestamp() < targetTicks)
-            {
-                if (ct.IsCancellationRequested)
-                    break;
-                if (X86Base.IsSupported)
-                    X86Base.Pause();
-                else
-                    Thread.SpinWait(1);
-            }
-
-            return true;
-        }
     }
 }

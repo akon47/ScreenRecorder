@@ -39,6 +39,61 @@ namespace ScreenRecorder.EncoderHarness
                 return 0;
             }
 
+            if (Array.Exists(args, a => a.Equals("--audio-probe", StringComparison.OrdinalIgnoreCase)))
+            {
+                var en = new NAudio.CoreAudioApi.MMDeviceEnumerator();
+                try
+                {
+                    var render = en.GetDefaultAudioEndpoint(NAudio.CoreAudioApi.DataFlow.Render, NAudio.CoreAudioApi.Role.Console);
+                    Console.WriteLine("Default render (loopback src): " + render.FriendlyName);
+                }
+                catch (Exception ex) { Console.WriteLine("No default render device: " + ex.Message); }
+                try
+                {
+                    var capture = en.GetDefaultAudioEndpoint(NAudio.CoreAudioApi.DataFlow.Capture, NAudio.CoreAudioApi.Role.Console);
+                    Console.WriteLine("Default capture (mic):         " + capture.FriendlyName);
+                }
+                catch (Exception ex) { Console.WriteLine("No default capture device (mic): " + ex.Message); }
+                try
+                {
+                    using var loop = new NAudio.Wave.WasapiLoopbackCapture();
+                    Console.WriteLine($"Loopback WaveFormat: {loop.WaveFormat} ({loop.WaveFormat.Encoding}, {loop.WaveFormat.SampleRate}Hz, {loop.WaveFormat.Channels}ch, {loop.WaveFormat.BitsPerSample}bit)");
+                    long bytes = 0; int callbacks = 0;
+                    loop.DataAvailable += (s, e) => { bytes += e.BytesRecorded; callbacks++; };
+                    loop.StartRecording();
+                    System.Threading.Thread.Sleep(1500);
+                    loop.StopRecording();
+                    System.Threading.Thread.Sleep(200);
+                    Console.WriteLine($"Loopback captured {bytes} bytes over {callbacks} callbacks in ~1.5s.");
+                }
+                catch (Exception ex) { Console.WriteLine("Loopback capture unavailable (no render device): " + ex.Message); }
+
+                try
+                {
+                    var micDev = en.GetDefaultAudioEndpoint(NAudio.CoreAudioApi.DataFlow.Capture, NAudio.CoreAudioApi.Role.Console);
+                    using var mic = new NAudio.CoreAudioApi.WasapiCapture(micDev);
+                    Console.WriteLine($"Mic WaveFormat: {mic.WaveFormat} ({mic.WaveFormat.Encoding}, {mic.WaveFormat.SampleRate}Hz, {mic.WaveFormat.Channels}ch, {mic.WaveFormat.BitsPerSample}bit)");
+                    long mbytes = 0; int mcb = 0;
+                    mic.DataAvailable += (s, e) => { mbytes += e.BytesRecorded; mcb++; };
+                    mic.StartRecording();
+                    System.Threading.Thread.Sleep(1500);
+                    mic.StopRecording();
+                    System.Threading.Thread.Sleep(200);
+                    Console.WriteLine($"Mic captured {mbytes} bytes over {mcb} callbacks in ~1.5s.");
+                }
+                catch (Exception ex) { Console.WriteLine("Mic capture unavailable: " + ex.Message); }
+                return 0;
+            }
+
+            if (Array.Exists(args, a => a.Equals("--audio-capture", StringComparison.OrdinalIgnoreCase)))
+            {
+                var ao = ParseArgs(args);
+                bool useMic = Array.Exists(args, a => a.Equals("--mic", StringComparison.OrdinalIgnoreCase));
+                MediaEncoder.MediaWriter.CheckHardwareCodec();
+                HwAccel ahw = MediaEncoder.MediaWriter.IsSupportedNvencH264() ? HwAccel.Nvenc : HwAccel.Software;
+                return AudioCaptureSmoke.Run(ao.Seconds, ao.Output, useMic, ahw);
+            }
+
             if (Array.Exists(args, a => a.Equals("--screen", StringComparison.OrdinalIgnoreCase)))
             {
                 var so = ParseArgs(args);
