@@ -35,7 +35,7 @@ namespace ScreenRecorder.Encoder
         public ulong VideoFramesCount
         {
             get => _videoFramesCount;
-            private set
+            protected set
             {
                 SetProperty(ref _videoFramesCount, value);
                 VideoTime = (ulong)(value / (double)Math.Max(1, FrameRateProvider.Framerate));
@@ -53,7 +53,7 @@ namespace ScreenRecorder.Encoder
         public ulong AudioSamplesCount
         {
             get => _audioSamplesCount;
-            private set => SetProperty(ref _audioSamplesCount, value);
+            protected set => SetProperty(ref _audioSamplesCount, value);
         }
 
         private string _url;
@@ -125,7 +125,7 @@ namespace ScreenRecorder.Encoder
             // real Recorder + ScreenVideoSource (P2) + WasapiAudioSource (P3).
         }
 
-        public void Resume()
+        public virtual void Resume()
         {
             if (Status == EncoderStatus.Stop)
                 return;
@@ -133,7 +133,7 @@ namespace ScreenRecorder.Encoder
             Status = EncoderStatus.Start;
         }
 
-        public void Pause()
+        public virtual void Pause()
         {
             if (Status == EncoderStatus.Stop)
                 return;
@@ -141,7 +141,7 @@ namespace ScreenRecorder.Encoder
             Status = EncoderStatus.Pause;
         }
 
-        public void Stop()
+        public virtual void Stop()
         {
             if (!IsRunning)
                 return;

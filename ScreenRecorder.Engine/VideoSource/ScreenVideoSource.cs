@@ -99,6 +99,10 @@ namespace ScreenRecorder.VideoSource
 
         public long DroppedFrames => _clock?.DroppedFrames ?? 0;
 
+        public void Pause() => _clock?.Pause();
+
+        public void Resume() => _clock?.Resume();
+
         public void Start()
         {
             _capture.Start();

@@ -17,6 +17,8 @@ namespace ScreenRecorder.VideoSource
         private readonly long _t0;
         private readonly Action<long, long, bool> _onTick;
         private long _dropped;
+        private volatile bool _paused;
+        private long _pauseStart;
 
         public PacedClock(int fpsNumerator, int fpsDenominator, long t0, Action<long, long, bool> onTick)
         {
@@ -27,6 +29,10 @@ namespace ScreenRecorder.VideoSource
 
         public long DroppedFrames => Interlocked.Read(ref _dropped);
 
+        public void Pause() => _paused = true;
+
+        public void Resume() => _paused = false;
+
         public void Run(CancellationToken ct)
         {
             long lastFrameTicks = _t0;
@@ -34,6 +40,21 @@ namespace ScreenRecorder.VideoSource
 
             while (!ct.IsCancellationRequested)
             {
+                // Paused: hold the grid index (paused time is excluded from the recording) and
+                // shift the wall-clock pacing reference forward on resume so no burst follows.
+                if (_paused)
+                {
+                    if (_pauseStart == 0)
+                        _pauseStart = Stopwatch.GetTimestamp();
+                    Thread.Sleep(10);
+                    continue;
+                }
+                if (_pauseStart != 0)
+                {
+                    lastFrameTicks += Stopwatch.GetTimestamp() - _pauseStart;
+                    _pauseStart = 0;
+                }
+
                 _onTick(_t0 + k * _interval, k, false);
 
                 long target = lastFrameTicks + _interval;

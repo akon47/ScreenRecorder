@@ -151,6 +151,18 @@ namespace ScreenRecorder
 
             CheckHardwareCodec();
 
+            // Keep the engine's frame-rate provider in sync with config (advanced fps, else 60),
+            // replacing the legacy VideoClockEvent.Framerate wiring.
+            UpdateFramerate();
+            AppConfig.Instance.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(AppConfig.SelectedRecordFrameRate) ||
+                    e.PropertyName == nameof(AppConfig.AdvancedSettings))
+                {
+                    UpdateFramerate();
+                }
+            };
+
             CompositionTarget.Rendering += CompositionTarget_Rendering;
 
             IsInitialized = true;
@@ -164,6 +176,13 @@ namespace ScreenRecorder
                 NotSupportedHwH264 = !MediaEncoder.MediaWriter.IsSupportedNvencH264() && !MediaEncoder.MediaWriter.IsSupportedQsvH264();
                 NotSupportedHwHevc = !MediaEncoder.MediaWriter.IsSupportedNvencHEVC() && !MediaEncoder.MediaWriter.IsSupportedQsvHEVC();
             });
+        }
+
+        private static void UpdateFramerate()
+        {
+            ScreenRecorder.Encoder.FrameRateProvider.Framerate = AppConfig.Instance.AdvancedSettings
+                ? AppConfig.Instance.SelectedRecordFrameRate
+                : 60;
         }
 
         private void CompositionTarget_Rendering(object sender, EventArgs e)

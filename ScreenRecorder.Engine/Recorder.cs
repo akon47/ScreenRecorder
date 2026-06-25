@@ -81,6 +81,7 @@ namespace ScreenRecorder.Encoder
         private Thread _muxThread;
 
         private long _droppedFrames;
+        private long _recordedVideoFrames;
         private bool _started;
         private bool _disposed;
 
@@ -93,6 +94,9 @@ namespace ScreenRecorder.Encoder
         }
 
         public long DroppedFrames => Interlocked.Read(ref _droppedFrames);
+
+        /// <summary>Video frames accepted so far (drives the recording-time display). Advances at fps.</summary>
+        public long RecordedVideoFrames => Interlocked.Read(ref _recordedVideoFrames);
 
         public void Start()
         {
@@ -141,6 +145,7 @@ namespace ScreenRecorder.Encoder
             Unsafe.CopyBlockUnaligned((void*)buffer, (void*)frame.Data, (uint)frameBytes);
 
             _videoIn.Add(new RawVideoFrame(buffer, frame.Stride, frame.Width, frame.Height, frame.Format, frame.TimestampQpc));
+            Interlocked.Increment(ref _recordedVideoFrames);
         }
 
         public void PushAudioFrame(in RawAudioFrame frame)

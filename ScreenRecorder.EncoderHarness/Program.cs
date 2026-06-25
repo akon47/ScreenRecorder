@@ -85,6 +85,51 @@ namespace ScreenRecorder.EncoderHarness
                 return 0;
             }
 
+            if (Array.Exists(args, a => a.Equals("--screen-encoder", StringComparison.OrdinalIgnoreCase)))
+            {
+                // Drives the P4 ScreenEncoder exactly as the WPF shell does (full end-to-end path).
+                var eo = ParseArgs(args);
+                bool mic = Array.Exists(args, a => a.Equals("--mic", StringComparison.OrdinalIgnoreCase));
+                MediaEncoder.MediaWriter.CheckHardwareCodec();
+                ScreenRecorder.Encoder.FrameRateProvider.Framerate = eo.Fps;
+                var mon = ScreenRecorder.DirectX.MonitorInfo.GetPrimaryMonitorInfo();
+                Console.WriteLine($"=== ScreenEncoder end-to-end: {eo.Seconds}s @{eo.Fps}fps, mic={mic}, monitor {mon.DeviceName} ===");
+                var enc = new ScreenRecorder.Encoder.ScreenEncoder();
+                enc.Start("mp4", eo.Output, MediaEncoder.VideoCodec.H264, 8_000_000, MediaEncoder.AudioCodec.Aac, 160_000,
+                    mon.DeviceName, new System.Windows.Rect(0, 0, double.MaxValue, double.MaxValue), drawCursor: true, recordMicrophone: mic);
+                bool testPause = Array.Exists(args, a => a.Equals("--pause", StringComparison.OrdinalIgnoreCase));
+                Console.WriteLine($"Recording... status={enc.Status}");
+                if (testPause)
+                {
+                    System.Threading.Thread.Sleep(eo.Seconds * 500);
+                    enc.Pause();
+                    Console.WriteLine($"Paused at {enc.VideoFramesCount} frames; holding 2s (excluded from output)...");
+                    System.Threading.Thread.Sleep(2000);
+                    enc.Resume();
+                    Console.WriteLine($"Resumed at {enc.VideoFramesCount} frames.");
+                    System.Threading.Thread.Sleep(eo.Seconds * 500);
+                }
+                else
+                {
+                    System.Threading.Thread.Sleep(eo.Seconds * 1000);
+                }
+                Console.WriteLine($"Frames recorded: {enc.VideoFramesCount}");
+                enc.Stop();
+                System.Threading.Thread.Sleep(500);
+                Console.WriteLine($"Stopped. status={enc.Status}");
+                enc.Dispose();
+
+                var info = MediaFileVerifier.Probe(eo.Output);
+                Console.WriteLine($"  streams={info.StreamCount} video={info.VideoCodec} {info.Width}x{info.Height} audio={info.AudioCodec} " +
+                                  $"vPackets={info.VideoPacketCount} dur={info.DurationSeconds:0.000}s");
+                info.Check(info.StreamCount == 2, "stream count == 2");
+                info.Check(info.VideoCodec == "h264", "video codec h264");
+                info.Check(info.VideoPacketCount > eo.Fps, "recorded multiple seconds of frames");
+                info.Check(info.DurationSeconds > 1.0, "duration > 1s");
+                Console.WriteLine(info.Ok ? "RESULT: ALL CHECKS PASSED" : "RESULT: FAILED");
+                return info.Ok ? 0 : 1;
+            }
+
             if (Array.Exists(args, a => a.Equals("--audio-capture", StringComparison.OrdinalIgnoreCase)))
             {
                 var ao = ParseArgs(args);

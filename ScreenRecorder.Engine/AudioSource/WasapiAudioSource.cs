@@ -38,9 +38,16 @@ namespace ScreenRecorder.AudioSource
 
         private Thread _pushThread;
         private CancellationTokenSource _cts;
+        private volatile bool _paused;
+        private long _pauseStart;
+        private long _pacingOffset;
         private bool _disposed;
 
         public bool IsLoopbackActive => _loopback.IsActive;
+
+        public void Pause() => _paused = true;
+
+        public void Resume() => _paused = false;
 
         public WasapiAudioSource(string loopbackDeviceId, string micDeviceId, long t0, Recorder recorder)
         {
@@ -118,7 +125,22 @@ namespace ScreenRecorder.AudioSource
 
             while (!ct.IsCancellationRequested)
             {
-                long target = _t0 + AudioHelper.GetDurationFromSamples(cumulative + Block, OutRate);
+                // Paused: hold the sample count (audio PTS = sample count, so paused time is
+                // excluded) and shift the pacing reference forward on resume so no burst follows.
+                if (_paused)
+                {
+                    if (_pauseStart == 0)
+                        _pauseStart = Stopwatch.GetTimestamp();
+                    Thread.Sleep(10);
+                    continue;
+                }
+                if (_pauseStart != 0)
+                {
+                    _pacingOffset += Stopwatch.GetTimestamp() - _pauseStart;
+                    _pauseStart = 0;
+                }
+
+                long target = _t0 + _pacingOffset + AudioHelper.GetDurationFromSamples(cumulative + Block, OutRate);
                 QpcSleep.SleepToTicks(target, ct);
                 if (ct.IsCancellationRequested)
                     break;
