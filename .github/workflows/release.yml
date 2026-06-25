@@ -1,7 +1,7 @@
 name: Release
 
-# Build the NSIS installer and publish a GitHub Release when a version tag (X.Y.Z) is pushed.
-# WIP branch commits never trigger this — only bare version tags do.
+# Build the NSIS installer + portable zip, publish a GitHub Release, and submit the winget
+# manifest when a version tag (X.Y.Z) is pushed. WIP branch commits never trigger this.
 on:
   push:
     tags:
@@ -39,8 +39,9 @@ jobs:
         shell: pwsh
         run: choco install nsis -y --no-progress
 
-      # build_setup.bat: dotnet publish (self-contained win-x64) -> regenerate NSI file list -> makensis.
-      - name: Build installer
+      # build_setup.bat: publish (self-contained win-x64) -> portable zip -> NSI file list -> makensis.
+      # Produces dist\ScreenRecorder_Setup_v<ver>.exe and dist\ScreenRecorder_v<ver>_Portable.zip.
+      - name: Build installer + portable
         shell: cmd
         run: call Installers\build_setup.bat ${{ github.ref_name }}
 
@@ -49,5 +50,25 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
-          files: dist/ScreenRecorder_Setup.exe
+          files: |
+            dist/ScreenRecorder_Setup_v*.exe
+            dist/ScreenRecorder_v*_Portable.zip
           generate_release_notes: true
+
+  # Submit the updated manifest to microsoft/winget-pkgs for "kimhwan.ScreenRecorder".
+  # Runs as a job here (not a separate release-triggered workflow) because a Release created
+  # with GITHUB_TOKEN does NOT fire the `release` event. `needs: build` so the asset exists;
+  # `release-tag` since this is a tag-push (not release) trigger. Only the installer is matched.
+  #
+  # Requires repository secret WINGET_TOKEN: a CLASSIC PAT with ONLY `public_repo` scope, owned
+  # by an account that has forked microsoft/winget-pkgs (fine-grained tokens are not supported).
+  winget:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: vedantmgoyal9/winget-releaser@v2
+        with:
+          identifier: kimhwan.ScreenRecorder
+          installers-regex: 'ScreenRecorder_Setup_v.*\.exe$'
+          release-tag: ${{ github.ref_name }}
+          token: ${{ secrets.WINGET_TOKEN }}

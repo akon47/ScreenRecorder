@@ -45,7 +45,9 @@ Unicode true
 !insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_LANGUAGE "Korean"
 
-!define OUT_FILE_NAME "ScreenRecorder_Setup"
+!ifndef OUT_FILE_NAME
+  !define OUT_FILE_NAME "ScreenRecorder_Setup"
+!endif
 
 RequestExecutionLevel admin
 
