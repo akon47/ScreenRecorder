@@ -7,7 +7,9 @@ harness, and later the app).
 
 ## Required DLLs (`Externals/ffmpeg/win-x64/`)
 
-FFmpeg 8.0 generation, matched to FFmpeg.AutoGen 8.1.0:
+FFmpeg 8.0 generation, matched to FFmpeg.AutoGen 8.1.0. Only these **5** are needed (we use file
+output + our own WGC/WASAPI capture, so `avdevice` and `avfilter` are intentionally NOT shipped —
+dropping them cut the installer ~106 MB; `FFmpegBootstrap` no longer calls `avdevice_register_all`):
 
 | DLL | Major |
 |---|---|
@@ -16,8 +18,6 @@ FFmpeg 8.0 generation, matched to FFmpeg.AutoGen 8.1.0:
 | `avutil-60.dll` | 60 |
 | `swresample-6.dll` | 6 |
 | `swscale-9.dll` | 9 |
-| `avdevice-62.dll` | 62 |
-| `avfilter-11.dll` | 11 |
 
 ## How to obtain
 

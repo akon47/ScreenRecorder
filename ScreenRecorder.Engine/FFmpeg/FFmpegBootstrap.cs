@@ -28,7 +28,8 @@ namespace MediaEncoder
                 // Touch the binding so a wrong RootPath / ABI mismatch throws here with a clear message.
                 _ = ffmpeg.av_version_info();
                 ffmpeg.av_log_set_level(ffmpeg.AV_LOG_ERROR);
-                ffmpeg.avdevice_register_all();
+                // No avdevice_register_all / avformat_network_init: we use file output + our own
+                // WGC/WASAPI capture, so avdevice and avfilter DLLs are not shipped.
 
                 _initialized = true;
             }
