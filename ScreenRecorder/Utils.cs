@@ -28,20 +28,28 @@ namespace ScreenRecorder
             }
         }
 
+        // Effective recording fps (advanced-settings value, otherwise pinned 60), replacing the
+        // legacy VideoClockEvent.Framerate. The real frame clock now lives in the engine.
+        private static int EffectiveFramerate()
+        {
+            return Math.Max(1, AppConfig.Instance.AdvancedSettings ? AppConfig.Instance.SelectedRecordFrameRate : 60);
+        }
+
         public static TimeSpan VideoFramesCountToTimeSpan(ulong videoFramesCount)
         {
-            return TimeSpan.FromSeconds(videoFramesCount / (double)VideoClockEvent.Framerate);
+            return TimeSpan.FromSeconds(videoFramesCount / (double)EffectiveFramerate());
         }
 
         public static string VideoFramesCountToStringTime(ulong videoFramesCount)
         {
-            var totalSecond = (ulong)(videoFramesCount / (double)VideoClockEvent.Framerate);
+            int framerate = EffectiveFramerate();
+            var totalSecond = (ulong)(videoFramesCount / (double)framerate);
             var hour = totalSecond / 3600;
             var minute = totalSecond % 3600 / 60;
             var second = totalSecond % 3600 % 60;
-            var frames = videoFramesCount % (ulong)VideoClockEvent.Framerate;
+            var frames = videoFramesCount % (ulong)framerate;
 
-            if (VideoClockEvent.Framerate >= 100)
+            if (framerate >= 100)
             {
                 return $"{hour:00}:{minute:00}:{second:00}.{frames:000}";
             }
@@ -53,7 +61,7 @@ namespace ScreenRecorder
 
         public static ulong VideoFramesCountToSeconds(ulong videoFramesCount)
         {
-            return (ulong)(videoFramesCount / (double)VideoClockEvent.Framerate);
+            return (ulong)(videoFramesCount / (double)EffectiveFramerate());
         }
 
         [DllImport("user32.dll")]

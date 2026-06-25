@@ -2,12 +2,13 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using ScreenRecorder.DirectX;
 using ScreenRecorder.Encoder;
 
 namespace ScreenRecorder
 {
-    public sealed class AppManager : NotifyPropertyBase, IDisposable
+    public sealed class AppManager : ObservableObject, IDisposable
     {
         #region Constructors
 
@@ -150,6 +151,18 @@ namespace ScreenRecorder
 
             CheckHardwareCodec();
 
+            // Keep the engine's frame-rate provider in sync with config (advanced fps, else 60),
+            // replacing the legacy VideoClockEvent.Framerate wiring.
+            UpdateFramerate();
+            AppConfig.Instance.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(AppConfig.SelectedRecordFrameRate) ||
+                    e.PropertyName == nameof(AppConfig.AdvancedSettings))
+                {
+                    UpdateFramerate();
+                }
+            };
+
             CompositionTarget.Rendering += CompositionTarget_Rendering;
 
             IsInitialized = true;
@@ -165,9 +178,18 @@ namespace ScreenRecorder
             });
         }
 
+        private static void UpdateFramerate()
+        {
+            ScreenRecorder.Encoder.FrameRateProvider.Framerate = AppConfig.Instance.AdvancedSettings
+                ? AppConfig.Instance.SelectedRecordFrameRate
+                : 60;
+        }
+
         private void CompositionTarget_Rendering(object sender, EventArgs e)
         {
-            EncodeTime = Utils.VideoFramesCountToStringTime(_screenEncoder.VideoFramesCount);
+            // Read the live frame count each render (~60fps) so the elapsed-time display ticks
+            // smoothly, instead of sampling a value that a background poll only refreshed at 10Hz.
+            EncodeTime = Utils.VideoFramesCountToStringTime(_screenEncoder.LiveVideoFrames);
         }
 
         public void Dispose()

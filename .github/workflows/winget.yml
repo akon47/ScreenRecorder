@@ -1,0 +1,23 @@
+name: Submit to winget
+
+# After a GitHub Release is published, submit an updated manifest to microsoft/winget-pkgs
+# for the existing package "kimhwan.ScreenRecorder". Decoupled from release.yml so a winget
+# failure never blocks the GitHub Release.
+#
+# Requires repository secret WINGET_TOKEN:
+#   - a CLASSIC personal access token with ONLY the `public_repo` scope
+#   - owned by an account that has forked microsoft/winget-pkgs
+#   - fine-grained tokens are NOT supported by winget-releaser
+on:
+  release:
+    types: [released]   # non-draft, non-prerelease — assets are live
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: vedantmgoyal9/winget-releaser@v2
+        with:
+          identifier: kimhwan.ScreenRecorder
+          installers-regex: 'ScreenRecorder_Setup\.exe$'
+          token: ${{ secrets.WINGET_TOKEN }}

@@ -41,13 +41,13 @@
     - 15, 24, 25, 30, 48, 50, 60, 120, 144 fps
 
 ## 💡 시스템 요구 사항
-- 지원되는 플랫폼: Windows 10 64bit Version 2004 또는 이상 (*다른 플랫폼에서는 테스트해보지 못헀습니다*)
-- 그래픽: DirectX 11 또는 그 이상과 호환되는 그래픽카드
+- 지원되는 플랫폼: Windows 10 64bit Version 1903 또는 이상 (자기 창 캡처 제외 기능은 Version 2004 이상 권장)
+- 그래픽: DirectX 11 또는 그 이상과 호환되는 그래픽카드 (Windows Graphics Capture)
   - **NVENC H.264**를 사용하려면 **GTX 600** 시리즈 이상이 필요합니다
   - **NVENC HEVC**를 사용하려면 **GTX 950** 시리즈 이상이 필요합니다
   - NVENC에 필요한 최소 Nvidia 드라이버는 **522.25** 이상입니다
-- 필요한 공간: 약 110MB
-- Microsoft .Net Framework 4.8.1
+  - 하드웨어 인코딩을 사용할 수 없으면 소프트웨어(libx264/libx265)로 자동 대체됩니다
+- 설치 프로그램은 self-contained 방식으로, **별도의 .NET 런타임 설치가 필요 없습니다**
 
 ## 📚 레퍼런스
 - [v1.0.4 버전에 대한 소프트피디아 에디터의 리뷰](https://www.softpedia.com/get/Multimedia/Video/Video-Recording/ScreenRecorder-K.shtml)
@@ -55,19 +55,27 @@
 - [유튜버 ODORIZZI 리뷰](https://www.youtube.com/watch?v=_GoPhpy4Q44)
 ## 👨‍💻 빌드
 
-- Visual Studio 2022 or newer
-- Windows 10 or newer
-- Microsoft .Net Framework 4.8.1
+- .NET 9 SDK (`win-x64`)
+- Windows 10 64bit 또는 이상
 
-MediaEncoder 프로젝트에서는 [BtbN](https://github.com/BtbN/FFmpeg-Builds) 에서 빌드하고 배포하는 shared ffmpeg 라이브러리를 사용합니다.   
+FFmpeg shared 라이브러리는 저장소에 포함되어 있지 않습니다. 실행/빌드 전에 FFmpeg 8.x shared DLL **5개**
+(`avcodec-62`, `avformat-62`, `avutil-60`, `swresample-6`, `swscale-9`)를 `Externals/ffmpeg/win-x64/` 에
+넣어 주세요 (`Externals/ffmpeg/README.md` 참고; 예: [gyan.dev](https://github.com/GyanD/codexffmpeg/releases)
+의 `ffmpeg-8.1-full_build-shared` 빌드).
 
-1. 프로젝트 폴더 안에 **ffmpeg_shared_lib** 폴더를 생성합니다.
-2. **fmpeg_shared_lib** 폴더 안에 shared ffmpeg 라이브러리의 "**bin, include, lib**" 폴더를 붙여 넣고 빌드 하시면 됩니다.
+```pwsh
+# 빌드 & 실행
+dotnet run --project ScreenRecorder/ScreenRecorder.csproj
+
+# 설치 프로그램 빌드 (publish + NSIS) — NSIS(makensis) 필요
+Installers\build_setup.bat 2.0.0
+```
 
 ## 📦 서드 파티 라이브러리
-- FFmpeg: https://www.ffmpeg.org/
-- SharpDX: http://sharpdx.org/
-- NAudio: https://github.com/naudio/NAudio
+- FFmpeg: https://www.ffmpeg.org/ ([FFmpeg.AutoGen](https://github.com/Ruslan-B/FFmpeg.AutoGen) 경유)
+- Vortice.Windows (Direct3D 11 / DXGI): https://github.com/amerkoleci/Vortice.Windows
+- NAudio (WASAPI): https://github.com/naudio/NAudio
+- CommunityToolkit.Mvvm: https://github.com/CommunityToolkit/dotnet
 
 ## 💁 기능 요청
 - 원하시는 기능이 있으시면 [issues](https://github.com/akon47/ScreenRecorder/issues)에 **Feature Request** 라벨과 함께 요청해주세요. 

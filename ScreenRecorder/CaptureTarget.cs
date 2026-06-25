@@ -1,11 +1,8 @@
-﻿namespace ScreenRecorder
+namespace ScreenRecorder
 {
-    public interface ICaptureTarget
-    {
-        string DeviceName { get; }
-        string Description { get; }
-    }
-
+    // ICaptureTarget now lives in ScreenRecorder.Engine (so the engine's MonitorInfo can
+    // implement it without referencing the shell). This concrete CaptureTarget stays in the
+    // shell because its two sentinel descriptions are localized via Properties.Resources.
     public class CaptureTarget : ICaptureTarget
     {
         public const string PrimaryCaptureTargetDeviceName = "\\\\PRIMARY_DISPLAY_CAPTURE_TARGET\\\\";

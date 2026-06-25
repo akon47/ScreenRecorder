@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
 using ScreenRecorder.Config;
 using ScreenRecorder.Shortcut;
 
 namespace ScreenRecorder.Command
 {
-    public class DelegateCommand : NotifyPropertyBase, ICommand, IShortcut, IConfig
+    public class DelegateCommand : ObservableObject, ICommand, IShortcut, IConfig
     {
         private GlobalHotKey _globalHotKey;
 
@@ -94,7 +95,9 @@ namespace ScreenRecorder.Command
             {
                 if (SetProperty(ref _keyGesture, value))
                 {
-                    NotifyPropertyChanged(nameof(KeyGestureString), nameof(Key), nameof(Modifiers));
+                    OnPropertyChanged(nameof(KeyGestureString));
+                    OnPropertyChanged(nameof(Key));
+                    OnPropertyChanged(nameof(Modifiers));
 
                     if (_keyGesture != null)
                     {

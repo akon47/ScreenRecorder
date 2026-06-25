@@ -1,0 +1,26 @@
+<Project>
+
+  <!--
+    Shared assembly metadata for the modernization (.NET 9) projects. Metadata-only and
+    unconditional so it is harmless to the legacy non-SDK projects still on disk during the
+    migration (they ignore these properties). Compilation settings (TFM, Nullable, RID, etc.)
+    live in each SDK-style csproj.
+  -->
+  <PropertyGroup>
+    <Company>kimhwan</Company>
+    <Product>Screen Recorder</Product>
+    <Authors>kimhwan</Authors>
+    <Copyright>Copyright © kimhwan</Copyright>
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      CA1416 (platform compatibility) is noise for this inherently Windows-only desktop app
+      (WPF + WGC + WASAPI + DXGI). WGC/WinRT APIs that genuinely need a newer Windows build are
+      guarded explicitly with ApiInformation in P2 (Aurora pattern), not via this analyzer.
+    -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+</Project>

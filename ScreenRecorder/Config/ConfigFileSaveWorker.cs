@@ -41,10 +41,11 @@ namespace ScreenRecorder.Config
 
             if (_workerThread != null)
             {
-                if (_workerThread.IsAlive && !_workerThread.Join(5000))
-                {
-                    _workerThread.Abort();
-                }
+                // The worker observes _needToStop within ~300ms, so this Join effectively always
+                // completes. It is a background thread, so even in the worst case it terminates
+                // with the process — no Thread.Abort (which throws PlatformNotSupportedException
+                // on .NET 9).
+                _workerThread.Join(5000);
 
                 _workerThread = null;
 
