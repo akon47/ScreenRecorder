@@ -8,13 +8,17 @@ Guidance for Claude Code when working in this repository. Keep this file updated
 
 > Respond to the user in **Korean** (the maintainer works in Korean).
 
-## ⚠️ Migration in progress — read first
+## ✅ Migration complete — the code on disk is the MODERN stack
 
-This project is mid-overhaul from a legacy .NET Framework stack to a modern .NET stack. **The code on disk is still the LEGACY stack** until phases below are checked off. Always confirm which world a file belongs to before editing.
+The overhaul (P0–P7 below) is **done**: the code on disk is now the modern .NET 9 stack and the
+app records end-to-end. The legacy .NET Framework code, the C++ `MediaEncoder`, and the `.vdproj`
+installer have been deleted. The table below is kept as a from→to reference. The only remaining
+step is the release itself (`--no-ff` merge to `develop` + tag `2.0.0`, which the maintainer
+triggers).
 
-Reference codebase for the new patterns: **Aurora** at `C:\Users\hwank\OneDrive\문서\source\repos\Aurora` (a large broadcasting app; reuse only its capture/encode/audio/installer patterns, ignore broadcasting features). Do **not** edit Aurora — it is read-only reference.
+Reference codebase for the patterns used: **Aurora** at `C:\Users\hwank\OneDrive\문서\source\repos\Aurora` (a large broadcasting app; reused only its capture/encode/audio/installer patterns). Do **not** edit Aurora — it is read-only reference.
 
-| Concern | LEGACY (current on disk) | TARGET (confirmed direction) |
+| Concern | WAS (legacy) | NOW (on disk) |
 |---|---|---|
 | Runtime | .NET Framework **4.8.1**, WPF, x64 | **.NET 9** (`net9.0-windows10.0.20348.0`), WPF SDK-style, self-contained win-x64 |
 | Screen capture | **SharpDX 4.2** DXGI Desktop Duplication | **Windows.Graphics.Capture (WGC)** |
@@ -64,8 +68,9 @@ Sequenced to de-risk early: scaffold, then the **highest-risk encode/mux core FI
 - [x] P3 — **Audio: WASAPI (DONE)**. `ScreenRecorder.Engine\AudioSource\` (WasapiNotify IMMNotificationClient hot-swap, WasapiCaptureBase device-resolve+restart+QPC-backdated-timestamp, LoopbackCapture [event-synced WasapiCapture w/ Loopback flag, off the render endpoint], MicrophoneCapture, SourceTimeline per-source ring w/ silence-fill-on-underrun, AudioMixer float-sum+clamp+S16 [legacy MixStereoSamples −32768 bias bug avoided], WasapiAudioSource ties capture+resample[reuses P1 swresample AudioResampler, src→48k/2ch interleaved FLT]+mix+push). Push loop emits a 1024-sample 48k/2ch/S16 block every tick **unconditionally** (silence-filled) sharing the video QPC t0 → gap-free sample count = A/V aligned, hot-swap-safe. Harness `--audio-capture` verified: real loopback of a 440Hz tone → **rms 0.25 non-silent**, AAC 48k/2ch, A/V start <60ms, correct duration; mic (16k mono→48k stereo) signal-path proven; device-absence graceful; headless silence = WARN not fail. Legacy `IVideoSource`/`IAudioSource` stub interfaces removed; `Encoder.Start` signature dropped the source params (P4 wires real sources).
 - [x] P4 — **Wire shell → Engine (DONE)**. `ScreenEncoder.Start` now builds a single QPC `t0`, a `Recorder` (P1) + `ScreenVideoSource` (P2) + optional `WasapiAudioSource` (P3, mic via `recordMicrophone`), all sharing `t0`; HW-accel auto-select (NVENC→QSV→software per `MediaWriter` probes); fps from `FrameRateProvider` (AppManager syncs it from AppConfig). `base.Start` fires `EncoderFirstStarting` → the shell's `MainWindow.HwndSourceHook` applies `WDA_EXCLUDEFROMCAPTURE` to its own window before capture. `EncoderStopped` stops sources→recorder (finalizes mp4) + restores sleep (`PowerHelper`). Pause/Resume hold the video grid index + audio sample count and shift the pacing reference so **paused time is excluded** from the output. A stats thread surfaces `RecordedVideoFrames` → `VideoFramesCount` (drives the elapsed-time display). Verified via harness `--screen-encoder` (the exact shell code path): real screen+audio → mp4 (2 streams, h264 2560×1440 + aac), start/stop and pause/resume (4s record + 2s pause → 4.35s output) all pass; WPF app still launches. Remaining `Encoder`/`ScreenEncoder` are now real (no longer stubs).
 - [x] P5 — **Installer: NSIS (DONE)**. `Installers\Setup.nsi` (modern `Unicode true`, EN+KO MUI, `/S` silent), `update-setup-nsi.ps1` (regenerates the `AUTO_INSTALL`/`AUTO_UNINSTALL` file list from `publish\x64` — committed template has empty markers, build fills them), `build_setup.bat` (publish → regen → makensis → `dist\ScreenRecorder_Setup.exe`). Installs to `$PROGRAMFILES64\kimhwan\ScreenRecorder`; ARP key **DisplayName=ScreenRecorder, Publisher=kimhwan, QuietUninstallString `…\uninst.exe /S`** (matches old MSI → winget correlation). `.onInit` taskkills the running app + **removes the legacy MSI** (`msiexec /x {EF13AAC9-…} /qn`). Verified: silent install (497 files, correct ARP, app launches self-contained from Program Files) + silent uninstall (fully clean: dir, ARP, shortcuts, publisher dir all removed). Self-contained publish trimmed to **~324 MB** (dropped unused avdevice+avfilter, ~106 MB; `FFmpegBootstrap` no longer calls `avdevice_register_all`). `dist/` gitignored. **Open for P6: winget manifest needs `AppsAndFeaturesEntries` (DisplayName ScreenRecorder + Publisher kimhwan + DisplayVersion); assembly version stamping (csproj `GenerateAssemblyInfo=false` + hardcoded 1.1.5.0 in AssemblyInfo.cs means `-p:Version` on publish is ignored — fix at release).**
-- [ ] P6 — GitHub Actions: `release.yml` (tag→build→makensis→Release) + `winget.yml` (winget-releaser → `kimhwan.ScreenRecorder`)
-- [ ] P7 — Polish & cleanup: delete dead legacy DirectX/cursor/clock files, update READMEs (no more hand-dropped `ffmpeg_shared_lib`)
+- [x] P6 — **GitHub Actions (DONE)**. `.github/workflows/release.yml` (tag `X.Y.Z` → fetch the 5 FFmpeg 8.1 shared DLLs from gyan.dev `GyanD/codexffmpeg` 8.1 release → `Installers\build_setup.bat` → `softprops/action-gh-release` attaching `dist\ScreenRecorder_Setup.exe`; `permissions: contents: write`) + `winget.yml` (`release: types: [released]` → `vedantmgoyal9/winget-releaser@v2`, identifier `kimhwan.ScreenRecorder`, `installers-regex: ScreenRecorder_Setup\.exe$`, secret `WINGET_TOKEN`). **Maintainer setup before first release: (1) create `WINGET_TOKEN` — a CLASSIC PAT with only `public_repo`, on an account that has forked `microsoft/winget-pkgs`; (2) for robust NSIS→NSIS upgrade correlation, add `AppsAndFeaturesEntries` (DisplayName ScreenRecorder + Publisher kimhwan + DisplayVersion) to the winget manifest (one-time PR edit after the first auto-submission).**
+- [x] P7 — **Cleanup (DONE)**. Deleted legacy `ScreenRecorder\{DirectX,Encoder,AudioSource,VideoSource,Reactive}` + `VideoClockEvent.cs` + `Properties\Settings.*`, the C++ `MediaEncoder\` project, and `Setup\` (.vdproj). Removed the now-dead `<Compile Remove>` globs. **Fixed version stamping**: `GenerateAssemblyInfo` re-enabled, `<Version>2.0.0</Version>` in csproj, `AssemblyInfo.cs` trimmed to only the SDK-non-generated attrs (ComVisible/ThemeInfo/DisableDpiAwareness) → `-p:Version` now stamps (FileVersion 2.0.0.0). READMEs (EN/KO) updated to the .NET 9 / `dotnet` / NSIS build flow. App still builds (0 err) + launches.
+- [ ] **Release** — the only step left, maintainer-triggered: `--no-ff` merge `feature/modernization-net9` → `develop`, then tag **2.0.0** (drives `release.yml`). Confirm `WINGET_TOKEN` + winget-pkgs fork first.
 
 ## Branch & commit strategy
 
@@ -78,40 +83,45 @@ Sequenced to de-risk early: scaffold, then the **highest-risk encode/mux core FI
 
 ## Build & run
 
-### Legacy (current — until P0 lands)
-- Requires **Visual Studio 2022** (MSBuild), C++ workload, .NET Framework 4.8.1 targeting pack, x64.
-- **FFmpeg native libs are NOT in the repo.** Before building `MediaEncoder`, create `MediaEncoder\ffmpeg_shared_lib\` and drop BtbN FFmpeg shared build `bin` + `include` + `lib` folders into it. (Source: https://github.com/BtbN/FFmpeg-Builds)
-- Build: open `ScreenRecorder.sln`, config **Release|x64** (or Debug|x64). MSBuild CLI:
-  ```pwsh
-  msbuild ScreenRecorder.sln /p:Configuration=Release /p:Platform=x64
-  ```
-- Run: output at `bin\x64\Release\ScreenRecorder.exe`.
-- The `Setup` (.vdproj) project needs the legacy "Visual Studio Installer Projects" extension and only builds in the IDE.
+- **FFmpeg DLLs are not committed** (gitignored, ~128 MB). Before building/running an exe, place the
+  5 FFmpeg 8.x shared DLLs (`avcodec-62`, `avformat-62`, `avutil-60`, `swresample-6`, `swscale-9`)
+  in `Externals\ffmpeg\win-x64\` — see `Externals\ffmpeg\README.md` (e.g. the gyan.dev
+  `ffmpeg-8.1-full_build-shared` build). The Engine csproj copies them next to each exe;
+  `FFmpegBootstrap` sets `ffmpeg.RootPath = AppContext.BaseDirectory`. (CI fetches them in `release.yml`.)
+- Build & run the app: `dotnet run --project ScreenRecorder\ScreenRecorder.csproj` (or build `ScreenRecorder.sln`).
+- Headless engine tests (no UI): `ScreenRecorder.EncoderHarness` — `--screen-encoder` (full record path),
+  `--screen` (real-monitor capture → mp4 + PNG), `--audio-capture` (real loopback/mic → mp4 + RMS),
+  `--smooth`, `--wgc-item`, `--audio-probe`.
+- Build the installer: `Installers\build_setup.bat <version>` (publish self-contained win-x64 → regenerate
+  NSI file list → makensis → `dist\ScreenRecorder_Setup.exe`). Needs `makensis` (`C:\Program Files (x86)\NSIS\`).
+- No VS2022/MSBuild/C++ needed — plain `dotnet` on `windows-latest`. Local SDKs: .NET 8.0.404 + .NET 9.0.314.
 
-### Target (post-migration — placeholders, not wired yet)
-- `dotnet build` / `dotnet publish -c Release -r win-x64 --self-contained` against the new SDK-style projects (TFM `net9.0-windows10.0.20348.0`). No COMReferences → builds on plain `windows-latest`, no VS2022 MSBuild needed.
-- FFmpeg native DLLs (avcodec-62/avformat-62/avutil-60/swresample-6/swscale-9, FFmpeg 7.x/8.x, matched to FFmpeg.AutoGen 8.1.0) ship next to the exe — no more hand-dropped `ffmpeg_shared_lib`.
-- Installer: `makensis` (installed at `C:\Program Files (x86)\NSIS\makensis.exe`).
-- Local SDKs available: .NET 8.0.404 and .NET 9.0.314.
-
-## Layout (legacy)
+## Layout (current)
 
 ```
-ScreenRecorder.sln
-ScreenRecorder/            WPF app (.NET FW 4.8.1)
-  App*.cs, MainWindow*     app/UI entry, single-instance, hotkey hwnd hook
-  DirectX/                 SharpDX capture: DuplicatorCapture, NV12Converter, shaders, MonitorInfo
-  VideoSource/             ScreenVideoSource (capture source abstraction)
-  Encoder/                 Encoder, ScreenEncoder, codec/format enums, CircularBuffer (drives C++ MediaEncoder)
-  AudioSource/             NAudio loopback + mic capture, AudioMixer, resampler
-  Region/                  region/window/display selection UI
-  Shortcut/                global hotkeys
-  Config/                  XML config persistence
-MediaEncoder/             C++ FFmpeg wrapper (MediaWriter, VideoFrame, AudioFrame, Resampler, Scaler)
-Setup/                    Setup.vdproj (MSI) + banner.bmp + gpl-3.0.rtf
-.github/FUNDING.yml
+ScreenRecorder.sln                3 SDK-style projects, x64
+ScreenRecorder/                   WPF shell (.NET 9), references the Engine
+  App*.cs, MainWindow*            app/UI entry, single-instance, hotkey hwnd hook, self-window exclusion
+  AppManager/AppConfig/AppCommands  static singletons (kept), bound to the Engine
+  Command/DelegateCommand.cs      command type (rebased on CommunityToolkit ObservableObject)
+  CaptureTarget.cs                shell-side ICaptureTarget impl (localized sentinels)
+  Region/ Shortcut/ Config/ Behaviors/ CustomConverter/ Extensions/ Themes/  WPF UI + config
+ScreenRecorder.Engine/            headless capture/audio/encode library (.NET 9)
+  FFmpeg/                         FFmpeg.AutoGen video/audio encoders, container, helper, resampler, bootstrap
+  DirectX/                        Vortice D3D11 device, WGC interop, Nv12Converter (VideoProcessor), DisplayHelper, MonitorInfo
+  AudioSource/                    WASAPI loopback+mic capture, mixer, sync buffer, WasapiAudioSource
+  VideoSource/                    WgcCapture, PacedClock (QPC CFR), ScreenVideoSource
+  Encoder/                        Encoder/ScreenEncoder facade (drives Recorder + sources), FrameRateProvider, PowerHelper
+  Data/                          EncodedPacket, RawFrames, UnmanagedBufferPool, AudioHelper
+  Codecs/ Native/ Timing/        codec enums (namespace MediaEncoder), MediaWriter/MediaFormat, QpcSleep
+  Recorder.cs                     3-thread orchestrator (video+audio encode → mux)
+ScreenRecorder.EncoderHarness/    headless test harness (not shipped): --screen-encoder, --screen, --audio-capture, --smooth, etc.
+Externals/ffmpeg/win-x64/         5 FFmpeg 8.x shared DLLs (gitignored; README.md documents sourcing)
+Installers/                       Setup.nsi + update-setup-nsi.ps1 + build_setup.bat (NSIS)
+.github/workflows/                release.yml (tag→build→Release) + winget.yml (winget-releaser)
 ```
-(Detailed recording data-flow notes will be added here once the in-flight analysis completes.)
+
+**Timing / A-V data flow:** one QPC `t0` at record start → `ScreenVideoSource` (WGC FrameArrived updates latest texture; `PacedClock` samples at fps, ideal-grid PTS, NV12 via VideoProcessor) and `WasapiAudioSource` (loopback+mic → 48k/2ch/S16, sample-count PTS) both push timestamped frames to `Recorder` → FFmpeg encoders → `FFmpegFileContainer` (`av_interleaved_write_frame`, PTS-ordered). CFR via paced grid; A/V aligned by the shared `t0`.
 
 ## Feature checklist (must survive the rewrite)
 
@@ -119,9 +129,9 @@ Video H.264 + H.265; hardware encode NVENC + QuickSync with CPU fallback; audio 
 
 ## Conventions
 
-- Match existing code style in each file (legacy files are classic .NET FW WPF; new files follow Aurora's modern C# — file-scoped namespaces, nullable, `async`).
-- **GPL-3.0** licensed (`LICENSE`, `gpl-3.0.rtf`). Keep new dependencies license-compatible (Vortice = MIT, FFmpeg.AutoGen = LGPL/MIT binding; ship FFmpeg shared libs per their license).
-- Versioning: git tags `MAJOR.MINOR.PATCH` (latest **1.1.5**). The overhaul release will bump accordingly.
+- Modern C# throughout (the shell is WPF on .NET 9; the Engine follows Aurora's style — file-scoped namespaces where applicable, `unsafe` for FFmpeg/D3D interop). Match the surrounding file.
+- **GPL-3.0** licensed (`LICENSE`). Keep new dependencies license-compatible (Vortice = MIT, FFmpeg.AutoGen = LGPL/MIT binding; ship a `*-gpl-shared` FFmpeg build per its license).
+- Versioning: git tags `MAJOR.MINOR.PATCH` (last legacy **1.1.5**; the overhaul ships as **2.0.0**). Assembly version is stamped from `-p:Version` at release.
 - Two READMEs: `README.md` (EN) + `README-ko.md` (KO) — keep both in sync; update build instructions when the FFmpeg/native steps change.
 
 ## Gotchas
