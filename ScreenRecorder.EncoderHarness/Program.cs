@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using FFmpeg.AutoGen;
@@ -98,22 +99,43 @@ namespace ScreenRecorder.EncoderHarness
                 enc.Start("mp4", eo.Output, MediaEncoder.VideoCodec.H264, 8_000_000, MediaEncoder.AudioCodec.Aac, 160_000,
                     mon.DeviceName, new System.Windows.Rect(0, 0, double.MaxValue, double.MaxValue), drawCursor: true, recordMicrophone: mic);
                 bool testPause = Array.Exists(args, a => a.Equals("--pause", StringComparison.OrdinalIgnoreCase));
+                bool sampleSmooth = Array.Exists(args, a => a.Equals("--smooth", StringComparison.OrdinalIgnoreCase));
                 Console.WriteLine($"Recording... status={enc.Status}");
                 if (testPause)
                 {
                     System.Threading.Thread.Sleep(eo.Seconds * 500);
                     enc.Pause();
-                    Console.WriteLine($"Paused at {enc.VideoFramesCount} frames; holding 2s (excluded from output)...");
+                    Console.WriteLine($"Paused at {enc.LiveVideoFrames} frames; holding 2s (excluded from output)...");
                     System.Threading.Thread.Sleep(2000);
                     enc.Resume();
-                    Console.WriteLine($"Resumed at {enc.VideoFramesCount} frames.");
+                    Console.WriteLine($"Resumed at {enc.LiveVideoFrames} frames.");
                     System.Threading.Thread.Sleep(eo.Seconds * 500);
+                }
+                else if (sampleSmooth)
+                {
+                    // Sample LiveVideoFrames at ~60Hz (the UI render rate) and report the per-sample
+                    // deltas — proves the elapsed-time display advances ~1 frame/tick (smooth),
+                    // not in 6-frame jumps like the old 100ms poll.
+                    var deltas = new System.Collections.Generic.Dictionary<long, int>();
+                    ulong prev = enc.LiveVideoFrames;
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    while (sw.Elapsed.TotalSeconds < eo.Seconds)
+                    {
+                        System.Threading.Thread.Sleep(16);
+                        ulong now = enc.LiveVideoFrames;
+                        long d = (long)(now - prev);
+                        deltas[d] = deltas.TryGetValue(d, out var c) ? c + 1 : 1;
+                        prev = now;
+                    }
+                    Console.WriteLine("LiveVideoFrames delta per ~16ms sample (smooth = mostly 1):");
+                    foreach (var kv in deltas.OrderBy(k => k.Key))
+                        Console.WriteLine($"  delta {kv.Key}: {kv.Value} samples");
                 }
                 else
                 {
                     System.Threading.Thread.Sleep(eo.Seconds * 1000);
                 }
-                Console.WriteLine($"Frames recorded: {enc.VideoFramesCount}");
+                Console.WriteLine($"Frames recorded: {enc.LiveVideoFrames}");
                 enc.Stop();
                 System.Threading.Thread.Sleep(500);
                 Console.WriteLine($"Stopped. status={enc.Status}");

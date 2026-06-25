@@ -17,16 +17,28 @@ namespace ScreenRecorder.Encoder
     /// </summary>
     public class ScreenEncoder : Encoder
     {
-        private Recorder _recorder;
+        private volatile Recorder _recorder;
         private ScreenVideoSource _video;
         private WasapiAudioSource _audio;
-        private Thread _statsThread;
-        private CancellationTokenSource _statsCts;
         private bool _sleepPrevented;
 
         public ScreenEncoder()
         {
             this.EncoderStopped += ScreenEncoder_EncoderStopped;
+        }
+
+        /// <summary>
+        /// Live count of video frames recorded so far, read straight from the recorder (lock-free).
+        /// The UI samples this once per render frame for a smooth elapsed-time display — there is no
+        /// throttling poll in between. Returns 0 when not recording.
+        /// </summary>
+        public ulong LiveVideoFrames
+        {
+            get
+            {
+                var recorder = _recorder;
+                return recorder != null ? (ulong)recorder.RecordedVideoFrames : 0;
+            }
         }
 
         public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, Rect region, bool drawCursor, bool recordMicrophone)
@@ -84,27 +96,11 @@ namespace ScreenRecorder.Encoder
 
                 _video.Start();
                 _audio?.Start();
-
-                _statsCts = new CancellationTokenSource();
-                _statsThread = new Thread(StatsLoop) { Name = "EncoderStats", IsBackground = true };
-                _statsThread.Start();
             }
             catch
             {
                 base.Stop(); // fires EncoderStopped → cleanup
                 throw;
-            }
-        }
-
-        private void StatsLoop()
-        {
-            var ct = _statsCts.Token;
-            while (!ct.IsCancellationRequested)
-            {
-                var recorder = _recorder;
-                if (recorder != null)
-                    VideoFramesCount = (ulong)recorder.RecordedVideoFrames;
-                Thread.Sleep(100);
             }
         }
 
@@ -140,11 +136,6 @@ namespace ScreenRecorder.Encoder
 
         private void ScreenEncoder_EncoderStopped(object sender, EncoderStoppedEventArgs eventArgs)
         {
-            _statsCts?.Cancel();
-            _statsThread?.Join(500);
-            _statsThread = null;
-            _statsCts = null;
-
             _audio?.Stop();
             _audio?.Dispose();
             _audio = null;

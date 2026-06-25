@@ -187,7 +187,9 @@ namespace ScreenRecorder
 
         private void CompositionTarget_Rendering(object sender, EventArgs e)
         {
-            EncodeTime = Utils.VideoFramesCountToStringTime(_screenEncoder.VideoFramesCount);
+            // Read the live frame count each render (~60fps) so the elapsed-time display ticks
+            // smoothly, instead of sampling a value that a background poll only refreshed at 10Hz.
+            EncodeTime = Utils.VideoFramesCountToStringTime(_screenEncoder.LiveVideoFrames);
         }
 
         public void Dispose()
