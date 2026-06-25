@@ -1,0 +1,2 @@
+# FFmpeg shared DLLs are large (~230 MB) and not committed. See README.md to obtain them.
+*.dll

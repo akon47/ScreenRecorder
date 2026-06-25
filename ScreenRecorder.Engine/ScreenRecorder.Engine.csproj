@@ -33,4 +33,17 @@
     <PackageReference Include="NAudio" Version="2.3.0" />
   </ItemGroup>
 
+  <!--
+    Native FFmpeg 8.x shared DLLs (not committed; see Externals\ffmpeg\README.md). Copied next to
+    the consuming executable's output so ffmpeg.RootPath = AppContext.BaseDirectory finds them.
+    CopyToOutputDirectory items flow transitively to projects that reference this engine.
+  -->
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)..\Externals\ffmpeg\win-x64\*.dll">
+      <Link>%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </None>
+  </ItemGroup>
+
 </Project>
