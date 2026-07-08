@@ -30,14 +30,68 @@ namespace ScreenRecorder.EncoderHarness
                 var winrt = ScreenRecorder.DirectX.WgcInterop.CreateWinRtDevice(dev.Device);
                 Console.WriteLine("WinRT IDirect3DDevice bridged: " + (winrt != null));
                 var mon = ScreenRecorder.DirectX.MonitorInfo.GetPrimaryMonitorInfo();
-                Console.WriteLine($"Primary monitor: {mon.DeviceName} {mon.Width}x{mon.Height}");
+                Console.WriteLine($"Primary monitor: {mon.DeviceName} virtual {mon.Width}x{mon.Height}, physical {mon.PhysicalWidth}x{mon.PhysicalHeight}");
                 var hmon = ScreenRecorder.DirectX.DisplayHelper.GetMonitorHandleFromDeviceName(mon.DeviceName);
                 Console.WriteLine("HMONITOR: 0x" + hmon.ToString("X"));
                 var item = ScreenRecorder.DirectX.WgcInterop.CreateItemForMonitor(hmon);
                 Console.WriteLine($"GraphicsCaptureItem.Size: {item.Size.Width}x{item.Size.Height}");
-                Console.WriteLine(item.Size.Width == mon.Width && item.Size.Height == mon.Height
-                    ? "OK: item size matches monitor." : "WARN: item size differs from monitor.");
+                // WGC item size is always physical pixels; virtual differs under DPI scaling (#58).
+                Console.WriteLine(item.Size.Width == mon.PhysicalWidth && item.Size.Height == mon.PhysicalHeight
+                    ? "OK: item size matches physical monitor size." : "WARN: item size differs from physical monitor size.");
                 return 0;
+            }
+
+            if (Array.Exists(args, a => a.Equals("--dpi-flip", StringComparison.OrdinalIgnoreCase)))
+            {
+                // Diagnoses whether the FFmpeg hardware-codec probe (QSV loads D3D9/DXVA2) flips
+                // this process's DPI awareness, and whether Screen.AllScreens caches stale bounds.
+                void Dump(string phase)
+                {
+                    GetProcessDpiAwareness(IntPtr.Zero, out int awareness);
+                    Console.WriteLine($"[{phase}] process DPI awareness = {awareness} (0=unaware 1=system 2=per-monitor)");
+                    foreach (var m in ScreenRecorder.DirectX.MonitorInfo.GetActiveMonitorInfos())
+                        Console.WriteLine($"[{phase}]   {m.DeviceName}: virtual {m.Width}x{m.Height}, physical {m.PhysicalWidth}x{m.PhysicalHeight}");
+                }
+                Dump("before probe");
+                MediaEncoder.MediaWriter.CheckHardwareCodec();
+                Dump("after probe ");
+                return 0;
+            }
+
+            if (Array.Exists(args, a => a.Equals("--dpi-map", StringComparison.OrdinalIgnoreCase)))
+            {
+                // Pure-math check of MonitorInfo.VirtualToPhysical — the DPI-virtualized→physical
+                // region mapping that fixes the quarter-frame recording at 200% scale (issue #58).
+                int failures = 0;
+                void Check(string name, System.Windows.Rect actual, System.Windows.Rect expected)
+                {
+                    bool ok = actual == expected;
+                    if (!ok) failures++;
+                    Console.WriteLine($"{(ok ? "OK  " : "FAIL")} {name}: {actual}" + (ok ? "" : $" (expected {expected})"));
+                }
+
+                // 3840x2160 monitor at 200%, seen by a DPI-unaware process as 1920x1080.
+                var m200 = new ScreenRecorder.DirectX.MonitorInfo { Right = 1920, Bottom = 1080, PhysicalWidth = 3840, PhysicalHeight = 2160 };
+                Check("200% full screen", m200.VirtualToPhysical(new System.Windows.Rect(0, 0, 1920, 1080)), new System.Windows.Rect(0, 0, 3840, 2160));
+                Check("200% sub-region", m200.VirtualToPhysical(new System.Windows.Rect(100, 50, 640, 360)), new System.Windows.Rect(200, 100, 1280, 720));
+                Check("200% empty region", m200.VirtualToPhysical(System.Windows.Rect.Empty), System.Windows.Rect.Empty);
+
+                // 2560x1440 at 150% → Windows virtualizes to 1707x960 (rounded, non-exact ratio).
+                var m150 = new ScreenRecorder.DirectX.MonitorInfo { Right = 1707, Bottom = 960, PhysicalWidth = 2560, PhysicalHeight = 1440 };
+                Check("150% full screen (rounded virtual size)", m150.VirtualToPhysical(new System.Windows.Rect(0, 0, 1707, 960)), new System.Windows.Rect(0, 0, 2560, 1440));
+                Check("150% sub-region at far edge stays in bounds", m150.VirtualToPhysical(new System.Windows.Rect(1000, 500, 707, 460)), new System.Windows.Rect(1500, 750, 1060, 690));
+
+                // 100% scale (or a DPI-aware process): identity.
+                var m100 = new ScreenRecorder.DirectX.MonitorInfo { Right = 2560, Bottom = 1440, PhysicalWidth = 2560, PhysicalHeight = 1440 };
+                Check("100% full screen (identity)", m100.VirtualToPhysical(new System.Windows.Rect(0, 0, 2560, 1440)), new System.Windows.Rect(0, 0, 2560, 1440));
+                Check("100% sub-region (identity)", m100.VirtualToPhysical(new System.Windows.Rect(123, 45, 640, 480)), new System.Windows.Rect(123, 45, 640, 480));
+
+                // Real monitors on this machine, for reference.
+                foreach (var real in ScreenRecorder.DirectX.MonitorInfo.GetActiveMonitorInfos())
+                    Console.WriteLine($"     {real.DeviceName}: virtual {real.Width}x{real.Height}, physical {real.PhysicalWidth}x{real.PhysicalHeight}");
+
+                Console.WriteLine(failures == 0 ? "PASS: dpi-map" : $"FAIL: {failures} case(s)");
+                return failures == 0 ? 0 : 1;
             }
 
             if (Array.Exists(args, a => a.Equals("--audio-probe", StringComparison.OrdinalIgnoreCase)))
@@ -93,8 +147,16 @@ namespace ScreenRecorder.EncoderHarness
                 bool mic = Array.Exists(args, a => a.Equals("--mic", StringComparison.OrdinalIgnoreCase));
                 MediaEncoder.MediaWriter.CheckHardwareCodec();
                 ScreenRecorder.Encoder.FrameRateProvider.Framerate = eo.Fps;
-                var mon = ScreenRecorder.DirectX.MonitorInfo.GetPrimaryMonitorInfo();
-                Console.WriteLine($"=== ScreenEncoder end-to-end: {eo.Seconds}s @{eo.Fps}fps, mic={mic}, monitor {mon.DeviceName} ===");
+                string monName = GetOptionValue(args, "--monitor");
+                var mon = monName != null
+                    ? ScreenRecorder.DirectX.MonitorInfo.GetMonitorInfo(monName)
+                    : ScreenRecorder.DirectX.MonitorInfo.GetPrimaryMonitorInfo();
+                if (mon == null)
+                {
+                    Console.WriteLine($"Monitor not found: {monName}");
+                    return 2;
+                }
+                Console.WriteLine($"=== ScreenEncoder end-to-end: {eo.Seconds}s @{eo.Fps}fps, mic={mic}, monitor {mon.DeviceName} (virtual {mon.Width}x{mon.Height}, physical {mon.PhysicalWidth}x{mon.PhysicalHeight}) ===");
                 var enc = new ScreenRecorder.Encoder.ScreenEncoder();
                 enc.Start("mp4", eo.Output, MediaEncoder.VideoCodec.H264, 8_000_000, MediaEncoder.AudioCodec.Aac, 160_000,
                     mon.DeviceName, new System.Windows.Rect(0, 0, double.MaxValue, double.MaxValue), drawCursor: true, recordMicrophone: mic);
@@ -167,7 +229,8 @@ namespace ScreenRecorder.EncoderHarness
                 string png = Path.ChangeExtension(so.Output, ".png");
                 MediaEncoder.MediaWriter.CheckHardwareCodec();
                 return ScreenCaptureSmoke.Run(so.Seconds, so.Fps, so.Output, png, cursor: true,
-                    resolveHw: (codec, hw) => MediaEncoder.MediaWriter.IsSupportedNvencH264() ? HwAccel.Nvenc : HwAccel.Software);
+                    resolveHw: (codec, hw) => MediaEncoder.MediaWriter.IsSupportedNvencH264() ? HwAccel.Nvenc : HwAccel.Software,
+                    deviceName: GetOptionValue(args, "--monitor"));
             }
 
             var opt = ParseArgs(args);
@@ -345,6 +408,15 @@ namespace ScreenRecorder.EncoderHarness
             public AudioCodec AudioCodec = AudioCodec.Aac;
             public string Output = Path.Combine(Path.GetTempPath(), "screenrecorder_harness.mp4");
             public bool SmokeOnly;
+        }
+
+        [System.Runtime.InteropServices.DllImport("shcore.dll")]
+        private static extern int GetProcessDpiAwareness(IntPtr hProcess, out int awareness);
+
+        private static string GetOptionValue(string[] args, string option)
+        {
+            int i = Array.FindIndex(args, a => a.Equals(option, StringComparison.OrdinalIgnoreCase));
+            return i >= 0 && i + 1 < args.Length ? args[i + 1] : null;
         }
 
         private static Options ParseArgs(string[] args)

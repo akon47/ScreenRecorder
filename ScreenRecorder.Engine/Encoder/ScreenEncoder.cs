@@ -51,6 +51,9 @@ namespace ScreenRecorder.Encoder
                 throw new ArgumentException($"{deviceName} is not exist");
 
             Rect validRegion = Rect.Intersect(region, new Rect(0, 0, monitorInfo.Width, monitorInfo.Height));
+            // The shell runs DPI-unaware, so Screen-derived regions are DPI-virtualized while the
+            // WGC capture surface is physical pixels — map before sizing/cropping (issue #58).
+            validRegion = monitorInfo.VirtualToPhysical(validRegion);
             int width = Math.Max(2, (int)validRegion.Width & ~1);
             int height = Math.Max(2, (int)validRegion.Height & ~1);
             int fps = Math.Max(1, FrameRateProvider.Framerate);

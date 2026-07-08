@@ -20,7 +20,7 @@ namespace ScreenRecorder.EncoderHarness
     /// </summary>
     internal static unsafe class ScreenCaptureSmoke
     {
-        public static int Run(int seconds, int fps, string output, string pngPath, bool cursor, Func<VideoCodec, string, HwAccel> resolveHw)
+        public static int Run(int seconds, int fps, string output, string pngPath, bool cursor, Func<VideoCodec, string, HwAccel> resolveHw, string deviceName = null)
         {
             if (!Windows.Graphics.Capture.GraphicsCaptureSession.IsSupported())
             {
@@ -28,9 +28,18 @@ namespace ScreenRecorder.EncoderHarness
                 return 2;
             }
 
-            var mon = MonitorInfo.GetPrimaryMonitorInfo();
-            int w = mon.Width & ~1;
-            int h = mon.Height & ~1;
+            var mon = deviceName != null ? MonitorInfo.GetMonitorInfo(deviceName) : MonitorInfo.GetPrimaryMonitorInfo();
+            if (mon == null)
+            {
+                Console.WriteLine($"Monitor not found: {deviceName}");
+                return 2;
+            }
+
+            // Same virtual→physical mapping as ScreenEncoder.Start — the harness is DPI-unaware,
+            // so mon.Width/Height are virtualized on scaled monitors while WGC is physical (#58).
+            var region = mon.VirtualToPhysical(new Rect(0, 0, mon.Width, mon.Height));
+            int w = (int)region.Width & ~1;
+            int h = (int)region.Height & ~1;
             HwAccel hw = resolveHw(VideoCodec.H264, "auto");
 
             Console.WriteLine($"=== Screen capture: {seconds}s {w}x{h}@{fps} H264/{hw} (monitor {mon.DeviceName}) ===");
@@ -52,7 +61,7 @@ namespace ScreenRecorder.EncoderHarness
             using (var recorder = new Recorder(output, "mp4", videoParams, null))
             {
                 recorder.Start();
-                using var src = new ScreenVideoSource(mon.DeviceName, new Rect(0, 0, w, h), cursor, fps, 1, t0, recorder);
+                using var src = new ScreenVideoSource(mon.DeviceName, new Rect(region.X, region.Y, w, h), cursor, fps, 1, t0, recorder);
                 src.Start();
                 Thread.Sleep(seconds * 1000);
                 src.Stop();
