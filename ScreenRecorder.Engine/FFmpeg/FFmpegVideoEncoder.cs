@@ -47,7 +47,8 @@ namespace MediaEncoder
             int bitrateBps,
             RateControl rateControl = RateControl.Cbr,
             bool globalHeader = true,
-            string presetOverride = null)
+            string presetOverride = null,
+            int quality = 23)
         {
             FFmpegBootstrap.EnsureInitialized();
 
@@ -81,7 +82,7 @@ namespace MediaEncoder
             if (globalHeader)
                 _ctx->flags |= ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER;
 
-            InitializeCodec(hw, rateControl, bitrateBps, presetOverride);
+            InitializeCodec(hw, rateControl, bitrateBps, quality, presetOverride);
 
             int openResult = ffmpeg.avcodec_open2(_ctx, _codec, null);
             if (openResult < 0)
@@ -167,10 +168,17 @@ namespace MediaEncoder
             return fallback;
         }
 
-        private void InitializeCodec(HwAccel hw, RateControl rateControl, int bitrate, string presetOverride)
+        private void InitializeCodec(HwAccel hw, RateControl rateControl, int bitrate, int quality, string presetOverride)
         {
             void* priv = _ctx->priv_data;
             bool cbr = rateControl == RateControl.Cbr;
+            bool cq = rateControl == RateControl.Cq;
+
+            if (cq)
+            {
+                // Constant quality: the bitrate follows content complexity.
+                _ctx->bit_rate = 0;
+            }
 
             switch (hw)
             {
@@ -183,6 +191,12 @@ namespace MediaEncoder
                         _ctx->rc_max_rate = bitrate;
                         _ctx->rc_buffer_size = bitrate;
                     }
+                    else if (cq)
+                    {
+                        // ffmpeg CLI equivalent: -rc vbr -cq <q> -b:v 0
+                        ffmpeg.av_opt_set(priv, "rc", "vbr", 0);
+                        ffmpeg.av_opt_set_int(priv, "cq", quality, 0);
+                    }
                     ffmpeg.av_opt_set(priv, "preset", presetOverride ?? "p4", 0);
                     ffmpeg.av_opt_set(priv, "tune", "ll", 0);
                     break;
@@ -194,6 +208,12 @@ namespace MediaEncoder
                         _ctx->rc_min_rate = bitrate;
                         _ctx->rc_max_rate = bitrate;
                         _ctx->rc_buffer_size = bitrate;
+                    }
+                    else if (cq)
+                    {
+                        // ICQ mode (no bitrate + global_quality). The shell prefers NVENC or
+                        // software for constant quality; this path is a best-effort fallback.
+                        _ctx->global_quality = quality;
                     }
                     else
                     {
@@ -212,6 +232,10 @@ namespace MediaEncoder
                         _ctx->rc_min_rate = bitrate;
                         _ctx->rc_max_rate = bitrate;
                         _ctx->rc_buffer_size = bitrate;
+                    }
+                    else if (cq)
+                    {
+                        ffmpeg.av_opt_set(priv, "crf", quality.ToString(), 0);
                     }
                     break;
             }

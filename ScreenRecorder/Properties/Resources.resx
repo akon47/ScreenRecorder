@@ -237,4 +237,25 @@
   <data name="TheRecordingPathIsNotSet" xml:space="preserve">
     <value>The recording path is not set. Please set the recording path</value>
   </data>
+  <data name="Minimize" xml:space="preserve">
+    <value>Minimize</value>
+  </data>
+  <data name="EncoderRateControl" xml:space="preserve">
+    <value>Rate Control</value>
+  </data>
+  <data name="QualityModeBitrate" xml:space="preserve">
+    <value>Bitrate (CBR)</value>
+  </data>
+  <data name="QualityModeHigh" xml:space="preserve">
+    <value>Constant Quality - High</value>
+  </data>
+  <data name="QualityModeMedium" xml:space="preserve">
+    <value>Constant Quality - Medium</value>
+  </data>
+  <data name="QualityModeLow" xml:space="preserve">
+    <value>Constant Quality - Low</value>
+  </data>
+  <data name="RecordDelay" xml:space="preserve">
+    <value>Start Delay (sec)</value>
+  </data>
 </root>

@@ -25,9 +25,14 @@ if not exist "%ROOT%\dist" mkdir "%ROOT%\dist"
 
 echo === [2/4] Packaging portable zip ===
 if exist "%PORTABLE%" del /q "%PORTABLE%"
+rem The marker switches the app to portable mode (config in UserData next to the exe).
+rem It goes into the zip only - removed again so the installer build never picks it up.
+type nul > "%ROOT%\publish\x64\portable"
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "Compress-Archive -Path '%ROOT%\publish\x64\*' -DestinationPath '%PORTABLE%' -Force"
-if errorlevel 1 ( echo portable zip failed & exit /b 1 )
+set "ZIP_RESULT=%errorlevel%"
+del /q "%ROOT%\publish\x64\portable"
+if not "%ZIP_RESULT%"=="0" ( echo portable zip failed & exit /b 1 )
 
 echo === [3/4] Regenerating NSI file list ===
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0update-setup-nsi.ps1"
