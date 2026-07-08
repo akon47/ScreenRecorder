@@ -1,11 +1,16 @@
-﻿using System;
-using System.Linq;
+using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
 namespace ScreenRecorder.Region
 {
+    /// <summary>
+    /// Selection surface for ONE monitor's overlay window (one instance per monitor, kept in
+    /// sync by <see cref="RegionSelectorSession"/>). Mouse input arrives window-local and is
+    /// converted to desktop coordinates against the owning monitor's bounds, so results stay in
+    /// the same (possibly DPI-virtualized) desktop space the recorder maps from.
+    /// </summary>
     public class RegionSelector : FrameworkElement
     {
         public RegionSelectionMode RegionSelectionMode
@@ -33,12 +38,13 @@ namespace ScreenRecorder.Region
         public event RegionSelectedHandler RegionSelected;
 
         #region Private Fields
-        private Point _downPoint, _movePoint;
-        private Rect _selectedTargetBounds;
+        private Point _downPoint, _movePoint;   // desktop coordinates
+        private Rect _selectedTargetBounds;     // desktop coordinates
         private string _selectedTargetDevice;
         private bool _selectionStarted = false;
         private WindowRegion[] _windowRegions;
-        private System.Windows.Forms.Screen[] _screens;
+        private string _deviceName;             // owning monitor
+        private Rect _deviceBounds;             // owning monitor, desktop coordinates
         #endregion
 
         public RegionSelector()
@@ -46,8 +52,27 @@ namespace ScreenRecorder.Region
             Focusable = false;
             _downPoint = _movePoint = new Point(0, 0);
             _selectedTargetBounds = Rect.Empty;
-            _screens = System.Windows.Forms.Screen.AllScreens;
-            _windowRegions = WindowRegion.GetWindowRegions();
+            _windowRegions = WindowRegion.GetWindowRegions() ?? Array.Empty<WindowRegion>();
+        }
+
+        /// <summary>Binds this selector to the monitor its overlay window covers.</summary>
+        public void Attach(string deviceName, Rect deviceBounds)
+        {
+            _deviceName = deviceName;
+            _deviceBounds = deviceBounds;
+        }
+
+        private Point ToDesktop(Point localPoint)
+        {
+            return new Point(localPoint.X + _deviceBounds.X, localPoint.Y + _deviceBounds.Y);
+        }
+
+        private Rect ToLocal(Rect desktopRect)
+        {
+            if (desktopRect.IsEmpty)
+                return Rect.Empty;
+
+            return new Rect(desktopRect.X - _deviceBounds.X, desktopRect.Y - _deviceBounds.Y, desktopRect.Width, desktopRect.Height);
         }
 
         #region Mouse Event Handlers
@@ -57,25 +82,22 @@ namespace ScreenRecorder.Region
             if (!_selectionStarted)
                 return;
 
-            _downPoint = _movePoint = e.GetPosition(this);
+            _downPoint = _movePoint = ToDesktop(e.GetPosition(this));
 
             CaptureMouse();
 
             switch (RegionSelectionMode)
             {
                 case RegionSelectionMode.UserRegion:
-                    var screen = _screens.FirstOrDefault(s => s.Bounds.Contains((int)_downPoint.X, (int)_downPoint.Y));
-                    if (screen != null)
-                    {
-                        _selectedTargetDevice = screen.DeviceName;
-                    }
+                    // The drag starts on this monitor and is clamped to it.
+                    _selectedTargetDevice = _deviceName;
                     break;
                 case RegionSelectionMode.WindowRegion:
                 case RegionSelectionMode.DisplayRegion:
                     if (!string.IsNullOrWhiteSpace(_selectedTargetDevice) && _selectedTargetBounds.Width > 0 && _selectedTargetBounds.Height > 0)
                     {
                         _selectionStarted = false;
-                        RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, _selectedTargetDevice, GetScreenBounds(_selectedTargetDevice), _selectedTargetBounds, !(_selectedTargetBounds.Width > 0 && _selectedTargetBounds.Height > 0)));
+                        RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, _selectedTargetDevice, _deviceBounds, _selectedTargetBounds, !(_selectedTargetBounds.Width > 0 && _selectedTargetBounds.Height > 0)));
                     }
                     break;
             }
@@ -88,7 +110,7 @@ namespace ScreenRecorder.Region
             if (!_selectionStarted)
                 return;
 
-            _movePoint = e.GetPosition(this);
+            _movePoint = ToDesktop(e.GetPosition(this));
 
             switch (RegionSelectionMode)
             {
@@ -109,7 +131,8 @@ namespace ScreenRecorder.Region
                         if (windowRegion.Region.Contains(_movePoint))
                         {
                             _selectedTargetBounds = windowRegion.Region;
-                            _selectedTargetDevice = _screens.FirstOrDefault(s => s.Bounds.Contains((int)_movePoint.X, (int)_movePoint.Y))?.DeviceName;
+                            // The pointer is on this monitor by construction.
+                            _selectedTargetDevice = _deviceName;
                             break;
                         }
                     }
@@ -118,18 +141,31 @@ namespace ScreenRecorder.Region
                 case RegionSelectionMode.DisplayRegion:
                     Cursor = Cursors.Arrow;
 
-                    var screen = _screens.FirstOrDefault(s => s.Bounds.Contains((int)_movePoint.X, (int)_movePoint.Y));
-                    if (screen != null)
+                    // Hovering this overlay means hovering this monitor.
+                    if (_selectedTargetBounds != _deviceBounds)
                     {
-                        Rect bounds = new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
-                        if (_selectedTargetBounds != bounds)
-                        {
-                            _selectedTargetBounds = bounds;
-                            _selectedTargetDevice = screen.DeviceName;
-                            InvalidateVisual();
-                        }
+                        _selectedTargetBounds = _deviceBounds;
+                        _selectedTargetDevice = _deviceName;
+                        InvalidateVisual();
                     }
                     break;
+            }
+        }
+
+        protected override void OnMouseLeave(MouseEventArgs e)
+        {
+            base.OnMouseLeave(e);
+
+            if (!_selectionStarted || IsMouseCaptured)
+                return;
+
+            // The pointer moved off to another monitor's overlay — drop this one's highlight.
+            if ((RegionSelectionMode == RegionSelectionMode.WindowRegion || RegionSelectionMode == RegionSelectionMode.DisplayRegion)
+                && _selectedTargetBounds != Rect.Empty)
+            {
+                _selectedTargetBounds = Rect.Empty;
+                _selectedTargetDevice = null;
+                InvalidateVisual();
             }
         }
 
@@ -147,7 +183,7 @@ namespace ScreenRecorder.Region
                     case RegionSelectionMode.UserRegion:
                         _selectionStarted = false;
                         Rect userRegion = GetUserRegion();
-                        RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, _selectedTargetDevice, GetScreenBounds(_selectedTargetDevice), userRegion, !(userRegion.Width > 0 && userRegion.Height > 0)));
+                        RegionSelected?.Invoke(this, new RegionSelectedEventArgs(RegionSelectionMode, _selectedTargetDevice, _deviceBounds, userRegion, !(userRegion.Width > 0 && userRegion.Height > 0)));
                         break;
                     case RegionSelectionMode.WindowRegion:
 
@@ -173,23 +209,27 @@ namespace ScreenRecorder.Region
 
             var pathGeometry = new PathGeometry();
             pathGeometry.AddGeometry(new RectangleGeometry(bounds));
+
+            Rect highlight = Rect.Empty;
             switch (RegionSelectionMode)
             {
                 case RegionSelectionMode.UserRegion:
-                    var userRegion = GetUserRegion();
-                    pathGeometry.AddGeometry(new RectangleGeometry(userRegion));
-                    dc.DrawRectangle(null, _selectorPen, userRegion);
+                    highlight = ToLocal(GetUserRegion());
                     break;
                 case RegionSelectionMode.WindowRegion:
-                    var windowRegion = Rect.Intersect(GetDeviceRegion(_selectedTargetDevice), _selectedTargetBounds);
-                    pathGeometry.AddGeometry(new RectangleGeometry(windowRegion));
-                    dc.DrawRectangle(null, _selectorPen, windowRegion);
+                    highlight = _selectedTargetBounds.IsEmpty ? Rect.Empty : ToLocal(Rect.Intersect(_deviceBounds, _selectedTargetBounds));
                     break;
                 case RegionSelectionMode.DisplayRegion:
-                    pathGeometry.AddGeometry(new RectangleGeometry(_selectedTargetBounds));
-                    dc.DrawRectangle(null, _selectorPen, _selectedTargetBounds);
+                    highlight = ToLocal(_selectedTargetBounds);
                     break;
             }
+
+            if (!highlight.IsEmpty)
+            {
+                pathGeometry.AddGeometry(new RectangleGeometry(highlight));
+                dc.DrawRectangle(null, _selectorPen, highlight);
+            }
+
             dc.DrawGeometry(_dimBrush, null, pathGeometry);
         }
 
@@ -197,35 +237,12 @@ namespace ScreenRecorder.Region
 
         #region Private Methods
 
-        private Rect GetScreenBounds(string deviceName)
-        {
-            var screen = _screens.FirstOrDefault(s => s.DeviceName == deviceName);
-            if (screen != null)
-            {
-                return new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
-            }
-            else
-            {
-                return Rect.Empty;
-            }
-        }
-
         private Rect GetUserRegion()
         {
             var selectorRegion = new Rect((int)Math.Min(_downPoint.X, _movePoint.X), (int)Math.Min(_downPoint.Y, _movePoint.Y), (int)Math.Abs(_downPoint.X - _movePoint.X), (int)Math.Abs(_downPoint.Y - _movePoint.Y));
-            return Rect.Intersect(GetDeviceRegion(_selectedTargetDevice), selectorRegion);
+            return Rect.Intersect(_deviceBounds, selectorRegion);
         }
 
-        private Rect GetDeviceRegion(string deviceName)
-        {
-            var screen = _screens.FirstOrDefault(s => s.DeviceName == deviceName);
-            if (screen != null)
-            {
-                return new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
-            }
-
-            return Rect.Empty;
-        }
         #endregion
 
         #region Public Methods
@@ -234,6 +251,7 @@ namespace ScreenRecorder.Region
             _selectionStarted = true;
             _downPoint = _movePoint = new Point(0, 0);
             _selectedTargetBounds = Rect.Empty;
+            _selectedTargetDevice = null;
             InvalidateVisual();
         }
 

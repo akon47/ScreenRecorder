@@ -79,6 +79,11 @@ namespace ScreenRecorder.Region
         {
             List<WindowRegion> windowRegions = new List<WindowRegion>();
 
+            // DWM extended frame bounds are always physical pixels (never DPI-virtualized), so
+            // on scaled monitors they must be mapped into this process's coordinate space before
+            // hit-testing against mouse/screen coordinates.
+            var monitors = ScreenRecorder.DirectX.MonitorInfo.GetActiveMonitorInfos();
+
             EnumWindows((hWnd, lparam) =>
             {
                 if(IsWindowVisible(hWnd) && !Utils.IsWindowDisplayedOnlyMonitor(hWnd))
@@ -86,6 +91,7 @@ namespace ScreenRecorder.Region
                     Rect rect = GetWindowRectangle(hWnd);
 
                     System.Windows.Rect region = new System.Windows.Rect(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
+                    region = ToVirtualDesktop(region, monitors);
                     if (region.Height > 16 && region.Width > 16)
                     {
                         windowRegions.Add(new WindowRegion() { Region = region, Hwnd = hWnd });
@@ -95,6 +101,26 @@ namespace ScreenRecorder.Region
             }, 0);
 
             return windowRegions.Count > 0 ? windowRegions.ToArray() : null;
+        }
+
+        private static System.Windows.Rect ToVirtualDesktop(System.Windows.Rect physicalRect, ScreenRecorder.DirectX.MonitorInfo[] monitors)
+        {
+            var center = new System.Windows.Point(physicalRect.X + physicalRect.Width / 2, physicalRect.Y + physicalRect.Height / 2);
+            foreach (var monitor in monitors)
+            {
+                if (monitor.PhysicalBounds.Contains(center))
+                {
+                    return monitor.DesktopPhysicalToVirtual(physicalRect);
+                }
+            }
+            foreach (var monitor in monitors)
+            {
+                if (monitor.PhysicalBounds.IntersectsWith(physicalRect))
+                {
+                    return monitor.DesktopPhysicalToVirtual(physicalRect);
+                }
+            }
+            return physicalRect;
         }
     }
 }

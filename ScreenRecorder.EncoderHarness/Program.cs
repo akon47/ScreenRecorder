@@ -86,6 +86,13 @@ namespace ScreenRecorder.EncoderHarness
                 Check("100% full screen (identity)", m100.VirtualToPhysical(new System.Windows.Rect(0, 0, 2560, 1440)), new System.Windows.Rect(0, 0, 2560, 1440));
                 Check("100% sub-region (identity)", m100.VirtualToPhysical(new System.Windows.Rect(123, 45, 640, 480)), new System.Windows.Rect(123, 45, 640, 480));
 
+                // Inverse (desktop-absolute) mapping used for DWM window rects: secondary 200%
+                // monitor right of a 100% primary — virtual (2560,0,1280x720), physical (2560,0,2560x1440).
+                var mSec200 = new ScreenRecorder.DirectX.MonitorInfo { Left = 2560, Top = 0, Right = 3840, Bottom = 720, PhysicalLeft = 2560, PhysicalTop = 0, PhysicalWidth = 2560, PhysicalHeight = 1440 };
+                Check("desktop phys→virt on 200% secondary", mSec200.DesktopPhysicalToVirtual(new System.Windows.Rect(3000, 200, 800, 600)), new System.Windows.Rect(2780, 100, 400, 300));
+                Check("desktop phys→virt identity on 100%", m100.DesktopPhysicalToVirtual(new System.Windows.Rect(100, 200, 300, 400)), new System.Windows.Rect(100, 200, 300, 400));
+                Check("desktop phys→virt empty stays empty", mSec200.DesktopPhysicalToVirtual(System.Windows.Rect.Empty), System.Windows.Rect.Empty);
+
                 // Real monitors on this machine, for reference.
                 foreach (var real in ScreenRecorder.DirectX.MonitorInfo.GetActiveMonitorInfos())
                     Console.WriteLine($"     {real.DeviceName}: virtual {real.Width}x{real.Height}, physical {real.PhysicalWidth}x{real.PhysicalHeight}");

@@ -31,7 +31,7 @@ namespace ScreenRecorder.DirectX
             int outputIndex = 0;
             foreach (var screen in Screen.AllScreens)
             {
-                GetPhysicalResolution(screen, out int physicalWidth, out int physicalHeight);
+                GetPhysicalBounds(screen, out int physicalLeft, out int physicalTop, out int physicalWidth, out int physicalHeight);
                 monitorInfos.Add(new MonitorInfo()
                 {
                     AdapterDescription = "Display Adapter",
@@ -43,6 +43,8 @@ namespace ScreenRecorder.DirectX
                     Top = screen.Bounds.Top,
                     Right = screen.Bounds.Right,
                     Bottom = screen.Bounds.Bottom,
+                    PhysicalLeft = physicalLeft,
+                    PhysicalTop = physicalTop,
                     PhysicalWidth = physicalWidth,
                     PhysicalHeight = physicalHeight,
                 });
@@ -53,21 +55,25 @@ namespace ScreenRecorder.DirectX
         }
 
         /// <summary>
-        /// The monitor's real pixel size from the current display mode. Unlike
+        /// The monitor's real pixel bounds from the current display mode. Unlike
         /// <see cref="Screen.Bounds"/>, EnumDisplaySettings is NOT subject to DPI virtualization,
         /// so this stays correct even in a DPI-unaware process.
         /// </summary>
-        private static void GetPhysicalResolution(Screen screen, out int width, out int height)
+        private static void GetPhysicalBounds(Screen screen, out int left, out int top, out int width, out int height)
         {
             var mode = new DEVMODE { dmSize = (ushort)Marshal.SizeOf<DEVMODE>() };
             if (EnumDisplaySettings(screen.DeviceName, ENUM_CURRENT_SETTINGS, ref mode)
                 && mode.dmPelsWidth > 0 && mode.dmPelsHeight > 0)
             {
+                left = mode.dmPositionX;
+                top = mode.dmPositionY;
                 width = (int)mode.dmPelsWidth;
                 height = (int)mode.dmPelsHeight;
             }
             else
             {
+                left = screen.Bounds.Left;
+                top = screen.Bounds.Top;
                 width = screen.Bounds.Width;
                 height = screen.Bounds.Height;
             }
@@ -88,15 +94,18 @@ namespace ScreenRecorder.DirectX
         public int Height => Bottom - Top;
 
         /// <summary>
-        /// Real pixel resolution of the monitor — the space WGC capture items are sized in.
+        /// Real pixel bounds of the monitor — the space WGC capture items are sized in.
         /// In a DPI-unaware process <see cref="Width"/>/<see cref="Height"/> are the
         /// DPI-virtualized size (a 3840×2160 monitor at 200% scale reads as 1920×1080) while
         /// this stays 3840×2160; both are equal at 100% scale or in a DPI-aware process.
         /// </summary>
+        public int PhysicalLeft { get; set; }
+        public int PhysicalTop { get; set; }
         public int PhysicalWidth { get; set; }
         public int PhysicalHeight { get; set; }
 
         public System.Windows.Rect Bounds => new System.Windows.Rect(Left, Top, Width, Height);
+        public System.Windows.Rect PhysicalBounds => new System.Windows.Rect(PhysicalLeft, PhysicalTop, PhysicalWidth, PhysicalHeight);
         public string Description => $"{AdapterDescription}: {PhysicalWidth}x{PhysicalHeight} @ {Left},{Top}{(IsPrimary ? " (Primary)" : "")}";
 
         /// <summary>
@@ -124,6 +133,31 @@ namespace ScreenRecorder.DirectX
                 Math.Round(region.Width * scaleX),
                 Math.Round(region.Height * scaleY));
             return System.Windows.Rect.Intersect(scaled, new System.Windows.Rect(0, 0, PhysicalWidth, PhysicalHeight));
+        }
+
+        /// <summary>
+        /// Maps an ABSOLUTE desktop rect in physical pixels into this process's (possibly
+        /// DPI-virtualized) desktop coordinate space, for rects that Windows never virtualizes —
+        /// notably DWM extended frame bounds (window rects used by window-region picking).
+        /// Unlike <see cref="VirtualToPhysical"/> (monitor-relative), both input and output are
+        /// desktop-absolute. No-op when the two spaces already match.
+        /// </summary>
+        public System.Windows.Rect DesktopPhysicalToVirtual(System.Windows.Rect physicalRect)
+        {
+            if (physicalRect.IsEmpty || PhysicalWidth <= 0 || PhysicalHeight <= 0)
+                return physicalRect;
+
+            if (PhysicalWidth == Width && PhysicalHeight == Height
+                && PhysicalLeft == Left && PhysicalTop == Top)
+                return physicalRect;
+
+            double scaleX = (double)Width / PhysicalWidth;
+            double scaleY = (double)Height / PhysicalHeight;
+            return new System.Windows.Rect(
+                Left + Math.Round((physicalRect.X - PhysicalLeft) * scaleX),
+                Top + Math.Round((physicalRect.Y - PhysicalTop) * scaleY),
+                Math.Round(physicalRect.Width * scaleX),
+                Math.Round(physicalRect.Height * scaleY));
         }
 
         #region Interop

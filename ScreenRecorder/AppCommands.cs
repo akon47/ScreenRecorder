@@ -249,18 +249,15 @@ namespace ScreenRecorder
                                     break;
                                 case CaptureTarget.ByUserChoiceTargetDeviceName:
                                     #region Select Region
-                                    var regionSelectorWindow = new Region.RegionSelectorWindow()
-                                    {
-                                        RegionSelectionMode = AppConfig.Instance.RegionSelectionMode
-                                    };
+                                    var regionSelectorSession = new Region.RegionSelectorSession();
                                     try
                                     {
-                                        if (!regionSelectorWindow.ShowDialog().Value)
+                                        if (!regionSelectorSession.ShowDialog(AppConfig.Instance.RegionSelectionMode))
                                         {
                                             return;
                                         }
 
-                                        var result = regionSelectorWindow.RegionSelectionResult;
+                                        var result = regionSelectorSession.RegionSelectionResult;
                                         if (result != null)
                                         {
                                             displayDeviceName = result.DeviceName;
@@ -279,7 +276,7 @@ namespace ScreenRecorder
                                     }
                                     finally
                                     {
-                                        AppConfig.Instance.RegionSelectionMode = regionSelectorWindow.RegionSelectionMode;
+                                        AppConfig.Instance.RegionSelectionMode = regionSelectorSession.RegionSelectionMode;
                                     }
                                     break;
                                     #endregion
