@@ -58,6 +58,20 @@
         x:Key="Icon_Close"
         Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
         />
+    <!-- Wrapped in a fixed 24x24 canvas: the bare glyph is a 16x4 bar, and Stretch=Uniform
+         would blow it up to fill the whole button. -->
+    <Viewbox
+        x:Shared="False"
+        x:Key="Icon_WindowMinimize"
+        >
+        <Grid Width="24" Height="24">
+            <Path
+                Style="{StaticResource IconPathStyle}"
+                Stretch="None"
+                Data="M20,14H4V10H20V14Z"
+                />
+        </Grid>
+    </Viewbox>
     <Path
         Style="{StaticResource IconPathStyle}"
         x:Shared="False"

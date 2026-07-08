@@ -237,4 +237,25 @@
   <data name="TheRecordingPathIsNotSet" xml:space="preserve">
     <value>녹화 경로가 설정되어 있지 않습니다. 녹화 경로를 설정해주세요</value>
   </data>
+  <data name="Minimize" xml:space="preserve">
+    <value>최소화</value>
+  </data>
+  <data name="EncoderRateControl" xml:space="preserve">
+    <value>레이트 컨트롤</value>
+  </data>
+  <data name="QualityModeBitrate" xml:space="preserve">
+    <value>비트레이트 (CBR)</value>
+  </data>
+  <data name="QualityModeHigh" xml:space="preserve">
+    <value>품질 고정 - 높음</value>
+  </data>
+  <data name="QualityModeMedium" xml:space="preserve">
+    <value>품질 고정 - 중간</value>
+  </data>
+  <data name="QualityModeLow" xml:space="preserve">
+    <value>품질 고정 - 낮음</value>
+  </data>
+  <data name="RecordDelay" xml:space="preserve">
+    <value>녹화 지연 (초)</value>
+  </data>
 </root>

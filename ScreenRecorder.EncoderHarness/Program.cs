@@ -166,7 +166,8 @@ namespace ScreenRecorder.EncoderHarness
                 Console.WriteLine($"=== ScreenEncoder end-to-end: {eo.Seconds}s @{eo.Fps}fps, mic={mic}, monitor {mon.DeviceName} (virtual {mon.Width}x{mon.Height}, physical {mon.PhysicalWidth}x{mon.PhysicalHeight}) ===");
                 var enc = new ScreenRecorder.Encoder.ScreenEncoder();
                 enc.Start("mp4", eo.Output, MediaEncoder.VideoCodec.H264, 8_000_000, MediaEncoder.AudioCodec.Aac, 160_000,
-                    mon.DeviceName, new System.Windows.Rect(0, 0, double.MaxValue, double.MaxValue), drawCursor: true, recordMicrophone: mic);
+                    mon.DeviceName, new System.Windows.Rect(0, 0, double.MaxValue, double.MaxValue), drawCursor: true, recordMicrophone: mic,
+                    rateControl: eo.Rc, quality: eo.Quality);
                 bool testPause = Array.Exists(args, a => a.Equals("--pause", StringComparison.OrdinalIgnoreCase));
                 bool sampleSmooth = Array.Exists(args, a => a.Equals("--smooth", StringComparison.OrdinalIgnoreCase));
                 Console.WriteLine($"Recording... status={enc.Status}");
@@ -264,7 +265,8 @@ namespace ScreenRecorder.EncoderHarness
                 FpsNumerator = opt.Fps,
                 FpsDenominator = 1,
                 Bitrate = 5_000_000,
-                RateControl = RateControl.Cbr,
+                RateControl = opt.Rc,
+                Quality = opt.Quality,
             };
 
             AudioParams audioParams = opt.AudioCodec == AudioCodec.None ? null : new AudioParams
@@ -415,6 +417,8 @@ namespace ScreenRecorder.EncoderHarness
             public AudioCodec AudioCodec = AudioCodec.Aac;
             public string Output = Path.Combine(Path.GetTempPath(), "screenrecorder_harness.mp4");
             public bool SmokeOnly;
+            public RateControl Rc = RateControl.Cbr;
+            public int Quality = 23;
         }
 
         [System.Runtime.InteropServices.DllImport("shcore.dll")]
@@ -457,6 +461,8 @@ namespace ScreenRecorder.EncoderHarness
             if (map.TryGetValue("format", out var fmt)) o.Format = fmt;
             if (map.TryGetValue("audio", out var au)) o.AudioCodec = au.Equals("none", StringComparison.OrdinalIgnoreCase) ? AudioCodec.None : au.Equals("mp3", StringComparison.OrdinalIgnoreCase) ? AudioCodec.Mp3 : AudioCodec.Aac;
             if (map.TryGetValue("out", out var outp)) o.Output = outp;
+            if (map.TryGetValue("rc", out var rc)) o.Rc = rc.Equals("cq", StringComparison.OrdinalIgnoreCase) ? RateControl.Cq : rc.Equals("vbr", StringComparison.OrdinalIgnoreCase) ? RateControl.Vbr : RateControl.Cbr;
+            if (map.TryGetValue("quality", out var q)) o.Quality = int.Parse(q);
 
             return o;
         }

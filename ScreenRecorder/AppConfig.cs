@@ -82,6 +82,8 @@ namespace ScreenRecorder
                 config.Add(nameof(SelectedRecordVideoBitrate), SelectedRecordVideoBitrate.ToString());
                 config.Add(nameof(SelectedRecordAudioBitrate), SelectedRecordAudioBitrate.ToString());
                 config.Add(nameof(SelectedRecordFrameRate), SelectedRecordFrameRate.ToString());
+                config.Add(nameof(SelectedRecordQualityMode), Enum.GetName(typeof(RecordQualityMode), SelectedRecordQualityMode));
+                config.Add(nameof(SelectedRecordDelay), SelectedRecordDelay.ToString());
 
                 config.Add(nameof(RecordDirectory), RecordDirectory);
                 config.Add(nameof(RegionSelectionMode), Enum.GetName(typeof(RegionSelectionMode), RegionSelectionMode));
@@ -116,6 +118,8 @@ namespace ScreenRecorder
                     SelectedRecordVideoBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordVideoBitrate), 5000000);
                     SelectedRecordAudioBitrate = Config.Config.GetInt32(config, nameof(SelectedRecordAudioBitrate), 160000);
                     SelectedRecordFrameRate = Config.Config.GetInt32(config, nameof(SelectedRecordFrameRate), 60);
+                    SelectedRecordQualityMode = Config.Config.GetEnum<RecordQualityMode>(config, nameof(SelectedRecordQualityMode), RecordQualityMode.Bitrate);
+                    SelectedRecordDelay = Config.Config.GetInt32(config, nameof(SelectedRecordDelay), 0);
                     RecordDirectory = Config.Config.GetString(config, nameof(RecordDirectory), Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
                     RegionSelectionMode = Config.Config.GetEnum<RegionSelectionMode>(config, nameof(RegionSelectionMode), RegionSelectionMode.UserRegion);
 
@@ -149,6 +153,8 @@ namespace ScreenRecorder
             SelectedRecordVideoBitrate = 5000000;
             SelectedRecordAudioBitrate = 160000;
             SelectedRecordFrameRate = 60;
+            SelectedRecordQualityMode = RecordQualityMode.Bitrate;
+            SelectedRecordDelay = 0;
             RecordDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
             RegionSelectionMode = RegionSelectionMode.UserRegion;
 
@@ -311,6 +317,41 @@ namespace ScreenRecorder
         {
             get => _selectedRecordFrameRate;
             set => SetProperty(ref _selectedRecordFrameRate, value);
+        }
+
+
+        private RecordQualityMode _selectedRecordQualityMode;
+
+        public RecordQualityMode SelectedRecordQualityMode
+        {
+            get => _selectedRecordQualityMode;
+            set => SetProperty(ref _selectedRecordQualityMode, value);
+        }
+
+
+        private IEnumerable<int> _recordDelays;
+
+        /// <summary>Selectable countdown lengths (seconds) before recording starts.</summary>
+        public IEnumerable<int> RecordDelays
+        {
+            get
+            {
+                if (_recordDelays == null)
+                {
+                    _recordDelays = new[] { 0, 3, 5, 10 };
+                }
+
+                return _recordDelays;
+            }
+        }
+
+
+        private int _selectedRecordDelay;
+
+        public int SelectedRecordDelay
+        {
+            get => _selectedRecordDelay;
+            set => SetProperty(ref _selectedRecordDelay, value);
         }
 
 

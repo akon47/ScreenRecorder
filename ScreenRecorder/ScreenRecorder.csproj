@@ -15,7 +15,7 @@
     <!-- Version is stamped from -p:Version at release (build_setup.bat / release.yml);
          this is the local default. AssemblyInfo.cs keeps only the attributes the SDK
          does not generate (ThemeInfo / DPI / ComVisible). -->
-    <Version>2.0.1</Version>
+    <Version>2.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

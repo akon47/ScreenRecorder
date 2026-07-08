@@ -41,7 +41,8 @@ namespace ScreenRecorder.Encoder
             }
         }
 
-        public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, Rect region, bool drawCursor, bool recordMicrophone)
+        public void Start(string format, string url, VideoCodec videoCodec, int videoBitrate, AudioCodec audioCodec, int audioBitrate, string deviceName, Rect region, bool drawCursor, bool recordMicrophone,
+            RateControl rateControl = RateControl.Cbr, int quality = 23)
         {
             if (base.IsRunning)
                 return;
@@ -61,13 +62,14 @@ namespace ScreenRecorder.Encoder
             var videoParams = new VideoParams
             {
                 Codec = videoCodec,
-                Hw = SelectHwAccel(videoCodec),
+                Hw = SelectHwAccel(videoCodec, rateControl),
                 Width = width,
                 Height = height,
                 FpsNumerator = fps,
                 FpsDenominator = 1,
                 Bitrate = videoBitrate,
-                RateControl = RateControl.Cbr,
+                RateControl = rateControl,
+                Quality = quality,
             };
 
             AudioParams audioParams = audioCodec == AudioCodec.None ? null : new AudioParams
@@ -107,14 +109,17 @@ namespace ScreenRecorder.Encoder
             }
         }
 
-        private static HwAccel SelectHwAccel(VideoCodec codec)
+        private static HwAccel SelectHwAccel(VideoCodec codec, RateControl rateControl)
         {
+            // Constant-quality on QSV (ICQ) is untested hardware-wise; prefer software CRF there.
+            bool allowQsv = rateControl != RateControl.Cq;
+
             if (codec == VideoCodec.H264)
                 return MediaWriter.IsSupportedNvencH264() ? HwAccel.Nvenc
-                    : MediaWriter.IsSupportedQsvH264() ? HwAccel.Qsv : HwAccel.Software;
+                    : allowQsv && MediaWriter.IsSupportedQsvH264() ? HwAccel.Qsv : HwAccel.Software;
 
             return MediaWriter.IsSupportedNvencHEVC() ? HwAccel.Nvenc
-                : MediaWriter.IsSupportedQsvHEVC() ? HwAccel.Qsv : HwAccel.Software;
+                : allowQsv && MediaWriter.IsSupportedQsvHEVC() ? HwAccel.Qsv : HwAccel.Software;
         }
 
         public override void Pause()

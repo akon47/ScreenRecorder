@@ -419,5 +419,68 @@ namespace ScreenRecorder.Properties {
                 return ResourceManager.GetString("TheRecordingPathIsNotSet", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Minimize.
+        /// </summary>
+        public static string Minimize {
+            get {
+                return ResourceManager.GetString("Minimize", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Rate Control.
+        /// </summary>
+        public static string EncoderRateControl {
+            get {
+                return ResourceManager.GetString("EncoderRateControl", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Bitrate (CBR).
+        /// </summary>
+        public static string QualityModeBitrate {
+            get {
+                return ResourceManager.GetString("QualityModeBitrate", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Constant Quality - High.
+        /// </summary>
+        public static string QualityModeHigh {
+            get {
+                return ResourceManager.GetString("QualityModeHigh", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Constant Quality - Medium.
+        /// </summary>
+        public static string QualityModeMedium {
+            get {
+                return ResourceManager.GetString("QualityModeMedium", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Constant Quality - Low.
+        /// </summary>
+        public static string QualityModeLow {
+            get {
+                return ResourceManager.GetString("QualityModeLow", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Start Delay (sec).
+        /// </summary>
+        public static string RecordDelay {
+            get {
+                return ResourceManager.GetString("RecordDelay", resourceCulture);
+            }
+        }
     }
 }

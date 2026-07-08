@@ -64,6 +64,35 @@ namespace ScreenRecorder
             private set => SetProperty(ref _encodeTime, value);
         }
 
+        private int _recordCountdown;
+
+        /// <summary>
+        /// Seconds remaining in the pre-record countdown (#56); 0 when no countdown is active.
+        /// While non-zero the elapsed-time display shows the countdown instead.
+        /// </summary>
+        public int RecordCountdown
+        {
+            get => _recordCountdown;
+            set
+            {
+                if (SetProperty(ref _recordCountdown, value))
+                {
+                    OnPropertyChanged(nameof(IsRecordCountdown));
+                }
+            }
+        }
+
+        /// <summary>True while the pre-record countdown runs (enables the stop button to cancel it).</summary>
+        public bool IsRecordCountdown => _recordCountdown > 0;
+
+        private RecordQualityModeItem[] _recordQualityModes;
+
+        public RecordQualityModeItem[] RecordQualityModes
+        {
+            get => _recordQualityModes;
+            private set => SetProperty(ref _recordQualityModes, value);
+        }
+
         private EncoderFormat[] _encoderFormats;
 
         public EncoderFormat[] EncoderFormats
@@ -142,6 +171,13 @@ namespace ScreenRecorder
                 new EncoderAudioCodec(MediaEncoder.AudioCodec.Aac, "AAC (Advanced Audio Coding)"),
                 new EncoderAudioCodec(MediaEncoder.AudioCodec.Mp3, "MP3 (MPEG audio layer 3)"),
             };
+            RecordQualityModes = new RecordQualityModeItem[]
+            {
+                new RecordQualityModeItem(RecordQualityMode.Bitrate, Properties.Resources.QualityModeBitrate),
+                new RecordQualityModeItem(RecordQualityMode.High, Properties.Resources.QualityModeHigh),
+                new RecordQualityModeItem(RecordQualityMode.Medium, Properties.Resources.QualityModeMedium),
+                new RecordQualityModeItem(RecordQualityMode.Low, Properties.Resources.QualityModeLow),
+            };
 
             CaptureTargets = new ICaptureTarget[]
             {
@@ -189,7 +225,10 @@ namespace ScreenRecorder
         {
             // Read the live frame count each render (~60fps) so the elapsed-time display ticks
             // smoothly, instead of sampling a value that a background poll only refreshed at 10Hz.
-            EncodeTime = Utils.VideoFramesCountToStringTime(_screenEncoder.LiveVideoFrames);
+            // During the pre-record countdown the same display shows the remaining seconds.
+            EncodeTime = _recordCountdown > 0
+                ? $"00:00:{_recordCountdown:00}"
+                : Utils.VideoFramesCountToStringTime(_screenEncoder.LiveVideoFrames);
         }
 
         public void Dispose()

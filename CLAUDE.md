@@ -127,6 +127,8 @@ Installers/                       Setup.nsi + update-setup-nsi.ps1 + build_setup
 
 Video H.264 + H.265; hardware encode NVENC + QuickSync with CPU fallback; audio AAC + MP3; fps 15/24/25/30/48/50/60/120/144 (default 60); capture **region / window / display**; cursor capture toggle; **self-window excluded** from capture; global hotkeys for start/stop; **system loopback + microphone** audio; XML config persistence; EN/KO localization.
 
+Added in 2.1.0: **constant-quality rate control** (`RateControl.Cq` → CRF/NVENC-CQ, advanced setting; QSV skipped in quality mode — untested ICQ); **pre-record countdown** (`SelectedRecordDelay` 0/3/5/10 s, shown in the time display, stop cancels); **portable mode** (a `portable` marker next to the exe → config in `UserData\` beside it; the portable zip ships the marker, the installer must NOT); **minimize button**.
+
 ## Conventions
 
 - Modern C# throughout (the shell is WPF on .NET 9; the Engine follows Aurora's style — file-scoped namespaces where applicable, `unsafe` for FFmpeg/D3D interop). Match the surrounding file.

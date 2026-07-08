@@ -209,6 +209,12 @@
             <TextBlock Text="{Binding StringFormat={}{0} fps}" />
         </DataTemplate>
 
+        <!-- Untemplated string items pick up the settings grid's implicit (white) TextBlock
+             style in the dropdown; an explicit template keeps the normal item colors. -->
+        <DataTemplate x:Key="RecordDelayDataTemplate">
+            <TextBlock Text="{Binding}" />
+        </DataTemplate>
+
     </Window.Resources>
 
     <Border
@@ -341,6 +347,10 @@
                                         <DataTrigger Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=ScreenEncoder.IsStopped, Mode=OneWay}" Value="False">
                                             <Setter Property="IsEnabled" Value="True" />
                                         </DataTrigger>
+                                        <!-- The stop button also cancels the pre-record countdown. -->
+                                        <DataTrigger Binding="{Binding Source={x:Static local:AppManager.Instance}, Path=IsRecordCountdown, Mode=OneWay}" Value="True">
+                                            <Setter Property="IsEnabled" Value="True" />
+                                        </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Viewbox.Style>
@@ -379,6 +389,10 @@
                 Grid.Column="1"
                 Margin="0 5 3 5"
                 >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
@@ -386,6 +400,18 @@
 
                 <Button
                     Grid.Column="0"
+                    Grid.Row="0"
+                    Style="{StaticResource IconButtonStyle}"
+                    Content="{StaticResource Icon_WindowMinimize}"
+                    ToolTip="{x:Static properties:Resources.Minimize}"
+                    behaviors:ToolTipBehavior.IgnoreToolTipWhenEncoderStarted="True"
+                    Command="{Binding Source={x:Static local:AppCommands.Instance}, Path=WindowMinimizeCommand}"
+                    CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                    Margin="3"
+                    />
+
+                <Button
+                    Grid.Column="1"
                     Grid.Row="0"
                     Style="{StaticResource IconButtonStyle}"
                     Content="{StaticResource Icon_Close}"
@@ -398,6 +424,7 @@
 
                 <Grid
                     Grid.Column="0"
+                    Grid.ColumnSpan="2"
                     Grid.Row="1"
                     >
                     <ToggleButton
@@ -418,6 +445,7 @@
                         >
                         <Border
                             MinWidth="400"
+                            MaxWidth="520"
                             BorderThickness="1"
                             BorderBrush="{StaticResource BlackBrush}"
                             Background="{StaticResource DarkGrayBrush}"
@@ -541,11 +569,15 @@
                                                 <RowDefinition />
                                                 <!-- Video Bitrate -->
                                                 <RowDefinition Tag="AdvancedSettings" />
+                                                <!-- Rate Control / Quality -->
+                                                <RowDefinition Tag="AdvancedSettings" />
                                                 <!-- Audio Codec -->
                                                 <RowDefinition />
                                                 <!-- Audio Bitrate -->
                                                 <RowDefinition Tag="AdvancedSettings" />
                                                 <!-- Frame Rate -->
+                                                <RowDefinition />
+                                                <!-- Start Delay -->
                                                 <RowDefinition />
                                                 <!-- Capture Display -->
                                                 <RowDefinition />
@@ -576,30 +608,42 @@
                                             <TextBlock
                                                 Grid.Column="0"
                                                 Grid.Row="3"
-                                                Text="{x:Static properties:Resources.EncoderAudioCodec}"
+                                                Text="{x:Static properties:Resources.EncoderRateControl}"
                                                 Margin="3"
                                                 />
                                             <TextBlock
                                                 Grid.Column="0"
                                                 Grid.Row="4"
-                                                Text="{x:Static properties:Resources.EncoderAudioBitrate}"
+                                                Text="{x:Static properties:Resources.EncoderAudioCodec}"
                                                 Margin="3"
                                                 />
                                             <TextBlock
                                                 Grid.Column="0"
                                                 Grid.Row="5"
-                                                Text="{x:Static properties:Resources.EncoderFrameRate}"
+                                                Text="{x:Static properties:Resources.EncoderAudioBitrate}"
                                                 Margin="3"
                                                 />
                                             <TextBlock
                                                 Grid.Column="0"
                                                 Grid.Row="6"
-                                                Text="{x:Static properties:Resources.EncoderCaptureDisplay}"
+                                                Text="{x:Static properties:Resources.EncoderFrameRate}"
                                                 Margin="3"
                                                 />
                                             <TextBlock
                                                 Grid.Column="0"
                                                 Grid.Row="7"
+                                                Text="{x:Static properties:Resources.RecordDelay}"
+                                                Margin="3"
+                                                />
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                Grid.Row="8"
+                                                Text="{x:Static properties:Resources.EncoderCaptureDisplay}"
+                                                Margin="3"
+                                                />
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                Grid.Row="9"
                                                 Text="{x:Static properties:Resources.EncoderBaseDirectory}"
                                                 Margin="3"
                                                 />
@@ -630,10 +674,35 @@
                                                 ItemTemplate="{StaticResource BitrateDataTemplate}"
                                                 ItemsSource="{Binding Source={x:Static local:AppConfig.Instance}, Path=VideoBitrates}"
                                                 SelectedItem="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordVideoBitrate, Mode=TwoWay}"
-                                                />
+                                                >
+                                                <ComboBox.Style>
+                                                    <Style TargetType="{x:Type ComboBox}">
+                                                        <Style.Triggers>
+                                                            <!-- Constant-quality mode ignores the bitrate. -->
+                                                            <MultiDataTrigger>
+                                                                <MultiDataTrigger.Conditions>
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}" Value="True" />
+                                                                    <Condition Binding="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordQualityMode, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Bitrate, Mode=OneWay}" Value="False" />
+                                                                </MultiDataTrigger.Conditions>
+                                                                <Setter Property="IsEnabled" Value="False" />
+                                                            </MultiDataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ComboBox.Style>
+                                            </ComboBox>
                                             <ComboBox
                                                 Grid.Column="1"
                                                 Grid.Row="3"
+                                                Margin="3"
+                                                ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=RecordQualityModes, Mode=OneWay}"
+                                                SelectedValuePath="Mode"
+                                                DisplayMemberPath="Name"
+                                                SelectedValue="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordQualityMode, Mode=TwoWay}"
+                                                IsEnabled="{Binding Source={x:Static local:AppConfig.Instance}, Path=AdvancedSettings, Mode=OneWay}"
+                                                />
+                                            <ComboBox
+                                                Grid.Column="1"
+                                                Grid.Row="4"
                                                 Margin="3"
                                                 ItemsSource="{Binding Source={x:Static local:AppManager.Instance}, Path=EncoderAudioCodecs, Mode=OneWay}"
                                                 SelectedValuePath="AudioCodec"
@@ -643,7 +712,7 @@
                                                 />
                                             <ComboBox
                                                 Grid.Column="1"
-                                                Grid.Row="4"
+                                                Grid.Row="5"
                                                 Margin="3"
                                                 ItemTemplate="{StaticResource BitrateDataTemplate}"
                                                 ItemsSource="{Binding Source={x:Static local:AppConfig.Instance}, Path=AudioBitrates}"
@@ -651,15 +720,23 @@
                                                 />
                                             <ComboBox
                                                 Grid.Column="1"
-                                                Grid.Row="5"
+                                                Grid.Row="6"
                                                 Margin="3"
                                                 ItemTemplate="{StaticResource FramerateDataTemplate}"
                                                 ItemsSource="{Binding Source={x:Static local:AppConfig.Instance}, Path=RecordFramerates}"
                                                 SelectedItem="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordFrameRate, Mode=TwoWay}"
                                                 />
+                                            <ComboBox
+                                                Grid.Column="1"
+                                                Grid.Row="7"
+                                                Margin="3"
+                                                ItemTemplate="{StaticResource RecordDelayDataTemplate}"
+                                                ItemsSource="{Binding Source={x:Static local:AppConfig.Instance}, Path=RecordDelays}"
+                                                SelectedItem="{Binding Source={x:Static local:AppConfig.Instance}, Path=SelectedRecordDelay, Mode=TwoWay}"
+                                                />
                                             <Grid
                                                 Grid.Column="1"
-                                                Grid.Row="6"
+                                                Grid.Row="8"
                                                 Margin="3"
                                                 >
                                                 <ComboBox
@@ -690,7 +767,7 @@
                                             </Grid>
                                             <Grid
                                                 Grid.Column="1"
-                                                Grid.Row="7"
+                                                Grid.Row="9"
                                                 >
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
@@ -703,6 +780,7 @@
                                                     VerticalAlignment="Center"
                                                     IsReadOnly="True"
                                                     Text="{Binding Source={x:Static local:AppConfig.Instance}, Path=RecordDirectory, Mode=OneWay}"
+                                                    ToolTip="{Binding Source={x:Static local:AppConfig.Instance}, Path=RecordDirectory, Mode=OneWay}"
                                                     >
                                                     <TextBox.ContextMenu>
                                                         <ContextMenu>
@@ -724,7 +802,7 @@
                                             </Grid>
                                             <WrapPanel
                                                 Grid.Column="0"
-                                                Grid.Row="8"
+                                                Grid.Row="10"
                                                 Grid.ColumnSpan="2"
                                                 Orientation="Horizontal"
                                                 HorizontalAlignment="Right"
@@ -755,7 +833,7 @@
                                             </WrapPanel>
                                             <Border
                                                 Grid.Column="0"
-                                                Grid.Row="9"
+                                                Grid.Row="11"
                                                 Grid.ColumnSpan="2"
                                                 Margin="3 3 3 6"
                                                 HorizontalAlignment="Center"
