@@ -35,6 +35,12 @@ namespace ScreenRecorder.Region
         {
             InitializeComponent();
 
+            // Screen.Bounds/GetWindowRect/WGC all report physical pixels; WPF window geometry is
+            // in DIPs. Without this conversion, at DPI scales above 100% the window (and therefore
+            // the visible/selectable area) ends up sized wrong relative to the real desktop.
+            double dpiScale = Utils.GetSystemDpiScale();
+            regionSelector.DpiScale = dpiScale;
+
             System.Drawing.Rectangle bounds = new System.Drawing.Rectangle();
             foreach (var screenBound in System.Windows.Forms.Screen.AllScreens.Select(s => s.Bounds))
             {
@@ -44,14 +50,14 @@ namespace ScreenRecorder.Region
 
             if (bounds.Width > 0 && bounds.Height > 0)
             {
-                Left = bounds.Left;
-                Top = bounds.Top;
-                Width = bounds.Width;
-                Height = bounds.Height;
+                Left = bounds.Left / dpiScale;
+                Top = bounds.Top / dpiScale;
+                Width = bounds.Width / dpiScale;
+                Height = bounds.Height / dpiScale;
 
                 var primaryScreenBounds = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
-                Canvas.SetLeft(regionMenuRoot, (primaryScreenBounds.Width / 2.0d) - (regionMenuRoot.Width / 2.0));
-                Canvas.SetTop(regionMenuRoot, primaryScreenBounds.Top);
+                Canvas.SetLeft(regionMenuRoot, (primaryScreenBounds.Width / dpiScale / 2.0d) - (regionMenuRoot.Width / 2.0));
+                Canvas.SetTop(regionMenuRoot, primaryScreenBounds.Top / dpiScale);
 
                 using (var bitmap = new System.Drawing.Bitmap(bounds.Width, bounds.Height))
                 {

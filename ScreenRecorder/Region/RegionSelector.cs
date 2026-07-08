@@ -32,6 +32,15 @@ namespace ScreenRecorder.Region
 
         public event RegionSelectedHandler RegionSelected;
 
+        /// <summary>
+        /// Physical-pixel-per-DIP scale (see <see cref="Utils.GetSystemDpiScale"/>). Mouse input
+        /// arrives in DIPs (WPF's native unit); screen/window bounds (Screen.Bounds, WindowRegion,
+        /// and ultimately the capture engine's MonitorInfo/WGC item size) are physical pixels. All
+        /// selection math below is done in physical pixels and converted back to DIPs only for
+        /// on-screen drawing, so the emitted region lines up with what actually gets captured.
+        /// </summary>
+        public double DpiScale { get; set; } = 1.0;
+
         #region Private Fields
         private Point _downPoint, _movePoint;
         private Rect _selectedTargetBounds;
@@ -57,7 +66,7 @@ namespace ScreenRecorder.Region
             if (!_selectionStarted)
                 return;
 
-            _downPoint = _movePoint = e.GetPosition(this);
+            _downPoint = _movePoint = ToPhysical(e.GetPosition(this));
 
             CaptureMouse();
 
@@ -88,7 +97,7 @@ namespace ScreenRecorder.Region
             if (!_selectionStarted)
                 return;
 
-            _movePoint = e.GetPosition(this);
+            _movePoint = ToPhysical(e.GetPosition(this));
 
             switch (RegionSelectionMode)
             {
@@ -176,18 +185,19 @@ namespace ScreenRecorder.Region
             switch (RegionSelectionMode)
             {
                 case RegionSelectionMode.UserRegion:
-                    var userRegion = GetUserRegion();
+                    var userRegion = ToDip(GetUserRegion());
                     pathGeometry.AddGeometry(new RectangleGeometry(userRegion));
                     dc.DrawRectangle(null, _selectorPen, userRegion);
                     break;
                 case RegionSelectionMode.WindowRegion:
-                    var windowRegion = Rect.Intersect(GetDeviceRegion(_selectedTargetDevice), _selectedTargetBounds);
+                    var windowRegion = ToDip(Rect.Intersect(GetDeviceRegion(_selectedTargetDevice), _selectedTargetBounds));
                     pathGeometry.AddGeometry(new RectangleGeometry(windowRegion));
                     dc.DrawRectangle(null, _selectorPen, windowRegion);
                     break;
                 case RegionSelectionMode.DisplayRegion:
-                    pathGeometry.AddGeometry(new RectangleGeometry(_selectedTargetBounds));
-                    dc.DrawRectangle(null, _selectorPen, _selectedTargetBounds);
+                    var displayRegion = ToDip(_selectedTargetBounds);
+                    pathGeometry.AddGeometry(new RectangleGeometry(displayRegion));
+                    dc.DrawRectangle(null, _selectorPen, displayRegion);
                     break;
             }
             dc.DrawGeometry(_dimBrush, null, pathGeometry);
@@ -196,6 +206,16 @@ namespace ScreenRecorder.Region
         #endregion
 
         #region Private Methods
+
+        private Point ToPhysical(Point dip) => new Point(dip.X * DpiScale, dip.Y * DpiScale);
+
+        private Rect ToDip(Rect physical)
+        {
+            if (physical.IsEmpty)
+                return Rect.Empty;
+
+            return new Rect(physical.X / DpiScale, physical.Y / DpiScale, physical.Width / DpiScale, physical.Height / DpiScale);
+        }
 
         private Rect GetScreenBounds(string deviceName)
         {

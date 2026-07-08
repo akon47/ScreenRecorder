@@ -15,6 +15,19 @@ namespace ScreenRecorder
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool DeleteObject([In] IntPtr hObject);
 
+        [DllImport("user32.dll")]
+        private static extern uint GetDpiForSystem();
+
+        /// <summary>
+        /// System DPI scale (1.0 = 96 DPI / 100%). Used to convert between the physical pixel
+        /// coordinates reported by Win32/WinForms (Screen.Bounds, GetWindowRect, WGC item size)
+        /// and the device-independent units WPF windows/elements use for layout.
+        /// </summary>
+        public static double GetSystemDpiScale()
+        {
+            return GetDpiForSystem() / 96.0;
+        }
+
         public static ImageSource ImageSourceFromBitmap(System.Drawing.Bitmap bmp)
         {
             var handle = bmp.GetHbitmap();
