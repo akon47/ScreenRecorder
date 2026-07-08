@@ -1,51 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
-using System.Xml;
 using System.Windows;
-using System.Globalization;
+using System.Xml;
 
 namespace ScreenRecorder.Config
 {
-    internal static class ConfigExtensions
-    {
-        public static Dictionary<string, string> SaveCollection<T>(this Collection<T> collection, string name)
-            where T : IConfig
-        {
-            var config = new Dictionary<string, string>();
-
-            for (var i = 0; i < collection.Count; i++)
-            {
-                var key = string.Format("{0}_{1}", name, i);
-                config.Add(key, Config.SaveToString(collection[i]));
-            }
-
-            return config;
-        }
-
-        public static void LoadCollection<T>(this Collection<T> collection, Dictionary<string, string> config,
-            string name) where T : IConfig, new()
-        {
-            for (var i = 0;; i++)
-            {
-                var key = string.Format("{0}_{1}", name, i);
-                if (config.ContainsKey(key))
-                {
-                    var data = new T();
-                    data.LoadConfig(Config.LoadFromString(config[key]));
-                    collection.Add(data);
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-    }
-
     public sealed class Config
     {
         public static object CreateObjectWithAssemblyQualifiedName(string assemblyQualifiedName)

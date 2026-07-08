@@ -21,8 +21,8 @@ namespace ScreenRecorder.Extensions
             /// https://github.com/dotnet/wpf/blob/main/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/Primitives/Popup.cs
             try
             {
-                var _secHelper = popup.GetType().GetField("_secHelper", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(popup);
-                if (_secHelper?.GetType().GetProperty("Handle", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(_secHelper) is IntPtr popupHandle)
+                var secHelper = popup.GetType().GetField("_secHelper", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(popup);
+                if (secHelper?.GetType().GetProperty("Handle", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(secHelper) is IntPtr popupHandle)
                 {
                     return popupHandle;
                 }

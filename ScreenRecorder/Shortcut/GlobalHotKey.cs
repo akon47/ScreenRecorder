@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
 using ScreenRecorder.Command;
@@ -12,7 +8,7 @@ namespace ScreenRecorder.Shortcut
 {
     public sealed class GlobalHotKey : IDisposable
     {
-        static public bool PassthroughGlobalHotKey { get; set; } = false;
+        public static bool PassthroughGlobalHotKey { get; set; } = false;
 
         internal class HotKeyControl : System.Windows.Forms.Control
         {
@@ -27,9 +23,10 @@ namespace ScreenRecorder.Shortcut
                 public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
             }
 
-            private DelegateCommand _delegateCommand;
-            private int _id;
+            private readonly DelegateCommand _delegateCommand;
+            private readonly int _id;
             private IntPtr _hWnd;
+
             public HotKeyControl(DelegateCommand delegateCommand, int id)
             {
                 _delegateCommand = delegateCommand;

@@ -5,8 +5,7 @@
 # Screen Recorder
 
 <p>
-  
-  <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fakon47%2FScreenRecorder&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false" />
+  <img src="https://counter.kimhwan.kr/?key=github-akon47-screen-recorder" />
   <img alt="GitHub" src="https://img.shields.io/github/license/akon47/ScreenRecorder">
   <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/akon47/ScreenRecorder">
   <img alt="GitHub starts" src="https://img.shields.io/github/stars/akon47/ScreenRecorder">
@@ -42,13 +41,13 @@ It is a simple recording program with the ability to record the screen.
     - 15, 24, 25, 30, 48, 50, 60, 120, 144 fps
 
 ## 💡 System requirements
-- Platforms Supported: Windows 10 64bit Version 2004 or newer (*I haven't tested it on other platforms*)
-- Graphics: Compatible with DirectX 11 or later
+- Platforms Supported: Windows 10 64bit Version 1903 or newer (Version 2004+ recommended for self-window exclusion)
+- Graphics: Compatible with DirectX 11 or later (Windows Graphics Capture)
   - If you want to use **NVENC H.264**, you need **GTX 600** series or higher
   - If you want to use **NVENC HEVC**, you need **GTX 950** series or higher
-  - The minimum required Nvidia driver for NVENC is **471.41** or newer
-- Space required: 110MB
-- Microsoft .Net Framework 4.8
+  - The minimum required Nvidia driver for NVENC is **522.25** or newer
+  - Hardware encoding falls back to software (libx264/libx265) when unavailable
+- The installer is self-contained — **no separate .NET runtime is required**
 
 ## 📚 References
 - [Softpedia review of v1.0.4](https://www.softpedia.com/get/Multimedia/Video/Video-Recording/ScreenRecorder-K.shtml)
@@ -56,19 +55,27 @@ It is a simple recording program with the ability to record the screen.
 
 ## 👨‍💻 Build
 
-- Visual Studio 2019 or newer
+- .NET 9 SDK (`win-x64`)
 - Windows 10 64bit or newer
-- Microsoft .Net Framework 4.8
 
-The MediaEncoder project uses a shared ffmpeg library that [BtbN](https://github.com/BtbN/FFmpeg-Builds) builds and deploys.
+FFmpeg shared libraries are not committed. Before running/building, place the **5** FFmpeg 8.x
+shared DLLs (`avcodec-62`, `avformat-62`, `avutil-60`, `swresample-6`, `swscale-9`) into
+`Externals/ffmpeg/win-x64/` (see `Externals/ffmpeg/README.md`; e.g. the
+[gyan.dev](https://github.com/GyanD/codexffmpeg/releases) `ffmpeg-8.1-full_build-shared` build).
 
-1. Create the **ffmpeg_shared_lib** folder inside the project folder.
-2. Paste the shared ffmpeg library "**bin, include, lib**" folder into the **fmpeg_shared_lib** folder and build it.
+```pwsh
+# Build & run
+dotnet run --project ScreenRecorder/ScreenRecorder.csproj
+
+# Build the installer (publish + NSIS) — requires NSIS (makensis)
+Installers\build_setup.bat 2.0.0
+```
 
 ## 📦 Third party libraries
-- FFmpeg: https://www.ffmpeg.org/
-- SharpDX: http://sharpdx.org/
-- NAudio: https://github.com/naudio/NAudio
+- FFmpeg: https://www.ffmpeg.org/ (via [FFmpeg.AutoGen](https://github.com/Ruslan-B/FFmpeg.AutoGen))
+- Vortice.Windows (Direct3D 11 / DXGI): https://github.com/amerkoleci/Vortice.Windows
+- NAudio (WASAPI): https://github.com/naudio/NAudio
+- CommunityToolkit.Mvvm: https://github.com/CommunityToolkit/dotnet
 
 ## 💁 Feature Request
 - If you have any features you want, please request them on the [issues](https://github.com/akon47/ScreenRecorder/issues) with the **Feature Request** label.

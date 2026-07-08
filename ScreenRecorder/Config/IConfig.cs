@@ -8,7 +8,7 @@ namespace ScreenRecorder.Config
         void LoadConfig(Dictionary<string, string> config);
     }
 
-    public static class IConfigExtensions
+    public static class ConfigExtensions
     {
         public static T GetClone<T>(this T config) where T : IConfig, new()
         {

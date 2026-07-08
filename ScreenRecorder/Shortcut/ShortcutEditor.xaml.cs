@@ -53,12 +53,12 @@ namespace ScreenRecorder.Shortcut
         public delegate void OnShortcutChangingHandler(ShortcutEditor sender, CancelEventArgs e, KeyGesture keyGesture);
 		public event OnShortcutChangingHandler OnShortcutChanging;
 
-		private static HashSet<Key> ignoredKey = new HashSet<Key>()
+		private static HashSet<Key> _ignoredKey = new HashSet<Key>()
 		{
 			Key.LeftAlt, Key.RightAlt, Key.LeftCtrl, Key.RightCtrl, Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin
 		};
 
-		private static HashSet<Key> ignoredAloneKey = new HashSet<Key>()
+		private static HashSet<Key> _ignoredAloneKey = new HashSet<Key>()
 		{
 			Key.Escape
 		};
@@ -66,12 +66,12 @@ namespace ScreenRecorder.Shortcut
 		{
 			if (ShortcutEditable)
 			{
-				if (!ignoredKey.Contains(e.Key) &&
-					(e.Key != Key.System || (e.Key == Key.System && !ignoredKey.Contains(e.SystemKey))))
+				if (!_ignoredKey.Contains(e.Key) &&
+					(e.Key != Key.System || (e.Key == Key.System && !_ignoredKey.Contains(e.SystemKey))))
 				{
-					Key key = (e.Key == Key.System && !ignoredKey.Contains(e.SystemKey)) ? e.SystemKey : e.Key;
-					if (!ignoredAloneKey.Contains(key) ||
-						(ignoredAloneKey.Contains(key) && Keyboard.Modifiers != ModifierKeys.None))
+					Key key = (e.Key == Key.System && !_ignoredKey.Contains(e.SystemKey)) ? e.SystemKey : e.Key;
+					if (!_ignoredAloneKey.Contains(key) ||
+						(_ignoredAloneKey.Contains(key) && Keyboard.Modifiers != ModifierKeys.None))
 					{
 						try
 						{

@@ -22,15 +22,7 @@ namespace ScreenRecorder
                 Mutex = new Mutex(true, AppConstants.AppName, out bool isNew);
                 if (isNew)
                 {
-                    VideoClockEvent.Start();
                     AppManager.Instance.Initialize();
-                    AppConfig.Instance.WhenChanged(() =>
-                    {
-                        VideoClockEvent.Framerate = AppConfig.Instance.AdvancedSettings ?
-                            AppConfig.Instance.SelectedRecordFrameRate : 60;
-                    },
-                    nameof(AppConfig.SelectedRecordFrameRate),
-                    nameof(AppConfig.AdvancedSettings));
 
                     base.OnStartup(e);
                 }
@@ -52,7 +44,6 @@ namespace ScreenRecorder
             AppCommands.Instance.Dispose();
             AppConfig.Instance.Dispose();
             AppManager.Instance.Dispose();
-            VideoClockEvent.Stop();
 
             base.OnExit(e);
         }

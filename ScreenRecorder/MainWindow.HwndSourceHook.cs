@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Interop;
 
 namespace ScreenRecorder
@@ -9,7 +8,7 @@ namespace ScreenRecorder
     public partial class MainWindow
     {
         [StructLayout(LayoutKind.Sequential)]
-        public struct WINDOWPOS
+        public struct Windowpos
         {
             public IntPtr hwnd;
             public IntPtr hwndInsertAfter;
@@ -20,15 +19,15 @@ namespace ScreenRecorder
             public int flags;
         }
 
-        private IntPtr windowHandle = IntPtr.Zero;
+        private IntPtr _windowHandle = IntPtr.Zero;
 
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
 
-            HwndSource source = (HwndSource)HwndSource.FromVisual((Window)this);
+            var source = (HwndSource)HwndSource.FromVisual((Window)this);
             source.AddHook(new HwndSourceHook(WndProc));
-            windowHandle = source.Handle;
+            _windowHandle = source.Handle;
 
             // 자기 자신은 캡쳐가 안 되도록 하기 위해 사용
             // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowdisplayaffinity
@@ -38,13 +37,13 @@ namespace ScreenRecorder
 
         private void UpdateWindowDisplayedOnlyMonitor(bool excludeFromCapture)
         {
-            if (windowHandle == IntPtr.Zero)
+            if (_windowHandle == IntPtr.Zero)
                 return;
 
-            var isWindowDisplayedOnlyMonitor = Utils.IsWindowDisplayedOnlyMonitor(windowHandle);
+            var isWindowDisplayedOnlyMonitor = Utils.IsWindowDisplayedOnlyMonitor(_windowHandle);
             if (excludeFromCapture != isWindowDisplayedOnlyMonitor)
             {
-                Utils.SetWindowDisplayedOnlyMonitor(windowHandle, excludeFromCapture);
+                Utils.SetWindowDisplayedOnlyMonitor(_windowHandle, excludeFromCapture);
             }
         }
 
@@ -56,11 +55,11 @@ namespace ScreenRecorder
             {
                 case 0x0046:
                     #region Magnetic Move
-                    if (windowHandle != IntPtr.Zero)
+                    if (_windowHandle != IntPtr.Zero)
                     {
-                        WINDOWPOS windowPos = (WINDOWPOS)message.GetLParam(typeof(WINDOWPOS));
+                        Windowpos windowPos = (Windowpos)message.GetLParam(typeof(Windowpos));
 
-                        System.Drawing.Rectangle workingArea = (System.Windows.Forms.Screen.FromHandle(windowHandle)).WorkingArea;
+                        System.Drawing.Rectangle workingArea = (System.Windows.Forms.Screen.FromHandle(_windowHandle)).WorkingArea;
 
                         int dockMargin = 15;
                         //left
@@ -94,13 +93,5 @@ namespace ScreenRecorder
 
             return IntPtr.Zero;
         }
-
-        #region Window Moving
-        private void Border_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ChangedButton == MouseButton.Left)
-                DragMove();
-        }
-        #endregion
     }
 }

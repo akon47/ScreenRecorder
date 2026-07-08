@@ -1,6 +1,6 @@
 ﻿using System;
 
-static class AppConstants
+internal static class AppConstants
 {
     public const string AppName = "ScreenRecorder";
 

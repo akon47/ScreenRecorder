@@ -6,7 +6,7 @@ using System.Windows.Data;
 namespace CustomConverter
 {
     /// <summary>
-    ///     https://stackoverflow.com/questions/397556/how-to-bind-radiobuttons-to-an-enum
+    /// https://stackoverflow.com/questions/397556/how-to-bind-radiobuttons-to-an-enum
     /// </summary>
     public class EnumBooleanConverter : IValueConverter
     {

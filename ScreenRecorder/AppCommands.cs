@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -12,47 +14,48 @@ namespace ScreenRecorder
     public sealed class AppCommands : IConfig, IConfigFile, IDisposable
     {
         #region Constructor
-        private static volatile AppCommands instance;
-        private static object syncRoot = new object();
+
+        private static volatile AppCommands _instance;
+        private static readonly object SyncRoot = new object();
+
         public static AppCommands Instance
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    lock (syncRoot)
+                    lock (SyncRoot)
                     {
-                        if (instance == null)
+                        if (_instance == null)
                         {
-                            instance = new AppCommands();
+                            _instance = new AppCommands();
                         }
                     }
                 }
 
-                return instance;
+                return _instance;
             }
         }
 
-        private readonly string ConfigFilePath = System.IO.Path.Combine(AppConstants.AppDataFolderPath, "commands");
-        private ConfigFileSaveWorker configFileSaveWorker;
-        private volatile bool isDisposed = false;
+        private readonly string _configFilePath = Path.Combine(AppConstants.AppDataFolderPath, "commands");
+        private ConfigFileSaveWorker _configFileSaveWorker;
+        private volatile bool _isDisposed;
 
         private AppCommands()
         {
-            Load(ConfigFilePath);
+            Load(_configFilePath);
 
             foreach (var propertyInfo in this.GetType().GetProperties())
             {
                 if (propertyInfo.PropertyType == typeof(DelegateCommand))
                 {
-                    var command = propertyInfo.GetValue(this, null) as DelegateCommand;
-                    if (command != null)
+                    if (propertyInfo.GetValue(this, null) is DelegateCommand command)
                     {
-                        command.WhenChanged(() =>
+                        command.PropertyChanged += (s, e) =>
                         {
-                            configFileSaveWorker?.SetModifiedConfigData();
-                        },
-                        nameof(DelegateCommand.KeyGesture));
+                            if (e.PropertyName == nameof(DelegateCommand.KeyGesture))
+                                _configFileSaveWorker?.SetModifiedConfigData();
+                        };
                     }
                 }
             }
@@ -60,7 +63,7 @@ namespace ScreenRecorder
             // then use globalhotkey
             //EventManager.RegisterClassHandler(typeof(Window), System.Windows.Input.Keyboard.PreviewKeyDownEvent, new KeyEventHandler(PreviewKeyDown), true);
 
-            configFileSaveWorker = new ConfigFileSaveWorker(this, ConfigFilePath);
+            _configFileSaveWorker = new ConfigFileSaveWorker(this, _configFilePath);
         }
 
         private void PreviewKeyDown(object sender, KeyEventArgs e)
@@ -72,7 +75,7 @@ namespace ScreenRecorder
                 if (propertyInfo.PropertyType == typeof(DelegateCommand))
                 {
                     var command = propertyInfo.GetValue(this, null) as DelegateCommand;
-                    if (command != null && command.KeyGesture != null)
+                    if (command?.KeyGesture != null)
                     {
                         if (Keyboard.Modifiers.HasFlag(command.Modifiers) && key == command.Key)
                         {
@@ -82,6 +85,7 @@ namespace ScreenRecorder
                 }
             }
         }
+
         #endregion
 
         #region IConfig
@@ -152,6 +156,7 @@ namespace ScreenRecorder
         #endregion
 
         #region IConfigFile
+
         public void Save(string filePath)
         {
             Config.Config.SaveToFile(filePath, this.SaveConfig());
@@ -161,140 +166,137 @@ namespace ScreenRecorder
         {
             this.LoadConfig(Config.Config.LoadFromFile(filePath, true));
         }
+
         #endregion
 
         #region IDisposable
 
         public void Dispose()
         {
-            if (isDisposed)
+            if (_isDisposed)
                 return;
 
-            configFileSaveWorker?.Dispose();
-            configFileSaveWorker = null;
+            _configFileSaveWorker?.Dispose();
+            _configFileSaveWorker = null;
 
-            isDisposed = true;
+            _isDisposed = true;
         }
+
         #endregion
 
         #region Private Command Fields
-        private DelegateCommand startScreenRecordCommand;
-        private DelegateCommand pauseScreenRecordCommand;
-        private DelegateCommand stopScreenRecordCommand;
-        private DelegateCommand openFolderInWindowExplorerCommand;
-        private DelegateCommand openRecordDirecotryCommand;
-        private DelegateCommand selectRecordDirectory;
 
-        private DelegateCommand openShortcutSettingsCommand;
+        private DelegateCommand _startScreenRecordCommand;
+        private DelegateCommand _pauseScreenRecordCommand;
+        private DelegateCommand _stopScreenRecordCommand;
+        private DelegateCommand _openFolderInWindowExplorerCommand;
+        private DelegateCommand _openRecordDirecotryCommand;
+        private DelegateCommand _selectRecordDirectory;
+        private DelegateCommand _openShortcutSettingsCommand;
+        private DelegateCommand _windowCloseCommand;
 
-        private DelegateCommand windowCloseCommand;
         #endregion
 
         #region Record Commands
-        public DelegateCommand StartScreenRecordCommand => startScreenRecordCommand ??
-            (startScreenRecordCommand = new DelegateCommand(o =>
+
+        public DelegateCommand StartScreenRecordCommand => _startScreenRecordCommand ??
+            (_startScreenRecordCommand = new DelegateCommand(o =>
             {
                 if (AppManager.Instance.ScreenEncoder.Status == Encoder.EncoderStatus.Stop)
                 {
-                    EncoderFormat encodeFormat = AppManager.Instance.EncoderFormats.First((x => x.Format.Equals(AppConfig.Instance.SelectedRecordFormat, StringComparison.OrdinalIgnoreCase)));
-                    if (encodeFormat != null)
+                    var encodeFormat = AppManager.Instance.EncoderFormats.FirstOrDefault((x => x.Format.Equals(AppConfig.Instance.SelectedRecordFormat, StringComparison.OrdinalIgnoreCase)));
+                    if (encodeFormat == null)
+                        return;
+
+                    if (!Directory.Exists(AppConfig.Instance.RecordDirectory))
                     {
-                        if (!System.IO.Directory.Exists(AppConfig.Instance.RecordDirectory))
-                        {
-                            if (string.IsNullOrWhiteSpace(AppConfig.Instance.RecordDirectory))
-                                MessageBox.Show(ScreenRecorder.Properties.Resources.TheRecordingPathIsNotSet,
-                                    ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer,
-                                    MessageBoxButton.OK, MessageBoxImage.Error);
-                            else
-                                MessageBox.Show(ScreenRecorder.Properties.Resources.RecordingPathDoesNotExist,
-                                    ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer,
-                                    MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
+                        if (string.IsNullOrWhiteSpace(AppConfig.Instance.RecordDirectory))
+                            MessageBox.Show(ScreenRecorder.Properties.Resources.TheRecordingPathIsNotSet,
+                                ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
                         else
+                            MessageBox.Show(ScreenRecorder.Properties.Resources.RecordingPathDoesNotExist,
+                                ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    else
+                    {
+                        string ext = ".";
+                        string[] exts = encodeFormat.Extensions?.Split(',');
+                        if (exts != null && exts.Length > 0)
+                            ext += exts[0];
+
+                        DateTime now = DateTime.Now;
+
+                        string filePath = $"{AppConfig.Instance.RecordDirectory}\\{AppConstants.AppName}-{DateTime.Now.ToString("yyyyMMdd-HHmmss.fff")}{ext}";
+
+                        if (!System.IO.File.Exists(filePath))
                         {
-                            string ext = ".";
-                            string[] exts = encodeFormat.Extensions?.Split(',');
-                            if (exts != null && exts.Length > 0)
-                                ext += exts[0];
+                            /// Only when the Advanced Settings menu is enabled, the settings in the Advanced Settings apply.
+                            var videoCodec = AppConfig.Instance.AdvancedSettings ?
+                                AppConfig.Instance.SelectedRecordVideoCodec : MediaEncoder.VideoCodec.H264;
+                            var audioCodec = AppConfig.Instance.AdvancedSettings ?
+                                AppConfig.Instance.SelectedRecordAudioCodec : MediaEncoder.AudioCodec.Aac;
+                            var displayDeviceName = o is string target ? target : AppConfig.Instance.ScreenCaptureMonitor;
+                            var region = new Rect(0, 0, double.MaxValue, double.MaxValue);
 
-                            DateTime now = DateTime.Now;
-
-                            string filePath = string.Format("{0}\\{1}-{2}{3}",
-                                AppConfig.Instance.RecordDirectory,
-                                AppConstants.AppName,
-                                DateTime.Now.ToString("yyyyMMdd-HHmmss.fff"), ext);
-
-                            if (!System.IO.File.Exists(filePath))
+                            switch (displayDeviceName)
                             {
-                                /// Only when the Advanced Settings menu is enabled, the settings in the Advanced Settings apply.
-                                var videoCodec = AppConfig.Instance.AdvancedSettings ?
-                                    AppConfig.Instance.SelectedRecordVideoCodec : MediaEncoder.VideoCodec.H264;
-                                var audioCodec = AppConfig.Instance.AdvancedSettings ?
-                                    AppConfig.Instance.SelectedRecordAudioCodec : MediaEncoder.AudioCodec.Aac;
-                                var displayDeviceName = o is string target ? target : AppConfig.Instance.ScreenCaptureMonitor;
-                                var region = new Rect(0, 0, double.MaxValue, double.MaxValue);
+                                case CaptureTarget.PrimaryCaptureTargetDeviceName:
+                                    #region Select PrimayDisplay
+                                    displayDeviceName = System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
+                                    #endregion
+                                    break;
+                                case CaptureTarget.ByUserChoiceTargetDeviceName:
+                                    #region Select Region
+                                    var regionSelectorSession = new Region.RegionSelectorSession();
+                                    try
+                                    {
+                                        if (!regionSelectorSession.ShowDialog(AppConfig.Instance.RegionSelectionMode))
+                                        {
+                                            return;
+                                        }
 
-                                switch(displayDeviceName)
-                                {
-                                    case CaptureTarget.PrimaryCaptureTargetDeviceName:
-                                        #region Select PrimayDisplay
-                                        displayDeviceName = System.Windows.Forms.Screen.PrimaryScreen.DeviceName;
-                                        #endregion
-                                        break;
-                                    case CaptureTarget.ByUserChoiceTargetDeviceName:
-                                        #region Select Region
-                                        var regionSelectorWindow = new Region.RegionSelectorWindow()
+                                        var result = regionSelectorSession.RegionSelectionResult;
+                                        if (result != null)
                                         {
-                                            RegionSelectionMode = AppConfig.Instance.RegionSelectionMode
-                                        };
-                                        try
-                                        {
-                                            if (!regionSelectorWindow.ShowDialog().Value)
+                                            displayDeviceName = result.DeviceName;
+                                            region = result.Region;
+
+                                            region.Width = ((int)region.Width) & (~0x01);
+                                            region.Height = ((int)region.Height) & (~0x01);
+
+                                            if (region.Width < 100 || region.Height < 100)
                                             {
+                                                MessageBox.Show(ScreenRecorder.Properties.Resources.RegionSizeError,
+                                                    AppConstants.AppName, MessageBoxButton.OK, MessageBoxImage.Error);
                                                 return;
                                             }
-
-                                            var result = regionSelectorWindow.RegionSelectionResult;
-                                            if (result != null)
-                                            {
-                                                displayDeviceName = result.DeviceName;
-                                                region = result.Region;
-
-                                                region.Width = ((int)region.Width) & (~0x01);
-                                                region.Height = ((int)region.Height) & (~0x01);
-
-                                                if(region.Width < 100 || region.Height < 100)
-                                                {
-                                                    MessageBox.Show(ScreenRecorder.Properties.Resources.RegionSizeError,
-                                                        AppConstants.AppName, MessageBoxButton.OK, MessageBoxImage.Error);
-                                                    return;
-                                                }
-                                            }
                                         }
-                                        finally
-                                        {
-                                            AppConfig.Instance.RegionSelectionMode = regionSelectorWindow.RegionSelectionMode;
-                                        }
-                                        break;
-                                        #endregion
-                                }
+                                    }
+                                    finally
+                                    {
+                                        AppConfig.Instance.RegionSelectionMode = regionSelectorSession.RegionSelectionMode;
+                                    }
+                                    break;
+                                    #endregion
+                            }
 
-                                // Start Record
-                                try
-                                {
-                                    AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
-                                            videoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
-                                            audioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
-                                            displayDeviceName, region,
-                                            AppConfig.Instance.ScreenCaptureCursorVisible,
-                                            AppConfig.Instance.RecordMicrophone);
-                                }
-                                catch
-                                {
-                                    MessageBox.Show(ScreenRecorder.Properties.Resources.FailedToStartRecording,
-                                        AppConstants.AppName,
-                                        MessageBoxButton.OK, MessageBoxImage.Error);
-                                }
+                            // Start Record
+                            try
+                            {
+                                AppManager.Instance.ScreenEncoder.Start(encodeFormat.Format, filePath,
+                                    videoCodec, AppConfig.Instance.SelectedRecordVideoBitrate,
+                                    audioCodec, AppConfig.Instance.SelectedRecordAudioBitrate,
+                                    displayDeviceName, region,
+                                    AppConfig.Instance.ScreenCaptureCursorVisible,
+                                    AppConfig.Instance.RecordMicrophone);
+                            }
+                            catch
+                            {
+                                MessageBox.Show(Properties.Resources.FailedToStartRecording,
+                                    AppConstants.AppName,
+                                    MessageBoxButton.OK, MessageBoxImage.Error);
                             }
                         }
                     }
@@ -305,29 +307,29 @@ namespace ScreenRecorder
                 }
             }));
 
-        public DelegateCommand PauseScreenRecordCommand => pauseScreenRecordCommand ??
-            (pauseScreenRecordCommand = new DelegateCommand(o =>
+        public DelegateCommand PauseScreenRecordCommand => _pauseScreenRecordCommand ??
+            (_pauseScreenRecordCommand = new DelegateCommand(o =>
             {
-                if (AppManager.Instance.ScreenEncoder.Status == Encoder.EncoderStatus.Start)
+                if (AppManager.Instance.ScreenEncoder.Status == EncoderStatus.Start)
                 {
                     AppManager.Instance.ScreenEncoder.Pause();
                 }
             }));
 
-        public DelegateCommand StopScreenRecordCommand => stopScreenRecordCommand ??
-            (stopScreenRecordCommand = new DelegateCommand(o =>
+        public DelegateCommand StopScreenRecordCommand => _stopScreenRecordCommand ??
+            (_stopScreenRecordCommand = new DelegateCommand(o =>
             {
-                if (AppManager.Instance.ScreenEncoder.Status != Encoder.EncoderStatus.Stop)
+                if (AppManager.Instance.ScreenEncoder.Status != EncoderStatus.Stop)
                 {
                     AppManager.Instance.ScreenEncoder.Stop();
                 }
             }));
 
-        public DelegateCommand SelectRecordDirectory => selectRecordDirectory ??
-            (selectRecordDirectory = new DelegateCommand(o =>
+        public DelegateCommand SelectRecordDirectory => _selectRecordDirectory ??
+            (_selectRecordDirectory = new DelegateCommand(o =>
             {
-                System.Windows.Forms.FolderBrowserDialog folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-                folderBrowserDialog.Description = ScreenRecorder.Properties.Resources.SetsTheRecordingPath;
+                var folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+                folderBrowserDialog.Description = Properties.Resources.SetsTheRecordingPath;
                 folderBrowserDialog.SelectedPath = AppConfig.Instance.RecordDirectory;
                 if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
@@ -335,37 +337,39 @@ namespace ScreenRecorder
                 }
             }));
 
-        public DelegateCommand OpenRecordDirecotryCommand => openRecordDirecotryCommand ??
-            (openRecordDirecotryCommand = new DelegateCommand(o =>
+        public DelegateCommand OpenRecordDirecotryCommand => _openRecordDirecotryCommand ??
+            (_openRecordDirecotryCommand = new DelegateCommand(o =>
             {
                 try
                 {
-                    if (System.IO.Directory.Exists(AppConfig.Instance.RecordDirectory))
+                    if (Directory.Exists(AppConfig.Instance.RecordDirectory))
                     {
-                        System.Diagnostics.Process.Start("explorer.exe", string.Format("\"{0}\"", AppConfig.Instance.RecordDirectory));
+                        Process.Start("explorer.exe", $"\"{AppConfig.Instance.RecordDirectory}\"");
                     }
                     else
                     {
-                        
+
                         if (string.IsNullOrWhiteSpace(AppConfig.Instance.RecordDirectory))
-                            MessageBox.Show(ScreenRecorder.Properties.Resources.TheRecordingPathIsNotSet, ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer, MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBox.Show(Properties.Resources.TheRecordingPathIsNotSet, Properties.Resources.OpenEncodingFolderInFileExplorer, MessageBoxButton.OK, MessageBoxImage.Error);
                         else
-                            MessageBox.Show(ScreenRecorder.Properties.Resources.RecordingPathDoesNotExist, ScreenRecorder.Properties.Resources.OpenEncodingFolderInFileExplorer, MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBox.Show(Properties.Resources.RecordingPathDoesNotExist, Properties.Resources.OpenEncodingFolderInFileExplorer, MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch { }
             }));
+
         #endregion
 
         #region Common Commands
-        public DelegateCommand OpenFolderInWindowExplorerCommand => openFolderInWindowExplorerCommand ??
-            (openFolderInWindowExplorerCommand = new DelegateCommand(o =>
+
+        public DelegateCommand OpenFolderInWindowExplorerCommand => _openFolderInWindowExplorerCommand ??
+            (_openFolderInWindowExplorerCommand = new DelegateCommand(o =>
             {
                 if (o is string folder)
                 {
                     try
                     {
-                        System.Diagnostics.Process.Start("explorer.exe", string.Format("\"{0}\"", folder));
+                        System.Diagnostics.Process.Start("explorer.exe", $"\"{folder}\"");
                     }
                     catch { }
                 }
@@ -377,11 +381,13 @@ namespace ScreenRecorder
                 }
                 return false;
             }));
+
         #endregion
 
         #region Shortcut Commands
-        public DelegateCommand OpenShortcutSettingsCommand => openShortcutSettingsCommand ??
-            (openShortcutSettingsCommand = new DelegateCommand(o =>
+
+        public DelegateCommand OpenShortcutSettingsCommand => _openShortcutSettingsCommand ??
+            (_openShortcutSettingsCommand = new DelegateCommand(o =>
             {
                 try
                 {
@@ -395,20 +401,20 @@ namespace ScreenRecorder
                     Shortcut.GlobalHotKey.PassthroughGlobalHotKey = false;
                 }
             }));
+
         #endregion
 
         #region Window Commands
-        public DelegateCommand WindowCloseCommand => windowCloseCommand ??
-            (windowCloseCommand = new DelegateCommand(o =>
+
+        public DelegateCommand WindowCloseCommand => _windowCloseCommand ??
+            (_windowCloseCommand = new DelegateCommand(o =>
             {
                 if (o is Window window)
                 {
                     window.Close();
                 }
-            }, o =>
-            {
-                return o is Window;
-            }));
+            }, o => o is Window));
+
         #endregion
     }
 }
