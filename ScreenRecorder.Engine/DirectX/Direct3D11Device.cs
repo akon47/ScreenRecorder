@@ -6,8 +6,7 @@ using Vortice.DXGI;
 namespace ScreenRecorder.DirectX
 {
     /// <summary>
-    /// Thin Vortice D3D11 device wrapper for screen capture (not Aurora's heavy graphics
-    /// abstraction). BgraSupport is mandatory for WGC (B8G8R8A8 capture sessions); VideoSupport
+    /// Thin Vortice D3D11 device wrapper for screen capture. BgraSupport is mandatory for WGC (B8G8R8A8 capture sessions); VideoSupport
     /// is needed so the VideoProcessor (BGRA→NV12) can be queried on all drivers.
     /// </summary>
     public sealed class Direct3D11Device : IDisposable
