@@ -6,10 +6,10 @@ using ScreenRecorder.Encoder;
 namespace ScreenRecorder.VideoSource
 {
     /// <summary>
-    /// QPC ideal-grid CFR pacer (ported from Aurora's VideoOutputProcessor). Calls onTick exactly
+    /// QPC ideal-grid CFR pacer. Calls onTick exactly
     /// once per grid index k with PTS = t0 + k*interval (the ideal grid, NOT wake time). On a late
     /// tick it emits one DUPLICATE per skipped index so the encoder receives exactly fps×duration
-    /// frames — the confirmed CFR contract (Aurora skips late indices; the recorder must not).
+    /// frames — the confirmed CFR contract (late indices are never skipped).
     /// </summary>
     internal sealed class PacedClock
     {

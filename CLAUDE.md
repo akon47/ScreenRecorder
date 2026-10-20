@@ -16,8 +16,6 @@ installer have been deleted. The table below is kept as a from→to reference. T
 step is the release itself (`--no-ff` merge to `develop` + tag `2.0.0`, which the maintainer
 triggers).
 
-Reference codebase for the patterns used: **Aurora** at `C:\Users\hwank\OneDrive\문서\source\repos\Aurora` (a large broadcasting app; reused only its capture/encode/audio/installer patterns). Do **not** edit Aurora — it is read-only reference.
-
 | Concern | WAS (legacy) | NOW (on disk) |
 |---|---|---|
 | Runtime | .NET Framework **4.8.1**, WPF, x64 | **.NET 9** (`net9.0-windows10.0.20348.0`), WPF SDK-style, self-contained win-x64 |
@@ -25,34 +23,34 @@ Reference codebase for the patterns used: **Aurora** at `C:\Users\hwank\OneDrive
 | D3D/DXGI wrapper | SharpDX 4.2 (abandoned) | **Vortice.Windows 3.8.3** (Direct3D11/DXGI/D3DCompiler) |
 | NV12 conversion | custom HLSL shader (`NV12Converter.cs`) | D3D11 **VideoProcessor** |
 | Encode + mux | **C++ `MediaEncoder.vcxproj`** native FFmpeg wrapper | **FFmpeg.AutoGen 8.1.0** (managed), C# only |
-| Audio capture | **NAudio 2.0.1** | **WASAPI** (Aurora `Audio\Wasapi*.cs` pattern) |
+| Audio capture | **NAudio 2.0.1** | **WASAPI** |
 | App layer (MVVM/DI) | hand-rolled `Command\DelegateCommand.cs`, `Reactive\NotifyPropertyBase.cs`, static singletons (`AppManager`) | **Microsoft.Extensions.DependencyInjection** + **CommunityToolkit.Mvvm** (`ObservableObject` / `RelayCommand` / `WeakReferenceMessenger`) |
-| Installer | **`Setup\Setup.vdproj`** (VS Deployment / MSI, deprecated) | **NSIS** (port Aurora `Installers\Setup.nsi`) |
+| Installer | **`Setup\Setup.vdproj`** (VS Deployment / MSI, deprecated) | **NSIS** |
 | CI / release | none (`.github` has only FUNDING.yml) | **GitHub Actions**: tag → build → makensis → Release → winget update |
 
 **Firm decisions:**
-- **D3D = minimal thin wrapper.** Do NOT port Aurora's heavy `DirectXGraphics*` abstraction; use only the Vortice D3D11/DXGI calls recording needs.
-- **.NET 9, not 8.** The recorder has **zero COMReferences** (unlike Aurora, which is pinned to .NET 8 by `tlbimp` COM refs), so it builds with plain `dotnet publish` on `windows-latest`. TFM `net9.0-windows10.0.20348.0`, `TargetPlatformMinVersion 10.0.18362.0`. (Pick 8 only if LTS is required — one-line TFM change.)
-- **2-project split**: `ScreenRecorder.Engine` (headless capture/audio/encode library, no WPF, `AllowUnsafeBlocks`) + `ScreenRecorder` (WPF shell, references Engine). Not single-project; not Aurora's 5-project sprawl.
+- **D3D = minimal thin wrapper.** No heavy graphics abstraction; use only the Vortice D3D11/DXGI calls recording needs.
+- **.NET 9, not 8.** The recorder has **zero COMReferences**, so it builds with plain `dotnet publish` on `windows-latest`. TFM `net9.0-windows10.0.20348.0`, `TargetPlatformMinVersion 10.0.18362.0`. (Pick 8 only if LTS is required — one-line TFM change.)
+- **2-project split**: `ScreenRecorder.Engine` (headless capture/audio/encode library, no WPF, `AllowUnsafeBlocks`) + `ScreenRecorder` (WPF shell, references Engine). Not single-project.
 - SharpDX removal and the .NET 9 migration are coupled (Vortice 3.x is .NET-only) — they land together.
 - Dropping `MediaEncoder.vcxproj` is a goal of the FFmpeg.AutoGen switch (no more native/managed boundary).
 - **New timing/A-V-sync model** (see below) — replaces the legacy free-run clock.
-- **App layer = Microsoft DI + CommunityToolkit.Mvvm** (all Microsoft, all MIT → GPL-safe). No hand-rolled IoC/aggregator/commands. **Do NOT use Prism** — Prism 9 is dual-licensed (non-MIT; Community License's revenue restriction is incompatible with GPL-3.0). Mirror Aurora's structure (DI container + ViewModel base + pub/sub + commands), just with MS type names: `ObservableObject` (=BindableBase), `RelayCommand`/`AsyncRelayCommand` (=DelegateCommand), `IMessenger`/`WeakReferenceMessenger` (=IEventAggregator). Replaces legacy `Command\DelegateCommand.cs` + `Reactive\NotifyPropertyBase.cs`.
+- **App layer = Microsoft DI + CommunityToolkit.Mvvm** (all Microsoft, all MIT → GPL-safe). No hand-rolled IoC/aggregator/commands. **Do NOT use Prism** — Prism 9 is dual-licensed (non-MIT; Community License's revenue restriction is incompatible with GPL-3.0). Structure: DI container + ViewModel base + pub/sub + commands, using `ObservableObject`, `RelayCommand`/`AsyncRelayCommand`, `IMessenger`/`WeakReferenceMessenger`. Replaces legacy `Command\DelegateCommand.cs` + `Reactive\NotifyPropertyBase.cs`.
 - Preserve **every** existing user-facing feature (see checklist below).
 
 ### Timing / A-V sync model (CORE design — do not regress to free-run)
 
 The legacy clock (`VideoClockEvent.cs`) is a single static thread that `Set()`s up to 8 `AutoResetEvent`s as a bare "do a frame now" **pulse with NO timestamp**; audio runs on NAudio's independent callback clock. Frames/packets carry no PTS, audio and video share no timeline → **free-run, drifts, no real sync**. This must be fully replaced.
 
-New model, ported from Aurora's `Aurora.Engine\Video\VideoOutputProcessor.cs` + `Aurora.Engine\Audio\AudioOutputProcessor.cs`:
-- **One monotonic reference clock** = QPC (`Stopwatch.GetTimestamp()`). Capture a single `t0` at record start and inject the **same** `t0` into both the video and audio loops so `pts=0` aligns exactly (recorder refinement over Aurora, which starts each processor independently).
+New model:
+- **One monotonic reference clock** = QPC (`Stopwatch.GetTimestamp()`). Capture a single `t0` at record start and inject the **same** `t0` into both the video and audio loops so `pts=0` aligns exactly.
 - **Every `VideoFrame` and `AudioPacket` carries a `TimeStamp`** field, propagated all the way to the muxer.
 - **Video PTS = ideal grid**: `pts_k = t0 + k*(Stopwatch.Frequency/fps)`, NOT wake-up time. WGC capture (`FrameArrived`) just updates the "latest texture" on its own cadence; a **paced master clock samples the latest texture at the target fps**, stamps the grid PTS, converts NV12, hands to the encoder → clean CFR despite capture jitter. Detect lateness by elapsed/interval, advance the grid index, count dropped frames.
 - **Audio PTS = sample-count derived**: fixed sample blocks; target wake time = `t0 + GetDurationFromSamples(cumulativeSamples, sampleRate)` → drift-free; stamp each packet in the same QPC domain.
-- **Precise pacing**: hybrid sleep (coarse `Thread.Sleep` + busy-spin to the exact QPC target), e.g. Aurora's `SleepToTicks`.
+- **Precise pacing**: hybrid sleep (coarse `Thread.Sleep` + busy-spin to the exact QPC target).
 - **Muxing**: rescale QPC-tick PTS → FFmpeg stream timebase with `av_rescale_q`; interleave by PTS. Shared origin makes A/V align.
 - Output mode: **CFR — confirmed.** Exactly one frame per grid tick: when capture is late/drops, **duplicate the last frame** to fill the gap (output frame count = fps × duration); when capture is faster than fps, the paced clock just samples the latest texture and discards extras. Video PTS = frame index in a `1/fps` timebase. (VFR is explicitly out of scope.)
-- Tick wiring: Aurora routes tick events through its `IEventAggregator`. Here, UI-facing notifications (fps/dropped-frame stats) may go through CommunityToolkit `IMessenger`, but the **hot per-frame capture→encode path is wired directly** (no messenger) to avoid per-frame allocation/dispatch overhead.
+- Tick wiring: UI-facing notifications (fps/dropped-frame stats) may go through CommunityToolkit `IMessenger`, but the **hot per-frame capture→encode path is wired directly** (no messenger) to avoid per-frame allocation/dispatch overhead.
 
 Full per-decision rationale lives in Claude's project memory (`memory/screenrecorder-overhaul.md`).
 
@@ -131,7 +129,7 @@ Added in 2.1.0: **constant-quality rate control** (`RateControl.Cq` → CRF/NVEN
 
 ## Conventions
 
-- Modern C# throughout (the shell is WPF on .NET 9; the Engine follows Aurora's style — file-scoped namespaces where applicable, `unsafe` for FFmpeg/D3D interop). Match the surrounding file.
+- Modern C# throughout (the shell is WPF on .NET 9; the Engine uses file-scoped namespaces where applicable, `unsafe` for FFmpeg/D3D interop). Match the surrounding file.
 - **GPL-3.0** licensed (`LICENSE`). Keep new dependencies license-compatible (Vortice = MIT, FFmpeg.AutoGen = LGPL/MIT binding; ship a `*-gpl-shared` FFmpeg build per its license).
 - Versioning: git tags `MAJOR.MINOR.PATCH` (last legacy **1.1.5**; the overhaul ships as **2.0.0**). Assembly version is stamped from `-p:Version` at release.
 - Two READMEs: `README.md` (EN) + `README-ko.md` (KO) — keep both in sync; update build instructions when the FFmpeg/native steps change.
