@@ -390,4 +390,13 @@
   <data name="ShowToolbar" xml:space="preserve">
     <value>Screen Recorder 표시</value>
   </data>
+  <data name="RecordWindow" xml:space="preserve">
+    <value>창 녹화</value>
+  </data>
+  <data name="NoWindowsToRecord" xml:space="preserve">
+    <value>녹화할 창이 없습니다</value>
+  </data>
+  <data name="WindowNotAvailable" xml:space="preserve">
+    <value>해당 창을 사용할 수 없습니다 (닫혔거나 최소화됨).</value>
+  </data>
 </root>

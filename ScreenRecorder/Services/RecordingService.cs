@@ -160,7 +160,20 @@ namespace ScreenRecorder.Services
         /// <inheritdoc cref="StartAsync(CaptureTarget)"/>
         public Task StartAsync(CaptureTarget target = null) => StartAsync(target, RecordingKind.Video);
 
-        private async Task StartAsync(CaptureTarget target, RecordingKind kind)
+        /// <summary>
+        /// Starts recording one window, chosen by name from the window list rather than on
+        /// screen — which also works for a window that is completely covered by others.
+        /// </summary>
+        public Task StartWindowAsync(IntPtr windowHandle)
+            => StartAsync(() => ResolveWindow(windowHandle), RecordingKind.Video, audioOnly: false);
+
+        private Task StartAsync(CaptureTarget target, RecordingKind kind)
+        {
+            target ??= _settings.CaptureTarget;
+            return StartAsync(() => ResolveTarget(target), kind, target.Kind == CaptureTargetKind.AudioOnly);
+        }
+
+        private async Task StartAsync(Func<ResolvedCaptureTarget> resolveTarget, RecordingKind kind, bool audioOnly)
         {
             switch (State)
             {
@@ -172,9 +185,6 @@ namespace ScreenRecorder.Services
                 default:
                     return;
             }
-
-            target ??= _settings.CaptureTarget;
-            bool audioOnly = target.Kind == CaptureTargetKind.AudioOnly;
 
             if (!CheckRecordDirectory())
                 return;
@@ -193,7 +203,7 @@ namespace ScreenRecorder.Services
                 return;
             }
 
-            ResolvedCaptureTarget resolved = ResolveTarget(target);
+            ResolvedCaptureTarget resolved = resolveTarget();
             if (resolved == null)
                 return;
 
@@ -269,6 +279,46 @@ namespace ScreenRecorder.Services
                 default:
                     return null;
             }
+        }
+
+        /// <summary>A window picked from the list: where it is now, and on which monitor.</summary>
+        private ResolvedCaptureTarget ResolveWindow(IntPtr windowHandle)
+        {
+            Rect? bounds = WindowRegion.GetVirtualBounds(windowHandle);
+            if (bounds == null)
+            {
+                // Closed or minimized since the list was shown.
+                _dialogs.ShowError(Properties.Resources.WindowNotAvailable);
+                return null;
+            }
+
+            MonitorInfo monitor = MonitorOf(bounds.Value);
+            if (monitor == null)
+            {
+                _dialogs.ShowError(Properties.Resources.WindowNotAvailable);
+                return null;
+            }
+
+            // The monitor-relative rectangle is what gets recorded should the window refuse
+            // to be captured as itself.
+            Rect onMonitor = Rect.Intersect(bounds.Value, monitor.Bounds);
+            Rect? region = RecordingRequestBuilder.NormalizeRegion(Rect.Offset(onMonitor, -monitor.Bounds.X, -monitor.Bounds.Y));
+            if (region == null)
+            {
+                _dialogs.ShowError(Properties.Resources.RegionSizeError);
+                return null;
+            }
+
+            return ResolvedCaptureTarget.ForWindow(windowHandle, monitor.DeviceName, region.Value, bounds.Value);
+        }
+
+        /// <summary>The monitor a rectangle is on: the one holding its center, else the first it touches.</summary>
+        private static MonitorInfo MonitorOf(Rect bounds)
+        {
+            MonitorInfo[] monitors = MonitorInfo.GetActiveMonitorInfos();
+            var center = new Point(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2);
+            return monitors.FirstOrDefault(m => m.Bounds.Contains(center))
+                ?? monitors.FirstOrDefault(m => m.Bounds.IntersectsWith(bounds));
         }
 
         private ResolvedCaptureTarget ResolveUserSelection()

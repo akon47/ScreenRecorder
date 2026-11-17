@@ -29,6 +29,7 @@ materials where available.
 - **Record**: the round button starts, the square button stops. The file is saved to your Videos folder (changeable) and a notification lets you open it.
 - **Pause / resume**: while recording, the record button becomes pause. Paused time is not in the file.
 - **Record an area**: the crop button — or `Alt`+`Shift`+`R` from anywhere — lets you drag an area, click a window or pick a display, and starts recording. The same shortcut stops it.
+- **Record a window by name**: right-click the toolbar (or the tray icon) → *Record a Window* lists the open windows; pick one and it is recorded — even if other windows cover it.
 - **Record a GIF**: the GIF button — or `Alt`+`Shift`+`G` from anywhere — does the same and saves an animated GIF.
 - **Microphone**: the microphone button on the toolbar turns recording your voice on or off. While recording, the thin bar under the time shows the level of the sound going into the file.
 - **Out of the way**: the minimize button hides the toolbar into the notification area (tray). The shortcuts keep working there, so `Alt`+`Shift`+`R` records straight away; click the tray icon — or start the app again — to bring the toolbar back. The icon shows a red dot while recording.
@@ -38,7 +39,7 @@ materials where available.
 ## 🎨 Features
 
 **What can be recorded**
-- A display, **all displays at once**, an area you drag (it may **span several monitors**), or a **window** — a window is recorded as itself, so it stays in the picture when it is moved or covered.
+- A display, **all displays at once**, an area you drag (it may **span several monitors**), or a **window** — a window is recorded as itself, so it stays in the picture when it is moved or covered. Pick it on screen or from the list of open windows.
 - **Audio only** (M4A or MP3), when you just need the sound.
 - System sound and microphone, mixed. Both devices can be chosen; the default devices are followed when they change. A level meter shows what is being recorded.
 - The recorder's own windows are kept out of the recording. The mouse cursor can be included or not.

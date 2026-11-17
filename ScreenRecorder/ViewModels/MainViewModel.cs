@@ -81,6 +81,10 @@ namespace ScreenRecorder.ViewModels
         [RelayCommand(AllowConcurrentExecutions = true)]
         private Task RecordRegionAsync() => Recording.StartAsync(CaptureTarget.UserSelection);
 
+        /// <summary>Records one window, chosen from the window list.</summary>
+        [RelayCommand(AllowConcurrentExecutions = true)]
+        private Task RecordWindowAsync(IntPtr windowHandle) => Recording.StartWindowAsync(windowHandle);
+
         /// <summary>Lets the user pick an area, then records it as an animated GIF.</summary>
         [RelayCommand(AllowConcurrentExecutions = true)]
         private Task RecordGifAsync() => Recording.StartGifAsync();

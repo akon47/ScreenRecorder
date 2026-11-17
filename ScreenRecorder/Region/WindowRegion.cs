@@ -70,7 +70,7 @@ namespace ScreenRecorder.Region
 
             EnumWindows((hWnd, lparam) =>
             {
-                if (!IsCandidate(hWnd, ownProcessId))
+                if (!IsCapturable(hWnd, ownProcessId))
                     return true;
 
                 System.Windows.Rect? region = GetVirtualBounds(hWnd, monitors);
@@ -83,7 +83,11 @@ namespace ScreenRecorder.Region
             return windowRegions.Count > 0 ? windowRegions.ToArray() : null;
         }
 
-        private static bool IsCandidate(IntPtr hWnd, uint ownProcessId)
+        /// <summary>
+        /// Whether a top-level window can be recorded right now: on screen (not minimized,
+        /// not cloaked), not one of this app's own windows and not hidden from capture.
+        /// </summary>
+        internal static bool IsCapturable(IntPtr hWnd, uint ownProcessId)
         {
             if (!IsWindowVisible(hWnd) || IsIconic(hWnd))
                 return false;

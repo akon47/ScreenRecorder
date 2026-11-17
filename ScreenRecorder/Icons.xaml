@@ -20,6 +20,7 @@
     <sys:String x:Key="Glyph.Show">&#xE890;</sys:String>
     <sys:String x:Key="Glyph.Hide">&#xED1A;</sys:String>
     <sys:String x:Key="Glyph.Keyboard">&#xE92E;</sys:String>
+    <sys:String x:Key="Glyph.Windows">&#xE7C4;</sys:String>
     <sys:String x:Key="Glyph.Microphone">&#xE720;</sys:String>
     <sys:String x:Key="Glyph.MicrophoneOff">&#xF781;</sys:String>
     <sys:String x:Key="Glyph.ChevronDown">&#xE70D;</sys:String>
