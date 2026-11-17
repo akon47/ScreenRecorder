@@ -5,7 +5,7 @@
 # Screen Recorder
 
 <p>
-  <img src="https://counter.kimhwan.kr/?key=github-akon47-screen-recorder" />
+  <img src="https://counter.kimhwan.com/?key=github-akon47-screen-recorder" />
   <img alt="GitHub" src="https://img.shields.io/github/license/akon47/ScreenRecorder">
   <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/akon47/ScreenRecorder">
   <img alt="GitHub starts" src="https://img.shields.io/github/stars/akon47/ScreenRecorder">
