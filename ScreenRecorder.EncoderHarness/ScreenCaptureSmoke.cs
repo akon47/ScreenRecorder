@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -20,7 +20,10 @@ namespace ScreenRecorder.EncoderHarness
     /// </summary>
     internal static unsafe class ScreenCaptureSmoke
     {
-        public static int Run(int seconds, int fps, string output, string pngPath, bool cursor, Func<VideoCodec, string, HwAccel> resolveHw, string deviceName = null)
+        /// <param name="variable">Variable frame rate: encode only when the screen changed.</param>
+        /// <param name="gpu">Try the zero-copy GPU-texture path (needs NVENC); false forces CPU readback.</param>
+        public static int Run(int seconds, int fps, string output, string pngPath, bool cursor, Func<VideoCodec, string, HwAccel> resolveHw, string deviceName = null,
+            bool variable = false, bool gpu = false)
         {
             if (!Windows.Graphics.Capture.GraphicsCaptureSession.IsSupported())
             {
@@ -42,7 +45,7 @@ namespace ScreenRecorder.EncoderHarness
             int h = (int)region.Height & ~1;
             HwAccel hw = resolveHw(VideoCodec.H264, "auto");
 
-            Console.WriteLine($"=== Screen capture: {seconds}s {w}x{h}@{fps} H264/{hw} (monitor {mon.DeviceName}) ===");
+            Console.WriteLine($"=== Screen capture: {seconds}s {w}x{h}@{fps} H264/{hw} {(variable ? "VFR" : "CFR")} {(gpu ? "gpu-textures" : "cpu-readback")} (monitor {mon.DeviceName}) ===");
             Console.WriteLine("Output: " + output);
 
             var videoParams = new VideoParams
@@ -55,19 +58,59 @@ namespace ScreenRecorder.EncoderHarness
                 FpsDenominator = 1,
                 Bitrate = 20_000_000,
                 RateControl = RateControl.Cbr,
+                VariableFrameRate = variable,
             };
 
-            long t0 = Stopwatch.GetTimestamp();
-            using (var recorder = new Recorder(output, "mp4", videoParams, null))
+            long newFrames, repeats, late, dropped;
+            bool usedGpu;
+            long allocatedBefore, allocatedAfter;
+            using (var device = new Direct3D11Device())
             {
-                recorder.Start();
-                using var src = new ScreenVideoSource(mon.DeviceName, new Rect(region.X, region.Y, w, h), cursor, fps, 1, t0, recorder);
-                src.Start();
-                Thread.Sleep(seconds * 1000);
-                src.Stop();
-                recorder.Stop();
-                Console.WriteLine($"Dropped frames: {src.DroppedFrames}");
+                SharedNv12Ring ring = null;
+                if (gpu && hw == HwAccel.Nvenc)
+                {
+                    try { ring = new SharedNv12Ring(device.Device, w, h); }
+                    catch (Exception ex) { Console.WriteLine("Shared ring unavailable: " + ex.Message); }
+                }
+                videoParams.SharedRing = ring;
+
+                using (var recorder = new Recorder(output, "mp4", videoParams, null))
+                {
+                    recorder.Start();
+                    usedGpu = recorder.UsesGpuInput;
+                    if (!usedGpu) { ring?.Dispose(); ring = null; }
+
+                    var layers = new[]
+                    {
+                        new CaptureLayer
+                        {
+                            Item = WgcInterop.CreateItemForMonitor(DisplayHelper.GetMonitorHandleFromDeviceName(mon.DeviceName)),
+                            Source = new Rect(region.X, region.Y, w, h),
+                            Area = new Vortice.RawRect(0, 0, w, h),
+                        },
+                    };
+                    using var src = new ScreenVideoSource(device, layers, w, h, CaptureOutputFormat.Nv12, cursor, false,
+                        fps, 1, variable, 1.0, recorder, recorder, ring);
+                    src.Start(Stopwatch.GetTimestamp());
+
+                    // Warm-up second, then measure managed allocation over the steady state.
+                    Thread.Sleep(1000);
+                    allocatedBefore = GC.GetTotalAllocatedBytes(false);
+                    Thread.Sleep(Math.Max(0, seconds - 1) * 1000);
+                    allocatedAfter = GC.GetTotalAllocatedBytes(false);
+
+                    src.Stop();
+                    recorder.Stop();
+                    newFrames = src.NewFrames; repeats = src.RepeatedFrames; late = src.LateTicks; dropped = recorder.DroppedFrames;
+                    Console.WriteLine($"Encoder: {recorder.VideoEncoderName ?? "(stopped)"}  completed={recorder.CompletedSuccessfully}");
+                }
+                ring?.Dispose();
             }
+
+            double allocPerSecond = (allocatedAfter - allocatedBefore) / Math.Max(1.0, seconds - 1);
+            Console.WriteLine($"Input path: {(usedGpu ? "GPU textures (zero-copy)" : "CPU readback")}");
+            Console.WriteLine($"New pictures: {newFrames}, repeats: {repeats}, late ticks: {late}, dropped: {dropped}");
+            Console.WriteLine($"Managed allocation while recording: {allocPerSecond / 1024.0:0.0} KB/s (whole process)");
 
             Console.WriteLine();
             Console.WriteLine("=== Verification ===");
@@ -76,7 +119,10 @@ namespace ScreenRecorder.EncoderHarness
             Console.WriteLine($"  video={info.VideoCodec} {info.Width}x{info.Height} vPackets={info.VideoPacketCount} dur={info.DurationSeconds:0.000}s");
             info.Check(info.VideoCodec == "h264", "video codec h264");
             info.Check(info.Width == w && info.Height == h, $"dimensions {w}x{h}");
-            info.Check(Math.Abs(info.VideoPacketCount - expected) <= fps, $"CFR-ish ~{expected} frames (got {info.VideoPacketCount})");
+            if (variable)
+                info.Check(info.VideoPacketCount >= seconds && info.VideoPacketCount <= expected + 2, $"VFR: between {seconds} (keep-alive) and {expected} frames (got {info.VideoPacketCount})");
+            else
+                info.Check(Math.Abs(info.VideoPacketCount - expected) <= 2, $"CFR exactly ~{expected} frames (got {info.VideoPacketCount})");
             info.Check(Math.Abs(info.DurationSeconds - seconds) < 0.6, $"duration ~= {seconds}s");
 
             double variance = AnalyzeAndSavePng(output, (int)(info.VideoPacketCount / 2), pngPath);

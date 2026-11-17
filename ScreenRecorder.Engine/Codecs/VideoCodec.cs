@@ -12,5 +12,8 @@ namespace MediaEncoder
         H264 = 2,
         Hevc = 3,
         H265 = Hevc,
+
+        /// <summary>AV1 — offered where a hardware encoder for it exists.</summary>
+        Av1 = 4,
     }
 }

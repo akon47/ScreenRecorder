@@ -18,37 +18,77 @@ namespace ScreenRecorder.AudioSource
         private int _writePos;  // float index
         private int _readPos;   // float index
         private int _availFrames;
+        private long _overflowFrames;
+        private long _underrunFrames;
 
-        public SourceTimeline(int capacityFrames = 1024 * 8)
+        public SourceTimeline(int capacityFrames = 1024 * 16)
         {
+            if (capacityFrames < 1)
+                throw new ArgumentOutOfRangeException(nameof(capacityFrames));
+
             _capacityFrames = capacityFrames;
             _ring = new float[capacityFrames * Channels];
         }
 
+        public int CapacityFrames => _capacityFrames;
+
+        /// <summary>Frames currently buffered.</summary>
+        public int AvailableFrames
+        {
+            get { lock (_lock) return _availFrames; }
+        }
+
+        /// <summary>Frames discarded because the consumer stalled (oldest dropped).</summary>
+        public long OverflowFrames
+        {
+            get { lock (_lock) return _overflowFrames; }
+        }
+
+        /// <summary>Frames of silence substituted for missing data.</summary>
+        public long UnderrunFrames
+        {
+            get { lock (_lock) return _underrunFrames; }
+        }
+
         public void Write(ReadOnlySpan<float> interleaved, int frames)
         {
+            if (frames <= 0)
+                return;
+
+            // More than the whole ring at once: only the newest part can survive.
+            if (frames > _capacityFrames)
+            {
+                int skip = frames - _capacityFrames;
+                interleaved = interleaved.Slice(skip * Channels);
+                frames = _capacityFrames;
+                lock (_lock)
+                    _overflowFrames += skip;
+            }
+
             int count = frames * Channels;
             lock (_lock)
             {
                 // Drop oldest on overflow (severe stall only).
                 if (_availFrames + frames > _capacityFrames)
                 {
-                    int overflowFrames = _availFrames + frames - _capacityFrames;
-                    _readPos = (_readPos + overflowFrames * Channels) % _ring.Length;
-                    _availFrames -= overflowFrames;
+                    int overflow = _availFrames + frames - _capacityFrames;
+                    _readPos = (_readPos + overflow * Channels) % _ring.Length;
+                    _availFrames -= overflow;
+                    _overflowFrames += overflow;
                 }
 
-                for (int i = 0; i < count; i++)
-                {
-                    _ring[_writePos] = interleaved[i];
-                    _writePos = (_writePos + 1) % _ring.Length;
-                }
+                int first = Math.Min(count, _ring.Length - _writePos);
+                interleaved.Slice(0, first).CopyTo(_ring.AsSpan(_writePos, first));
+                if (first < count)
+                    interleaved.Slice(first, count - first).CopyTo(_ring.AsSpan(0, count - first));
+
+                _writePos = (_writePos + count) % _ring.Length;
                 _availFrames += frames;
             }
         }
 
         /// <summary>Pops <paramref name="frames"/> frames into dst; silence-fills any shortfall.
-        /// Returns the number of frames actually backed by real data (stats only).</summary>
+        /// Returns the number of frames actually backed by real data.</summary>
         public int Read(Span<float> dst, int frames)
         {
             int count = frames * Channels;
@@ -57,17 +97,31 @@ namespace ScreenRecorder.AudioSource
                 int realFrames = Math.Min(frames, _availFrames);
                 int realCount = realFrames * Channels;
 
-                for (int i = 0; i < realCount; i++)
-                {
-                    dst[i] = _ring[_readPos];
-                    _readPos = (_readPos + 1) % _ring.Length;
-                }
+                int first = Math.Min(realCount, _ring.Length - _readPos);
+                _ring.AsSpan(_readPos, first).CopyTo(dst);
+                if (first < realCount)
+                    _ring.AsSpan(0, realCount - first).CopyTo(dst.Slice(first));
+
+                _readPos = (_readPos + realCount) % _ring.Length;
                 _availFrames -= realFrames;
 
-                for (int i = realCount; i < count; i++)
-                    dst[i] = 0f; // silence-fill underrun
+                if (realCount < count)
+                {
+                    dst.Slice(realCount, count - realCount).Clear(); // silence-fill underrun
+                    _underrunFrames += frames - realFrames;
+                }
 
                 return realFrames;
+            }
+        }
+
+        /// <summary>Discards everything buffered (the source restarted).</summary>
+        public void Clear()
+        {
+            lock (_lock)
+            {
+                _readPos = _writePos = 0;
+                _availFrames = 0;
             }
         }
     }

@@ -2,59 +2,93 @@
     x:Class="ScreenRecorder.Shortcut.ShortcutEditorWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:screenRecorder="clr-namespace:ScreenRecorder"
     xmlns:local="clr-namespace:ScreenRecorder.Shortcut"
+    xmlns:behaviors="clr-namespace:ScreenRecorder.Behaviors"
     xmlns:properties="clr-namespace:ScreenRecorder.Properties"
-    mc:Ignorable="d"
-    Background="#454545"
-    Topmost="True"
-    WindowStyle="ToolWindow"
-    WindowStartupLocation="CenterOwner"
+    xmlns:theming="clr-namespace:ScreenRecorder.Theming"
     Title="{x:Static properties:Resources.ShortcutSettings}"
-    MaxHeight="200"
-    MinWidth="250"
+    Width="400"
+    SizeToContent="Height"
+    WindowStyle="None"
     ResizeMode="NoResize"
-    SizeToContent="WidthAndHeight"
+    ShowInTaskbar="False"
+    Topmost="True"
+    WindowStartupLocation="CenterScreen"
+    Background="Transparent"
+    FontFamily="{StaticResource AppFontFamily}"
+    FontSize="{StaticResource BodyFontSize}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    UseLayoutRounding="True"
+    SnapsToDevicePixels="True"
+    TextOptions.TextFormattingMode="Display"
+    theming:WindowBackdrop.Kind="Mica"
     >
-    <Grid>
-        <ScrollViewer
-            VerticalScrollBarVisibility="Auto"
-            HorizontalScrollBarVisibility="Disabled"
-            >
-            <Border
-                Margin="5"
-                CornerRadius="2"
-                Background="#212121"
-                BorderBrush="Black"
-                BorderThickness="1"
-                >
-                <UniformGrid
-                    Columns="1"
-                    VerticalAlignment="Top"
-                    Grid.IsSharedSizeScope="True"
-                    >
-                    <UniformGrid.Resources>
-                        <Style TargetType="{x:Type local:ShortcutEditor}">
-                            <Setter Property="Margin" Value="3" />
-                        </Style>
-                    </UniformGrid.Resources>
+    <!--  Keyboard-shortcut editor: one row per shortcut, in a small dialog with its own title bar.  -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="36"
+            CornerRadius="0"
+            GlassFrameThickness="-1"
+            ResizeBorderThickness="0"
+            UseAeroCaptionButtons="False"
+            />
+    </WindowChrome.WindowChrome>
 
-                    <local:ShortcutEditor
-                        Title="{x:Static properties:Resources.StartRecording}"
-                        Shortcut="{Binding Source={x:Static screenRecorder:AppCommands.Instance}, Path=StartScreenRecordCommand}"
-                        />
-                    <local:ShortcutEditor
-                        Title="{x:Static properties:Resources.PauseRecording}"
-                        Shortcut="{Binding Source={x:Static screenRecorder:AppCommands.Instance}, Path=PauseScreenRecordCommand}"
-                        />
-                    <local:ShortcutEditor
-                        Title="{x:Static properties:Resources.StopRecording}"
-                        Shortcut="{Binding Source={x:Static screenRecorder:AppCommands.Instance}, Path=StopScreenRecordCommand}"
-                        />
-                </UniformGrid>
-            </Border>
-        </ScrollViewer>
-    </Grid>
+    <Border Background="{DynamicResource WindowBackgroundBrush}" behaviors:ClearFocusOnClickBehavior.IsActivated="True">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="36" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!--  Title bar  -->
+            <Grid>
+                <TextBlock
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Margin="16,0,0,0"
+                    FontSize="12"
+                    Text="{x:Static properties:Resources.ShortcutSettings}"
+                    />
+                <Button
+                    Style="{StaticResource CloseIconButtonStyle}"
+                    Width="40"
+                    Height="28"
+                    Margin="0,0,4,0"
+                    HorizontalAlignment="Right"
+                    FontSize="10"
+                    Content="{StaticResource Glyph.Close}"
+                    IsCancel="True"
+                    Click="CloseButton_Click"
+                    WindowChrome.IsHitTestVisibleInChrome="True"
+                    />
+            </Grid>
+
+            <StackPanel Grid.Row="1" Margin="16,2,16,16">
+                <TextBlock
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Margin="1,0,0,10"
+                    Text="{x:Static properties:Resources.ShortcutSettingsHint}"
+                    TextTrimming="None"
+                    TextWrapping="Wrap"
+                    />
+                <Border Style="{StaticResource CardBorderStyle}" Padding="12,8,10,8">
+                    <ItemsControl
+                        x:Name="ShortcutList"
+                        Focusable="False"
+                        Grid.IsSharedSizeScope="True"
+                        >
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <local:ShortcutEditor
+                                    Margin="0,3"
+                                    Title="{Binding DisplayName}"
+                                    Shortcut="{Binding}"
+                                    />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Border>
 </Window>

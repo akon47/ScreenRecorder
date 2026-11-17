@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -54,12 +54,7 @@ namespace ScreenRecorder.Region
             Width = bounds.Width;
             Height = bounds.Height;
 
-            if (showMenu)
-            {
-                Canvas.SetLeft(regionMenuRoot, (bounds.Width / 2.0d) - (regionMenuRoot.Width / 2.0));
-                Canvas.SetTop(regionMenuRoot, 0);
-            }
-            else
+            if (!showMenu)
             {
                 regionMenuRoot.Visibility = Visibility.Collapsed;
             }
@@ -93,7 +88,7 @@ namespace ScreenRecorder.Region
 
                 try
                 {
-                    ImageBrush imageBrush = new ImageBrush(Utils.ImageSourceFromBitmap(displayBitmap));
+                    ImageBrush imageBrush = new ImageBrush(ToImageSource(displayBitmap));
                     imageBrush.Freeze();
                     Background = imageBrush;
                 }
@@ -106,9 +101,32 @@ namespace ScreenRecorder.Region
                 }
             }
 
-            regionSelector.Attach(screen.DeviceName, new Rect(bounds.X, bounds.Y, bounds.Width, bounds.Height));
+            regionSelector.Attach(session, screen.DeviceName, new Rect(bounds.X, bounds.Y, bounds.Width, bounds.Height));
             regionSelector.StartSelection();
         }
+
+        [System.Runtime.InteropServices.DllImport("gdi32.dll", EntryPoint = "DeleteObject")]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool DeleteObject(IntPtr hObject);
+
+        private static ImageSource ToImageSource(System.Drawing.Bitmap bitmap)
+        {
+            IntPtr handle = bitmap.GetHbitmap();
+            try
+            {
+                var source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                    handle, IntPtr.Zero, Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                source.Freeze();
+                return source;
+            }
+            finally
+            {
+                DeleteObject(handle);
+            }
+        }
+
+        /// <summary>Redraws the selection (the shared drag rectangle changed).</summary>
+        internal void InvalidateSelection() => regionSelector.InvalidateVisual();
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -149,7 +167,12 @@ namespace ScreenRecorder.Region
             }
             else
             {
-                _session.Complete(new RegionSelectionResult(e.DeviceName, Rect.Offset(e.Region, -e.DisplayBounds.X, -e.DisplayBounds.Y)));
+                // No device name = the area spans monitors: only its desktop rectangle is meaningful.
+                Rect monitorRelative = e.DeviceName == null
+                    ? Rect.Empty
+                    : Rect.Offset(e.Region, -e.DisplayBounds.X, -e.DisplayBounds.Y);
+
+                _session.Complete(new RegionSelectionResult(e.DeviceName, monitorRelative, e.Region, e.WindowHandle, e.RegionSelectionMode));
             }
         }
 

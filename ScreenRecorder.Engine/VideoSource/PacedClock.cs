@@ -6,28 +6,86 @@ using ScreenRecorder.Encoder;
 namespace ScreenRecorder.VideoSource
 {
     /// <summary>
-    /// QPC ideal-grid CFR pacer. Calls onTick exactly
-    /// once per grid index k with PTS = t0 + k*interval (the ideal grid, NOT wake time). On a late
-    /// tick it emits one DUPLICATE per skipped index so the encoder receives exactly fps×duration
-    /// frames — the confirmed CFR contract (late indices are never skipped).
+    /// Pure grid arithmetic for the paced clock: where the ideal tick <c>k</c> sits on the QPC
+    /// axis and how many grid steps a late wake-up has to advance. Targets are always computed
+    /// from the origin (never by accumulating a truncated interval), so there is no long-run
+    /// drift at rates whose period is not a whole number of QPC ticks.
+    /// </summary>
+    internal readonly struct FrameGrid
+    {
+        private readonly long _origin;
+        private readonly long _fpsNumerator;
+        private readonly long _fpsDenominator;
+        private readonly long _frequency;
+
+        public FrameGrid(long origin, int fpsNumerator, int fpsDenominator, long frequency)
+        {
+            if (fpsNumerator <= 0) throw new ArgumentOutOfRangeException(nameof(fpsNumerator));
+            if (fpsDenominator <= 0) throw new ArgumentOutOfRangeException(nameof(fpsDenominator));
+
+            _origin = origin;
+            _fpsNumerator = fpsNumerator;
+            _fpsDenominator = fpsDenominator;
+            _frequency = frequency;
+        }
+
+        /// <summary>QPC tick of grid index <paramref name="index"/> (relative to the origin).</summary>
+        public long TicksAt(long index)
+        {
+            long units = index * _fpsDenominator;
+            long whole = units / _fpsNumerator;
+            long rem = units % _fpsNumerator;
+            // Rounded up, so IndexAt(TicksAt(k)) == k exactly.
+            return _origin + whole * _frequency + (rem * _frequency + _fpsNumerator - 1) / _fpsNumerator;
+        }
+
+        /// <summary>
+        /// Largest grid index whose tick is ≤ <paramref name="now"/> (0 before the origin).
+        /// </summary>
+        public long IndexAt(long now)
+        {
+            long elapsed = now - _origin;
+            if (elapsed <= 0)
+                return 0;
+
+            long whole = elapsed / _frequency;
+            long rem = elapsed % _frequency;
+            return whole * _fpsNumerator / _fpsDenominator
+                   + (whole * _fpsNumerator % _fpsDenominator * _frequency + rem * _fpsNumerator) / (_fpsDenominator * _frequency);
+        }
+    }
+
+    /// <summary>
+    /// QPC ideal-grid pacer. Calls <c>onTick(k, missed)</c> once per wake-up with the current
+    /// grid index <c>k</c> (PTS = k in a 1/fps time base — the ideal grid, NOT the wake time)
+    /// and the number of grid indices skipped since the previous tick because the thread woke
+    /// late. What happens to the skipped indices (repeat for CFR, skip for VFR) is the
+    /// source's policy, not the clock's. Pausing holds the grid index and shifts the pacing
+    /// origin, so paused time is excluded from the recording.
     /// </summary>
     internal sealed class PacedClock
     {
-        private readonly long _interval;
+        private readonly int _fpsNumerator;
+        private readonly int _fpsDenominator;
         private readonly long _t0;
-        private readonly Action<long, long, bool> _onTick;
-        private long _dropped;
+        private readonly Action<long, int> _onTick;
+        private long _lateTicks;
+        private long _currentIndex = -1;
         private volatile bool _paused;
-        private long _pauseStart;
 
-        public PacedClock(int fpsNumerator, int fpsDenominator, long t0, Action<long, long, bool> onTick)
+        public PacedClock(int fpsNumerator, int fpsDenominator, long t0, Action<long, int> onTick)
         {
-            _interval = Stopwatch.Frequency * fpsDenominator / fpsNumerator;
+            _fpsNumerator = fpsNumerator;
+            _fpsDenominator = fpsDenominator;
             _t0 = t0;
             _onTick = onTick;
         }
 
-        public long DroppedFrames => Interlocked.Read(ref _dropped);
+        /// <summary>Grid indices skipped by late wake-ups (CFR fills them with repeats).</summary>
+        public long LateTicks => Interlocked.Read(ref _lateTicks);
+
+        /// <summary>The most recent grid index handed to onTick (-1 before the first tick).</summary>
+        public long CurrentIndex => Interlocked.Read(ref _currentIndex);
 
         public void Pause() => _paused = true;
 
@@ -35,47 +93,47 @@ namespace ScreenRecorder.VideoSource
 
         public void Run(CancellationToken ct)
         {
-            long lastFrameTicks = _t0;
+            using var waiter = new PrecisionWaiter();
+
+            long pausedTotal = 0;   // QPC ticks spent paused, excluded from the grid
+            long pauseStart = 0;
             long k = 0;
+            long previous = -1;
 
             while (!ct.IsCancellationRequested)
             {
-                // Paused: hold the grid index (paused time is excluded from the recording) and
-                // shift the wall-clock pacing reference forward on resume so no burst follows.
                 if (_paused)
                 {
-                    if (_pauseStart == 0)
-                        _pauseStart = Stopwatch.GetTimestamp();
+                    if (pauseStart == 0)
+                        pauseStart = Stopwatch.GetTimestamp();
                     Thread.Sleep(10);
                     continue;
                 }
-                if (_pauseStart != 0)
+
+                if (pauseStart != 0)
                 {
-                    lastFrameTicks += Stopwatch.GetTimestamp() - _pauseStart;
-                    _pauseStart = 0;
+                    pausedTotal += Stopwatch.GetTimestamp() - pauseStart;
+                    pauseStart = 0;
                 }
 
-                _onTick(_t0 + k * _interval, k, false);
+                var grid = new FrameGrid(_t0 + pausedTotal, _fpsNumerator, _fpsDenominator, Stopwatch.Frequency);
 
-                long target = lastFrameTicks + _interval;
-                if (QpcSleep.SleepToTicks(target, ct))
-                {
-                    k++;
-                    lastFrameTicks = target;
-                }
-                else
-                {
-                    long diff = Math.Max(Stopwatch.GetTimestamp() - lastFrameTicks, _interval);
-                    long count = diff / _interval; // >= 1
-                    for (long i = 1; i < count; i++)
-                        _onTick(_t0 + (k + i) * _interval, k + i, true); // duplicate held frame
+                // Late: jump to the index the wall clock is actually at.
+                long actual = grid.IndexAt(Stopwatch.GetTimestamp());
+                if (actual > k)
+                    k = actual;
 
-                    Interlocked.Add(ref _dropped, count - 1);
-                    k += count;
-                    lastFrameTicks += _interval * count;
-                }
+                int missed = previous < 0 ? 0 : (int)Math.Min(int.MaxValue, k - previous - 1);
+                if (missed > 0)
+                    Interlocked.Add(ref _lateTicks, missed);
+
+                Interlocked.Exchange(ref _currentIndex, k);
+                _onTick(k, missed);
+
+                previous = k;
+                k++;
+                waiter.WaitUntil(grid.TicksAt(k), ct);
             }
         }
-
     }
 }

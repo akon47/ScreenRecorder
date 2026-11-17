@@ -1,0 +1,481 @@
+<Window
+    x:Class="ScreenRecorder.Views.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:behaviors="clr-namespace:ScreenRecorder.Behaviors"
+    xmlns:controls="clr-namespace:ScreenRecorder.Controls"
+    xmlns:properties="clr-namespace:ScreenRecorder.Properties"
+    xmlns:services="clr-namespace:ScreenRecorder.Services"
+    xmlns:theming="clr-namespace:ScreenRecorder.Theming"
+    xmlns:vm="clr-namespace:ScreenRecorder.ViewModels"
+    mc:Ignorable="d"
+    d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
+    Title="Screen Recorder"
+    Height="72"
+    MinWidth="240"
+    SizeToContent="Width"
+    WindowStyle="None"
+    ResizeMode="NoResize"
+    Topmost="True"
+    WindowStartupLocation="Manual"
+    Background="Transparent"
+    Icon="pack://application:,,,/ScreenRecorder;component/icon.ico"
+    FontFamily="{StaticResource AppFontFamily}"
+    FontSize="{StaticResource BodyFontSize}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    UseLayoutRounding="True"
+    SnapsToDevicePixels="True"
+    TextOptions.TextFormattingMode="Display"
+    theming:WindowBackdrop.Kind="Mica"
+    >
+    <!--
+        The compact recorder toolbar. Layout is the app's signature and is kept as is: a status
+        card on the left (status + quick actions on top, record / stop / time below) and the
+        window buttons with the settings gear on the right. The window has no title bar; the
+        whole surface drags it. WindowChrome keeps the real window frame, so Windows draws the
+        rounded corners, shadow and Mica backdrop.
+    -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="0"
+            CornerRadius="0"
+            GlassFrameThickness="-1"
+            ResizeBorderThickness="0"
+            UseAeroCaptionButtons="False"
+            />
+    </WindowChrome.WindowChrome>
+
+    <Window.ContextMenu>
+        <ContextMenu Closed="ContextMenu_Closed">
+            <!--  Only in the menu of the notification-area icon, while the toolbar is hidden.  -->
+            <MenuItem
+                x:Name="ShowToolbarMenuItem"
+                Header="{x:Static properties:Resources.ShowToolbar}"
+                Click="ShowToolbarMenuItem_Click"
+                FontWeight="SemiBold"
+                Visibility="Collapsed"
+                />
+            <Separator x:Name="ShowToolbarSeparator" Visibility="Collapsed" />
+            <MenuItem
+                Command="{Binding StartCommand}"
+                InputGestureText="{Binding StartShortcut.KeyGestureString}"
+                >
+                <MenuItem.Style>
+                    <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource DefaultMenuItemStyle}">
+                        <Setter Property="Header" Value="{x:Static properties:Resources.StartRecording}" />
+                        <Setter Property="IsEnabled" Value="{Binding Recording.IsIdle}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Recording.IsPaused}" Value="True">
+                                <Setter Property="Header" Value="{x:Static properties:Resources.ResumeRecording}" />
+                                <Setter Property="IsEnabled" Value="True" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </MenuItem.Style>
+                <MenuItem.Icon>
+                    <TextBlock Style="{StaticResource IconTextBlockStyle}" FontSize="12" Text="{StaticResource Glyph.Record}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Header="{x:Static properties:Resources.PauseRecording}"
+                Command="{Binding PauseCommand}"
+                InputGestureText="{Binding PauseShortcut.KeyGestureString}"
+                IsEnabled="{Binding Recording.IsRecording}"
+                >
+                <MenuItem.Icon>
+                    <TextBlock Style="{StaticResource IconTextBlockStyle}" FontSize="12" Text="{StaticResource Glyph.Pause}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Header="{x:Static properties:Resources.StopRecording}"
+                Command="{Binding StopCommand}"
+                InputGestureText="{Binding StopShortcut.KeyGestureString}"
+                IsEnabled="{Binding Recording.IsBusy}"
+                >
+                <MenuItem.Icon>
+                    <TextBlock Style="{StaticResource IconTextBlockStyle}" FontSize="12" Text="{StaticResource Glyph.Stop}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator />
+            <MenuItem
+                Header="{x:Static properties:Resources.SelectRegionAndRecord}"
+                Command="{Binding RecordRegionCommand}"
+                InputGestureText="{Binding RegionShortcut.KeyGestureString}"
+                IsEnabled="{Binding Recording.IsIdle}"
+                >
+                <MenuItem.Icon>
+                    <TextBlock Style="{StaticResource IconTextBlockStyle}" FontSize="13" Text="{StaticResource Glyph.Region}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Header="{x:Static properties:Resources.SelectRegionAndRecordGif}"
+                Command="{Binding RecordGifCommand}"
+                InputGestureText="{Binding GifShortcut.KeyGestureString}"
+                IsEnabled="{Binding Recording.IsIdle}"
+                >
+                <MenuItem.Icon>
+                    <TextBlock
+                        FontFamily="{StaticResource AppFontFamily}"
+                        FontSize="8.5"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="GIF"
+                        />
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator />
+            <MenuItem
+                Header="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}"
+                Command="{Binding OpenRecordFolderCommand}"
+                >
+                <MenuItem.Icon>
+                    <TextBlock Style="{StaticResource IconTextBlockStyle}" FontSize="13" Text="{StaticResource Glyph.Folder}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Header="{x:Static properties:Resources.EncoderSettings}"
+                Click="SettingsMenuItem_Click"
+                >
+                <MenuItem.Icon>
+                    <TextBlock Style="{StaticResource IconTextBlockStyle}" FontSize="13" Text="{StaticResource Glyph.Settings}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Header="{x:Static properties:Resources.ShortcutSettings}"
+                Command="{Binding OpenShortcutSettingsCommand}"
+                >
+                <MenuItem.Icon>
+                    <TextBlock Style="{StaticResource IconTextBlockStyle}" FontSize="13" Text="{StaticResource Glyph.Keyboard}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator />
+            <MenuItem
+                Header="{x:Static properties:Resources.Exit}"
+                Click="CloseButton_Click"
+                />
+        </ContextMenu>
+    </Window.ContextMenu>
+
+    <Border
+        Background="{DynamicResource WindowBackgroundBrush}"
+        behaviors:ClearFocusOnClickBehavior.IsActivated="True"
+        behaviors:DragMoveBehavior.IsActivated="True"
+        >
+        <Grid Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!--  Status card  -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                <Grid Margin="3,2,3,3">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="24" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Row 0: status + quick actions  -->
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  State dot: grey idle, red recording, amber paused / countdown  -->
+                        <Ellipse
+                            Width="7"
+                            Height="7"
+                            Margin="5,1,0,0"
+                            VerticalAlignment="Center"
+                            >
+                            <Ellipse.Style>
+                                <Style TargetType="{x:Type Ellipse}">
+                                    <Setter Property="Fill" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Recording.State}" Value="{x:Static services:RecordingState.Recording}">
+                                            <Setter Property="Fill" Value="{DynamicResource RecordFillColorDefaultBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Recording.State}" Value="{x:Static services:RecordingState.Paused}">
+                                            <Setter Property="Fill" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Recording.State}" Value="{x:Static services:RecordingState.Countdown}">
+                                            <Setter Property="Fill" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+
+                        <!--
+                            The window is as wide as its content, so the status must not change
+                            width with the state: every status text is laid out (invisibly) in
+                            this cell, which makes the cell as wide as the longest of them in
+                            whatever language is shown.
+                        -->
+                        <Grid Grid.Column="1" Margin="5,0,4,1" Visibility="Hidden">
+                            <Grid.Resources>
+                                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BodyTextBlockStyle}">
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Setter Property="TextTrimming" Value="None" />
+                                </Style>
+                            </Grid.Resources>
+                            <TextBlock Text="{x:Static properties:Resources.EncoderStatusStopMessage}" />
+                            <TextBlock Text="{x:Static properties:Resources.EncoderStatusStartMessage}" />
+                            <TextBlock Text="{x:Static properties:Resources.EncoderStatusPauseMessage}" />
+                            <TextBlock Text="{x:Static properties:Resources.EncoderStatusCountdownMessage}" />
+                        </Grid>
+                        <TextBlock
+                            Grid.Column="1"
+                            Margin="5,0,4,1"
+                            FontWeight="SemiBold"
+                            Text="{Binding StatusText}"
+                            >
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BodyTextBlockStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Recording.IsIdle}" Value="True">
+                                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <!--  Ways to start a recording: hidden while one is running, but still taking their space (see above).  -->
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel.Style>
+                                    <Style TargetType="{x:Type StackPanel}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Recording.IsIdle}" Value="False">
+                                                <Setter Property="Visibility" Value="Hidden" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <Button
+                                    Style="{StaticResource IconButtonStyle}"
+                                    Width="22"
+                                    Height="22"
+                                    FontSize="13"
+                                    Content="{StaticResource Glyph.Region}"
+                                    Command="{Binding RecordRegionCommand}"
+                                    ToolTip="{x:Static properties:Resources.CaptureRegionByUserSelection}"
+                                    />
+                                <Button
+                                    Style="{StaticResource IconButtonStyle}"
+                                    Width="24"
+                                    Height="22"
+                                    FontFamily="{StaticResource AppFontFamily}"
+                                    FontSize="9"
+                                    FontWeight="Bold"
+                                    Content="GIF"
+                                    Command="{Binding RecordGifCommand}"
+                                    ToolTip="{x:Static properties:Resources.SelectRegionAndRecordGif}"
+                                    />
+                            </StackPanel>
+                            <!--
+                                Microphone on / off. On the toolbar rather than in the settings:
+                                it is decided per recording, and whether your voice is about to
+                                be recorded should be visible before you press record. It stays
+                                visible (but locked) while recording.
+                            -->
+                            <ToggleButton
+                                Width="22"
+                                Height="22"
+                                FontSize="13"
+                                IsChecked="{Binding Settings.RecordMicrophone, Mode=TwoWay}"
+                                IsHitTestVisible="{Binding Recording.IsIdle}"
+                                >
+                                <ToggleButton.Style>
+                                    <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource IconButtonStyle}">
+                                        <Setter Property="Content" Value="{StaticResource Glyph.MicrophoneOff}" />
+                                        <Setter Property="ToolTip" Value="{x:Static properties:Resources.MicrophoneIsOff}" />
+                                        <Style.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter Property="Content" Value="{StaticResource Glyph.Microphone}" />
+                                                <Setter Property="ToolTip" Value="{x:Static properties:Resources.MicrophoneIsOn}" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ToggleButton.Style>
+                            </ToggleButton>
+                            <Button
+                                Style="{StaticResource IconButtonStyle}"
+                                Width="22"
+                                Height="22"
+                                FontSize="13"
+                                Content="{StaticResource Glyph.Folder}"
+                                Command="{Binding OpenRecordFolderCommand}"
+                                ToolTip="{x:Static properties:Resources.OpenEncodingFolderInFileExplorer}"
+                                />
+                        </StackPanel>
+                    </Grid>
+
+                    <!--  Row 1: record / pause, stop, time  -->
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  Record (idle / paused) ⇄ Pause (recording)  -->
+                        <Grid Grid.Column="0" Margin="1,0,0,0">
+                            <Button
+                                Style="{StaticResource IconButtonStyle}"
+                                Width="30"
+                                Height="30"
+                                Command="{Binding StartCommand}"
+                                >
+                                <Button.ToolTip>
+                                    <TextBlock>
+                                        <TextBlock.Style>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Setter Property="Text" Value="{x:Static properties:Resources.StartRecording}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Recording.IsPaused}" Value="True">
+                                                        <Setter Property="Text" Value="{x:Static properties:Resources.ResumeRecording}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Button.ToolTip>
+                                <Button.Visibility>
+                                    <Binding Path="Recording.IsRecording" Converter="{StaticResource InverseBooleanToVisibilityConverter}" />
+                                </Button.Visibility>
+                                <!--  Whole-pixel sizes: with layout rounding a fractional inset would pull the dot off-center.  -->
+                                <Grid Width="18" Height="18" UseLayoutRounding="False">
+                                    <Ellipse
+                                        Width="18"
+                                        Height="18"
+                                        Stroke="{DynamicResource RecordFillColorDefaultBrush}"
+                                        StrokeThickness="1.5"
+                                        Opacity="0.55"
+                                        />
+                                    <Ellipse
+                                        Width="10"
+                                        Height="10"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Fill="{DynamicResource RecordFillColorDefaultBrush}"
+                                        />
+                                </Grid>
+                            </Button>
+                            <Button
+                                Style="{StaticResource IconButtonStyle}"
+                                Width="30"
+                                Height="30"
+                                FontSize="15"
+                                Foreground="{DynamicResource RecordFillColorDefaultBrush}"
+                                Content="{StaticResource Glyph.Pause}"
+                                Command="{Binding PauseCommand}"
+                                ToolTip="{x:Static properties:Resources.PauseRecording}"
+                                Visibility="{Binding Recording.IsRecording, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                />
+                        </Grid>
+
+                        <Button
+                            Grid.Column="1"
+                            Style="{StaticResource IconButtonStyle}"
+                            Width="30"
+                            Height="30"
+                            FontSize="14"
+                            Content="{StaticResource Glyph.Stop}"
+                            Command="{Binding StopCommand}"
+                            IsEnabled="{Binding Recording.IsBusy}"
+                            ToolTip="{x:Static properties:Resources.StopRecording}"
+                            />
+
+                        <!--  Elapsed time (file size / dropped frames in the tooltip)  -->
+                        <Border
+                            Grid.Column="2"
+                            Margin="3,1,1,1"
+                            Background="{DynamicResource InsetFillColorBrush}"
+                            CornerRadius="4"
+                            ToolTip="{Binding RecordingInfo}"
+                            ToolTipService.IsEnabled="{Binding RecordingInfo, Converter={StaticResource NotNullConverter}}"
+                            >
+                            <Grid>
+                                <TextBlock
+                                    Margin="8,0,8,1"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppDisplayFontFamily}"
+                                    FontSize="17"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{Binding TimeText}"
+                                    TextOptions.TextFormattingMode="Ideal"
+                                    Typography.NumeralAlignment="Tabular"
+                                    />
+
+                                <!--  Level of the sound going into the recording (only while there is one)  -->
+                                <controls:LevelMeter
+                                    Height="2"
+                                    Margin="7,0,7,2"
+                                    VerticalAlignment="Bottom"
+                                    Source="{Binding Recording}"
+                                    TrackBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                    LevelBrush="{DynamicResource AccentFillColorDefaultBrush}"
+                                    CautionBrush="{DynamicResource SystemFillColorCautionBrush}"
+                                    CriticalBrush="{DynamicResource SystemFillColorCriticalBrush}"
+                                    Visibility="{Binding Recording.HasAudioLevel, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                    />
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!--  Window buttons + settings  -->
+            <Grid Grid.Column="1" Margin="3,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Horizontal">
+                    <Button
+                        Style="{StaticResource IconButtonStyle}"
+                        Width="24"
+                        Height="24"
+                        FontSize="10"
+                        Content="{StaticResource Glyph.Minimize}"
+                        Click="MinimizeButton_Click"
+                        ToolTip="{x:Static properties:Resources.Minimize}"
+                        />
+                    <Button
+                        Style="{StaticResource CloseIconButtonStyle}"
+                        Width="24"
+                        Height="24"
+                        FontSize="10"
+                        Content="{StaticResource Glyph.Close}"
+                        Click="CloseButton_Click"
+                        ToolTip="{x:Static properties:Resources.Exit}"
+                        />
+                </StackPanel>
+
+                <ToggleButton
+                    x:Name="SettingsButton"
+                    Grid.Row="1"
+                    Style="{StaticResource IconButtonStyle}"
+                    Width="Auto"
+                    Height="Auto"
+                    Margin="0,3,0,0"
+                    FontSize="16"
+                    Content="{StaticResource Glyph.Settings}"
+                    Checked="SettingsButton_Checked"
+                    Unchecked="SettingsButton_Unchecked"
+                    ToolTip="{x:Static properties:Resources.EncoderSettings}"
+                    />
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

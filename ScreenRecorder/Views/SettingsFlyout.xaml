@@ -1,0 +1,497 @@
+<Window
+    x:Class="ScreenRecorder.Views.SettingsFlyout"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:behaviors="clr-namespace:ScreenRecorder.Behaviors"
+    xmlns:properties="clr-namespace:ScreenRecorder.Properties"
+    xmlns:theming="clr-namespace:ScreenRecorder.Theming"
+    xmlns:vm="clr-namespace:ScreenRecorder.ViewModels"
+    mc:Ignorable="d"
+    d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
+    Title="{x:Static properties:Resources.EncoderSettings}"
+    Width="430"
+    SizeToContent="Height"
+    WindowStyle="None"
+    ResizeMode="NoResize"
+    ShowInTaskbar="False"
+    Topmost="True"
+    WindowStartupLocation="Manual"
+    Background="Transparent"
+    FontFamily="{StaticResource AppFontFamily}"
+    FontSize="{StaticResource BodyFontSize}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    UseLayoutRounding="True"
+    SnapsToDevicePixels="True"
+    TextOptions.TextFormattingMode="Display"
+    theming:WindowBackdrop.Kind="Acrylic"
+    >
+    <!--
+        The settings flyout: a light-dismiss window (it closes when it loses focus) that opens
+        under the toolbar. It is a real window rather than a Popup so it gets the system
+        acrylic material, rounded corners and shadow.
+    -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="0"
+            CornerRadius="0"
+            GlassFrameThickness="-1"
+            ResizeBorderThickness="0"
+            UseAeroCaptionButtons="False"
+            />
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <Style x:Key="SettingRowStyle" TargetType="{x:Type Grid}">
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+
+        <!--  A row that exists only while "Advanced settings" is on.  -->
+        <Style x:Key="AdvancedSettingRowStyle" TargetType="{x:Type Grid}" BasedOn="{StaticResource SettingRowStyle}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Settings.AdvancedSettings}" Value="True">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SettingLabelStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BodyTextBlockStyle}">
+            <Setter Property="Margin" Value="0,0,12,1" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+
+        <Style x:Key="SettingCheckBoxStyle" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource DefaultCheckBoxStyle}">
+            <Setter Property="Margin" Value="0,4,12,4" />
+        </Style>
+
+        <DataTemplate x:Key="BitrateTemplate">
+            <TextBlock Text="{Binding Converter={StaticResource BitrateFormatter}}" />
+        </DataTemplate>
+        <DataTemplate x:Key="FrameRateTemplate">
+            <TextBlock Text="{Binding Converter={StaticResource FrameRateFormatter}}" />
+        </DataTemplate>
+        <DataTemplate x:Key="GifFrameRateTemplate">
+            <TextBlock Text="{Binding StringFormat={}{0} fps}" />
+        </DataTemplate>
+        <DataTemplate x:Key="PercentTemplate">
+            <TextBlock Text="{Binding StringFormat={}{0}%}" />
+        </DataTemplate>
+        <DataTemplate x:Key="RecordDelayTemplate">
+            <TextBlock Text="{Binding Converter={StaticResource RecordDelayFormatter}}" />
+        </DataTemplate>
+    </Window.Resources>
+
+    <Border Background="{DynamicResource FlyoutBackgroundBrush}" behaviors:ClearFocusOnClickBehavior.IsActivated="True">
+        <Grid Margin="14,10,14,14">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!--  Header: title + window-level toggles  -->
+            <Grid Grid.Row="0" Margin="0,0,0,10">
+                <TextBlock
+                    Style="{StaticResource SubtitleTextBlockStyle}"
+                    Margin="1,0,0,0"
+                    Text="{x:Static properties:Resources.EncoderSettings}"
+                    />
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <ToggleButton
+                        Width="28"
+                        Height="26"
+                        IsChecked="{Binding Settings.ExcludeFromCapture, Mode=TwoWay}"
+                        >
+                        <ToggleButton.Style>
+                            <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource IconButtonStyle}">
+                                <Setter Property="Content" Value="{StaticResource Glyph.Show}" />
+                                <Setter Property="ToolTip" Value="{x:Static properties:Resources.IncludeAppFromCapture}" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsChecked" Value="True">
+                                        <Setter Property="Content" Value="{StaticResource Glyph.Hide}" />
+                                        <Setter Property="ToolTip" Value="{x:Static properties:Resources.ExcludeAppFromCapture}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ToggleButton.Style>
+                    </ToggleButton>
+                    <Button
+                        Style="{StaticResource IconButtonStyle}"
+                        Width="28"
+                        Height="26"
+                        Margin="2,0,0,0"
+                        Content="{StaticResource Glyph.Keyboard}"
+                        Click="ShortcutButton_Click"
+                        ToolTip="{x:Static properties:Resources.ShortcutSettings}"
+                        />
+                </StackPanel>
+            </Grid>
+
+            <!--  Settings (locked while recording)  -->
+            <StackPanel
+                Grid.Row="1"
+                Grid.IsSharedSizeScope="True"
+                IsEnabled="{Binding Recording.IsIdle}"
+                >
+                <Grid Style="{StaticResource SettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.EncoderFileFormat}" />
+                    <ComboBox
+                        Grid.Column="1"
+                        ItemsSource="{Binding Formats}"
+                        DisplayMemberPath="Name"
+                        SelectedValuePath="Format"
+                        SelectedValue="{Binding Settings.RecordFormat, Mode=TwoWay}"
+                        />
+                </Grid>
+
+                <Grid Style="{StaticResource AdvancedSettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.EncoderVideoCodec}" />
+                    <ComboBox
+                        Grid.Column="1"
+                        ItemsSource="{Binding VideoCodecs}"
+                        DisplayMemberPath="Name"
+                        SelectedValuePath="Value"
+                        SelectedValue="{Binding SelectedVideoCodec, Mode=TwoWay}"
+                        />
+                </Grid>
+
+                <Grid Style="{StaticResource SettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.EncoderVideoBitrate}" />
+                    <!--  Constant-quality modes ignore the bitrate.  -->
+                    <ComboBox
+                        Grid.Column="1"
+                        ItemsSource="{Binding VideoBitrates}"
+                        ItemTemplate="{StaticResource BitrateTemplate}"
+                        SelectedItem="{Binding Settings.VideoBitrate, Mode=TwoWay}"
+                        IsEnabled="{Binding IsVideoBitrateApplicable}"
+                        />
+                </Grid>
+
+                <Grid Style="{StaticResource AdvancedSettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.EncoderRateControl}" />
+                    <ComboBox
+                        Grid.Column="1"
+                        ItemsSource="{Binding QualityModes}"
+                        DisplayMemberPath="Name"
+                        SelectedValuePath="Value"
+                        SelectedValue="{Binding Settings.QualityMode, Mode=TwoWay}"
+                        />
+                </Grid>
+
+                <Grid Style="{StaticResource AdvancedSettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.EncoderFrameRate}" />
+                    <ComboBox
+                        Grid.Column="1"
+                        ItemsSource="{Binding FrameRates}"
+                        ItemTemplate="{StaticResource FrameRateTemplate}"
+                        SelectedItem="{Binding Settings.FrameRate, Mode=TwoWay}"
+                        ToolTip="{x:Static properties:Resources.FrameRateAutoToolTip}"
+                        />
+                </Grid>
+
+                <Grid Style="{StaticResource AdvancedSettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.EncoderAudioCodec}" />
+                    <ComboBox
+                        Grid.Column="1"
+                        ItemsSource="{Binding AudioCodecs}"
+                        DisplayMemberPath="Name"
+                        SelectedValuePath="Value"
+                        SelectedValue="{Binding Settings.AudioCodec, Mode=TwoWay}"
+                        />
+                </Grid>
+
+                <Grid Style="{StaticResource SettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.EncoderAudioBitrate}" />
+                    <ComboBox
+                        Grid.Column="1"
+                        ItemsSource="{Binding AudioBitrates}"
+                        ItemTemplate="{StaticResource BitrateTemplate}"
+                        SelectedItem="{Binding Settings.AudioBitrate, Mode=TwoWay}"
+                        />
+                </Grid>
+
+                <Grid Style="{StaticResource AdvancedSettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.AudioOutputDevice}" />
+                    <ComboBox
+                        Grid.Column="1"
+                        ItemsSource="{Binding AudioOutputDevices}"
+                        DisplayMemberPath="Name"
+                        SelectedValuePath="Id"
+                        SelectedValue="{Binding Settings.SystemAudioDevice, Mode=TwoWay}"
+                        IsEnabled="{Binding Settings.RecordSystemAudio}"
+                        />
+                </Grid>
+
+                <Grid Style="{StaticResource AdvancedSettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.AudioInputDevice}" />
+                    <ComboBox
+                        Grid.Column="1"
+                        ItemsSource="{Binding AudioInputDevices}"
+                        DisplayMemberPath="Name"
+                        SelectedValuePath="Id"
+                        SelectedValue="{Binding Settings.MicrophoneDevice, Mode=TwoWay}"
+                        IsEnabled="{Binding Settings.RecordMicrophone}"
+                        />
+                </Grid>
+
+                <Grid Style="{StaticResource AdvancedSettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.GifSettings}" />
+                    <ComboBox
+                        Grid.Column="1"
+                        ItemsSource="{Binding GifFrameRates}"
+                        ItemTemplate="{StaticResource GifFrameRateTemplate}"
+                        SelectedItem="{Binding Settings.GifFrameRate, Mode=TwoWay}"
+                        ToolTip="{x:Static properties:Resources.GifFrameRateToolTip}"
+                        />
+                    <ComboBox
+                        Grid.Column="3"
+                        ItemsSource="{Binding GifScalePercents}"
+                        ItemTemplate="{StaticResource PercentTemplate}"
+                        SelectedItem="{Binding Settings.GifScalePercent, Mode=TwoWay}"
+                        ToolTip="{x:Static properties:Resources.GifScaleToolTip}"
+                        />
+                </Grid>
+
+                <Grid Style="{StaticResource SettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.RecordDelay}" />
+                    <ComboBox
+                        Grid.Column="1"
+                        ItemsSource="{Binding RecordDelays}"
+                        ItemTemplate="{StaticResource RecordDelayTemplate}"
+                        SelectedItem="{Binding Settings.RecordDelay, Mode=TwoWay}"
+                        />
+                </Grid>
+
+                <Grid Style="{StaticResource SettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.EncoderCaptureDisplay}" />
+                    <ComboBox
+                        Grid.Column="1"
+                        ItemsSource="{Binding CaptureTargets}"
+                        DisplayMemberPath="Description"
+                        SelectedItem="{Binding SelectedCaptureTarget, Mode=TwoWay}"
+                        />
+                    <!--  The saved display is not connected right now.  -->
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="11,0,30,1"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                        IsHitTestVisible="False"
+                        Text="{x:Static properties:Resources.DisplayNotFound}"
+                        Visibility="{Binding IsCaptureTargetMissing, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        />
+                </Grid>
+
+                <Grid Style="{StaticResource SettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.EncoderBaseDirectory}" />
+                    <TextBox
+                        Grid.Column="1"
+                        IsReadOnly="True"
+                        Text="{Binding Settings.RecordDirectory, Mode=OneWay}"
+                        ToolTip="{Binding Settings.RecordDirectory}"
+                        >
+                        <TextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem
+                                    Header="{x:Static properties:Resources.OpenFolderInFileExplorer}"
+                                    Command="{Binding OpenRecordDirectoryCommand}"
+                                    />
+                                <Separator />
+                                <MenuItem
+                                    Header="{x:Static properties:Resources.Browse}"
+                                    Click="BrowseButton_Click"
+                                    />
+                            </ContextMenu>
+                        </TextBox.ContextMenu>
+                    </TextBox>
+                    <Button
+                        Grid.Column="2"
+                        Margin="6,0,0,0"
+                        Content="{x:Static properties:Resources.Browse}"
+                        Click="BrowseButton_Click"
+                        />
+                </Grid>
+
+                <!--
+                    On / off options, grouped by what they affect. (The microphone is switched
+                    on the toolbar.)
+                -->
+                <Grid Style="{StaticResource SettingRowStyle}" Margin="0,2,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.AudioOptions}" />
+                    <WrapPanel Grid.Column="1">
+                        <CheckBox
+                            Style="{StaticResource SettingCheckBoxStyle}"
+                            Content="{x:Static properties:Resources.RecordSystemAudio}"
+                            IsChecked="{Binding Settings.RecordSystemAudio, Mode=TwoWay}"
+                            />
+                    </WrapPanel>
+                </Grid>
+                <Grid Style="{StaticResource SettingRowStyle}" Margin="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource SettingLabelStyle}" Text="{x:Static properties:Resources.PictureOptions}" />
+                    <WrapPanel Grid.Column="1">
+                        <CheckBox
+                            Style="{StaticResource SettingCheckBoxStyle}"
+                            Content="{x:Static properties:Resources.CaptureCursor}"
+                            IsChecked="{Binding Settings.CaptureCursor, Mode=TwoWay}"
+                            />
+                        <CheckBox
+                            Style="{StaticResource SettingCheckBoxStyle}"
+                            Content="{x:Static properties:Resources.ShowRecordingFrame}"
+                            IsChecked="{Binding Settings.ShowRecordingFrame, Mode=TwoWay}"
+                            ToolTip="{x:Static properties:Resources.ShowRecordingFrameToolTip}"
+                            />
+                        <CheckBox
+                            Style="{StaticResource SettingCheckBoxStyle}"
+                            Content="{x:Static properties:Resources.HighlightClicks}"
+                            IsChecked="{Binding Settings.HighlightClicks, Mode=TwoWay}"
+                            ToolTip="{x:Static properties:Resources.HighlightClicksToolTip}"
+                            />
+                    </WrapPanel>
+                </Grid>
+
+                <!--  Shows / hides the advanced rows above. A view switch, not a setting among the others.  -->
+                <Border
+                    Margin="0,6,0,0"
+                    Padding="0,6,0,0"
+                    BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                    BorderThickness="0,1,0,0"
+                    >
+                    <ToggleButton
+                        Width="NaN"
+                        Height="26"
+                        Margin="-6,0,0,-4"
+                        Padding="6,0,8,0"
+                        HorizontalAlignment="Left"
+                        FontFamily="{StaticResource AppFontFamily}"
+                        FontSize="{StaticResource BodyFontSize}"
+                        IsChecked="{Binding Settings.AdvancedSettings, Mode=TwoWay}"
+                        >
+                        <ToggleButton.Style>
+                            <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource IconButtonStyle}" />
+                        </ToggleButton.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                FontFamily="{StaticResource IconFontFamily}"
+                                FontSize="10"
+                                Margin="0,1,7,0"
+                                VerticalAlignment="Center"
+                                >
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="Text" Value="{StaticResource Glyph.ChevronDown}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Settings.AdvancedSettings}" Value="True">
+                                                <Setter Property="Text" Value="{StaticResource Glyph.ChevronUp}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock VerticalAlignment="Center" Text="{x:Static properties:Resources.AdvancedSettings}" />
+                        </StackPanel>
+                    </ToggleButton>
+                </Border>
+            </StackPanel>
+
+            <!--  Info bar: no hardware encoder for the codec in use  -->
+            <Border
+                Grid.Row="2"
+                Margin="0,8,0,0"
+                Padding="10,7,10,8"
+                Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Visibility="{Binding ShowSoftwareEncoderWarning, Converter={StaticResource BooleanToVisibilityConverter}}"
+                >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Style="{StaticResource IconTextBlockStyle}"
+                        Margin="0,1,9,0"
+                        VerticalAlignment="Top"
+                        FontSize="14"
+                        Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                        Text="{StaticResource Glyph.Warning}"
+                        />
+                    <TextBlock
+                        Grid.Column="1"
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        Text="{x:Static properties:Resources.HardwareEncoderNotFoundWarning}"
+                        TextTrimming="None"
+                        TextWrapping="Wrap"
+                        />
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

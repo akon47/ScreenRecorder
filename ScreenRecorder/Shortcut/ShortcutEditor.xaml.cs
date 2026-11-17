@@ -1,132 +1,83 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ScreenRecorder.Shortcut
 {
     /// <summary>
-    /// ShortcutEditor.xaml에 대한 상호 작용 논리
+    /// Edits one <see cref="IShortcut"/>: while the box has focus, the next key combination
+    /// pressed becomes the shortcut.
     /// </summary>
     public partial class ShortcutEditor : UserControl
     {
+        public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
+            nameof(Title), typeof(string), typeof(ShortcutEditor), new PropertyMetadata(string.Empty));
+
+        public static readonly DependencyProperty ShortcutProperty = DependencyProperty.Register(
+            nameof(Shortcut), typeof(IShortcut), typeof(ShortcutEditor), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty ShortcutEditableProperty = DependencyProperty.Register(
+            nameof(ShortcutEditable), typeof(bool), typeof(ShortcutEditor), new PropertyMetadata(true));
+
+        /// <summary>Modifier keys on their own are not a shortcut.</summary>
+        private static readonly HashSet<Key> ModifierOnlyKeys = new HashSet<Key>
+        {
+            Key.LeftAlt, Key.RightAlt, Key.LeftCtrl, Key.RightCtrl, Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin,
+        };
+
         public string Title
-		{
-			get { return (string)GetValue(TitleProperty); }
-			set { SetValue(TitleProperty, value); }
-		}
-		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
-			"Title", typeof(string), typeof(ShortcutEditor), new PropertyMetadata("Command"));
+        {
+            get => (string)GetValue(TitleProperty);
+            set => SetValue(TitleProperty, value);
+        }
 
-		public IShortcut Shortcut
-		{
-			get { return (IShortcut)GetValue(ShortcutProperty); }
-			set { SetValue(ShortcutProperty, value); }
-		}
-		public static readonly DependencyProperty ShortcutProperty = DependencyProperty.Register(
-			"Shortcut", typeof(IShortcut), typeof(ShortcutEditor), new PropertyMetadata(null));
+        public IShortcut Shortcut
+        {
+            get => (IShortcut)GetValue(ShortcutProperty);
+            set => SetValue(ShortcutProperty, value);
+        }
 
-		public bool ShortcutEditable
-		{
-			get { return (bool)GetValue(ShortcutEditableProperty); }
-			set { SetValue(ShortcutEditableProperty, value); }
-		}
-		public static readonly DependencyProperty ShortcutEditableProperty = DependencyProperty.Register(
-			"ShortcutEditable", typeof(bool), typeof(ShortcutEditor), new PropertyMetadata(true));
+        public bool ShortcutEditable
+        {
+            get => (bool)GetValue(ShortcutEditableProperty);
+            set => SetValue(ShortcutEditableProperty, value);
+        }
 
         public ShortcutEditor()
         {
             InitializeComponent();
         }
 
-        public delegate void OnShortcutChangingHandler(ShortcutEditor sender, CancelEventArgs e, KeyGesture keyGesture);
-		public event OnShortcutChangingHandler OnShortcutChanging;
+        private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Alt combinations arrive as Key.System with the real key in SystemKey.
+            Key key = e.Key == Key.System ? e.SystemKey : e.Key;
 
-		private static HashSet<Key> _ignoredKey = new HashSet<Key>()
-		{
-			Key.LeftAlt, Key.RightAlt, Key.LeftCtrl, Key.RightCtrl, Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin
-		};
+            // Let Tab move between rows and a bare Esc close the dialog.
+            if (Keyboard.Modifiers == ModifierKeys.None && (key == Key.Tab || key == Key.Escape))
+                return;
 
-		private static HashSet<Key> _ignoredAloneKey = new HashSet<Key>()
-		{
-			Key.Escape
-		};
-		private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			if (ShortcutEditable)
-			{
-				if (!_ignoredKey.Contains(e.Key) &&
-					(e.Key != Key.System || (e.Key == Key.System && !_ignoredKey.Contains(e.SystemKey))))
-				{
-					Key key = (e.Key == Key.System && !_ignoredKey.Contains(e.SystemKey)) ? e.SystemKey : e.Key;
-					if (!_ignoredAloneKey.Contains(key) ||
-						(_ignoredAloneKey.Contains(key) && Keyboard.Modifiers != ModifierKeys.None))
-					{
-						try
-						{
-							KeyGesture keyGesture = new KeyGesture(key, Keyboard.Modifiers);
-							if (Shortcut != null)
-							{
-								CancelEventArgs cancelEventArgs = new CancelEventArgs() { Cancel = false };
-								OnShortcutChanging?.Invoke(this, cancelEventArgs, keyGesture);
+            e.Handled = true;
 
-								if (!cancelEventArgs.Cancel)
-								{
-									Shortcut.KeyGesture = keyGesture;
-								}
-							}
-						}
-						catch
-						{
-							// not supported key
-						}
-					}
-				}
-			}
-			e.Handled = true;
-		}
+            if (!ShortcutEditable || Shortcut == null || ModifierOnlyKeys.Contains(key))
+                return;
 
-		private void button_deleteShortcut_Click(object sender, RoutedEventArgs e)
-		{
-			if (Shortcut != null)
-			{
-				Shortcut.KeyGesture = null;
-			}
-		}
+            try
+            {
+                Shortcut.KeyGesture = new KeyGesture(key, Keyboard.Modifiers);
+            }
+            catch (NotSupportedException)
+            {
+                // WPF does not accept this combination as a gesture (e.g. a bare letter).
+            }
+        }
 
-		private void menuItem_loadDefault_Click(object sender, RoutedEventArgs e)
-		{
-			if (Shortcut != null)
-			{
-				if (Shortcut.DefaultKeyGesture != null)
-				{
-					KeyGesture keyGesture = new KeyGesture(Shortcut.DefaultKeyGesture.Key, Shortcut.DefaultKeyGesture.Modifiers);
-
-					CancelEventArgs cancelEventArgs = new CancelEventArgs();
-					cancelEventArgs.Cancel = false;
-					OnShortcutChanging?.Invoke(this, cancelEventArgs, keyGesture);
-
-					if (!cancelEventArgs.Cancel)
-					{
-						Shortcut.KeyGesture = keyGesture;
-					}
-				}
-				else
-				{
-					Shortcut.KeyGesture = null;
-				}
-			}
-		}
+        private void button_deleteShortcut_Click(object sender, RoutedEventArgs e)
+        {
+            if (Shortcut != null)
+                Shortcut.KeyGesture = null;
+        }
     }
 }

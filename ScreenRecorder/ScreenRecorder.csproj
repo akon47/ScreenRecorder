@@ -16,6 +16,14 @@
          this is the local default. AssemblyInfo.cs keeps only the attributes the SDK
          does not generate (ThemeInfo / DPI / ComVisible). -->
     <Version>2.1.0</Version>
+    <!--
+      Runtime tuning for a recorder: concurrent (background) GC so collections do not stall the
+      capture/encode threads, tiered PGO for the hot paths. Workstation GC (not Server): this is
+      a small tool and must stay small in memory.
+    -->
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <TieredPGO>true</TieredPGO>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +33,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ScreenRecorder.Engine\ScreenRecorder.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Lets the test project reach internal helpers. -->
+    <InternalsVisibleTo Include="ScreenRecorder.App.Tests" />
   </ItemGroup>
 
   <ItemGroup>

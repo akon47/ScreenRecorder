@@ -127,7 +127,7 @@
     <value>Capture Cancel</value>
   </data>
   <data name="CaptureCursor" xml:space="preserve">
-    <value>Capture Cursor</value>
+    <value>Cursor</value>
   </data>
   <data name="CaptureDisplay" xml:space="preserve">
     <value>Capture Display</value>
@@ -169,13 +169,13 @@
     <value>Recording Settings</value>
   </data>
   <data name="EncoderStatusPauseMessage" xml:space="preserve">
-    <value>Recording (Pause)</value>
+    <value>Paused</value>
   </data>
   <data name="EncoderStatusStartMessage" xml:space="preserve">
     <value>Recording</value>
   </data>
   <data name="EncoderStatusStopMessage" xml:space="preserve">
-    <value>Waiting for recording</value>
+    <value>Ready</value>
   </data>
   <data name="EncoderVideoBitrate" xml:space="preserve">
     <value>Video Bitrate</value>
@@ -238,7 +238,7 @@
     <value>The recording path is not set. Please set the recording path</value>
   </data>
   <data name="Minimize" xml:space="preserve">
-    <value>Minimize</value>
+    <value>Hide to the notification area</value>
   </data>
   <data name="EncoderRateControl" xml:space="preserve">
     <value>Rate Control</value>
@@ -257,5 +257,137 @@
   </data>
   <data name="RecordDelay" xml:space="preserve">
     <value>Start Delay (sec)</value>
+  </data>
+  <data name="FrameRateAuto" xml:space="preserve">
+    <value>Auto (changes only)</value>
+  </data>
+  <data name="FrameRateAutoToolTip" xml:space="preserve">
+    <value>Auto records only the frames that actually change, so a still screen takes almost no space. Pick a fixed rate only if another tool requires a constant frame rate.</value>
+  </data>
+  <data name="RecordDelayNone" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="SecondsFormat" xml:space="preserve">
+    <value>{0} sec</value>
+  </data>
+  <data name="RecordSystemAudio" xml:space="preserve">
+    <value>System audio</value>
+  </data>
+  <data name="AudioOutputDevice" xml:space="preserve">
+    <value>Playback Device</value>
+  </data>
+  <data name="AudioInputDevice" xml:space="preserve">
+    <value>Microphone Device</value>
+  </data>
+  <data name="DefaultDevice" xml:space="preserve">
+    <value>System default</value>
+  </data>
+  <data name="AudioOnly" xml:space="preserve">
+    <value>Audio only (no video)</value>
+  </data>
+  <data name="ShowRecordingFrame" xml:space="preserve">
+    <value>Area border</value>
+  </data>
+  <data name="ShowRecordingFrameToolTip" xml:space="preserve">
+    <value>Shows a border around the area or window being recorded. The border itself is not recorded.</value>
+  </data>
+  <data name="RecordingStoppedTargetClosed" xml:space="preserve">
+    <value>The window being recorded was closed, so the recording has been saved and stopped.</value>
+  </data>
+  <data name="RecordingStoppedWriteFailed" xml:space="preserve">
+    <value>Recording stopped because the file could not be written. Check the free disk space and the recording path.</value>
+  </data>
+  <data name="RecordingStoppedCaptureFailed" xml:space="preserve">
+    <value>Recording stopped because screen capture failed. What was recorded so far has been saved.</value>
+  </data>
+  <data name="RecordingStoppedLowDiskSpace" xml:space="preserve">
+    <value>Recording stopped because the disk is almost full. What was recorded so far has been saved.</value>
+  </data>
+  <data name="RecordingSaved" xml:space="preserve">
+    <value>Saved</value>
+  </data>
+  <data name="AudioOnlyNeedsSource" xml:space="preserve">
+    <value>To record audio only, turn on system audio or the microphone and choose an audio codec.</value>
+  </data>
+  <data name="EncoderStatusCountdownMessage" xml:space="preserve">
+    <value>Starting</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="AlreadyRunning" xml:space="preserve">
+    <value>Screen Recorder is already running.</value>
+  </data>
+  <data name="ResumeRecording" xml:space="preserve">
+    <value>Resume Recording</value>
+  </data>
+  <data name="SelectRegionAndRecord" xml:space="preserve">
+    <value>Select Area and Record</value>
+  </data>
+  <data name="RecordingInfoToolTip" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="DroppedFramesFormat" xml:space="preserve">
+    <value>{0} dropped</value>
+  </data>
+  <data name="HighlightCaptureWindowHint" xml:space="preserve">
+    <value>Click a window to record it</value>
+  </data>
+  <data name="HighlightCaptureRegionHint" xml:space="preserve">
+    <value>Drag to select the area to record</value>
+  </data>
+  <data name="HighlightCaptureDisplayHint" xml:space="preserve">
+    <value>Click a display to record it</value>
+  </data>
+  <data name="SelectRegionAndRecordGif" xml:space="preserve">
+    <value>Select Area and Record GIF</value>
+  </data>
+  <data name="GifSettings" xml:space="preserve">
+    <value>GIF (rate / size)</value>
+  </data>
+  <data name="GifFrameRateToolTip" xml:space="preserve">
+    <value>Highest frame rate of GIF recordings. Only frames that change are stored, so a higher value mainly makes motion smoother.</value>
+  </data>
+  <data name="GifScaleToolTip" xml:space="preserve">
+    <value>GIF size relative to the selected area. A smaller size gives a much smaller file.</value>
+  </data>
+  <data name="ShortcutInUse" xml:space="preserve">
+    <value>This key combination is already used by another program.</value>
+  </data>
+  <data name="ShortcutSettingsHint" xml:space="preserve">
+    <value>Click a box and press the keys. Shortcuts work even when another app has focus.</value>
+  </data>
+  <data name="SoftwareEncoder" xml:space="preserve">
+    <value>Software (CPU)</value>
+  </data>
+  <data name="AllDisplays" xml:space="preserve">
+    <value>All displays</value>
+  </data>
+  <data name="HighlightClicks" xml:space="preserve">
+    <value>Click highlight</value>
+  </data>
+  <data name="HighlightClicksToolTip" xml:space="preserve">
+    <value>Shows a ring where the mouse is clicked so clicks are visible in the recording (display and area recordings).</value>
+  </data>
+  <data name="MicrophoneIsOn" xml:space="preserve">
+    <value>Microphone: on — your voice is recorded too</value>
+  </data>
+  <data name="MicrophoneIsOff" xml:space="preserve">
+    <value>Microphone: off</value>
+  </data>
+  <data name="AudioOptions" xml:space="preserve">
+    <value>Audio</value>
+  </data>
+  <data name="PictureOptions" xml:space="preserve">
+    <value>Picture</value>
+  </data>
+  <data name="TrayHint" xml:space="preserve">
+    <value>Still running here. Click the icon to bring the toolbar back; the recording shortcuts keep working.</value>
+  </data>
+  <data name="ShowToolbar" xml:space="preserve">
+    <value>Show Screen Recorder</value>
   </data>
 </root>

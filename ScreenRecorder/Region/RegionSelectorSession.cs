@@ -25,12 +25,58 @@ namespace ScreenRecorder.Region
         public RegionSelectionResult RegionSelectionResult { get; private set; }
 
         /// <summary>
+        /// The rectangle currently being dragged, in desktop coordinates (Empty when none). A
+        /// drag may cross monitors, so the rectangle is shared: every overlay draws the part
+        /// of it that lies on its own monitor.
+        /// </summary>
+        internal Rect Selection { get; private set; } = Rect.Empty;
+
+        /// <summary>Real pixel size the current <see cref="Selection"/> will be recorded at.</summary>
+        internal Size SelectionPixelSize { get; private set; }
+
+        /// <summary>Bounding box of all monitors (desktop coordinates).</summary>
+        internal Rect DesktopBounds { get; private set; } = Rect.Empty;
+
+        private ScreenRecorder.DirectX.MonitorInfo[] _monitors = System.Array.Empty<ScreenRecorder.DirectX.MonitorInfo>();
+
+        /// <summary>Updates the dragged rectangle and redraws every overlay.</summary>
+        internal void SetSelection(Rect desktopRect)
+        {
+            Selection = desktopRect;
+
+            var layout = desktopRect.IsEmpty ? null : ScreenRecorder.VideoSource.CaptureLayout.ForDesktopRegion(_monitors, desktopRect);
+            SelectionPixelSize = layout == null ? default : new Size(layout.Width, layout.Height);
+
+            foreach (var window in _windows)
+                window.InvalidateSelection();
+        }
+
+        /// <summary>
+        /// The monitor that wholly contains <paramref name="desktopRect"/>, or null when the
+        /// rectangle spans more than one.
+        /// </summary>
+        internal ScreenRecorder.DirectX.MonitorInfo FindContainingMonitor(Rect desktopRect)
+        {
+            foreach (var monitor in _monitors)
+            {
+                if (monitor.Bounds.Contains(desktopRect))
+                    return monitor;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Shows the per-monitor overlays and blocks (nested dispatcher frame) until the user
         /// selects a region or cancels. Returns true when a selection was made.
         /// </summary>
         public bool ShowDialog(RegionSelectionMode initialMode)
         {
             RegionSelectionMode = initialMode;
+
+            _monitors = ScreenRecorder.DirectX.MonitorInfo.GetActiveMonitorInfos();
+            foreach (var monitor in _monitors)
+                DesktopBounds = Rect.Union(DesktopBounds, monitor.Bounds);
 
             // Construct every window before showing any: each RegionSelector snapshots the
             // desktop and enumerates windows in its constructor, and must not see (or shoot)
@@ -66,6 +112,7 @@ namespace ScreenRecorder.Region
             try
             {
                 RegionSelectionMode = mode;
+                Selection = Rect.Empty;
                 foreach (var window in _windows)
                     window.RegionSelectionMode = mode;
             }

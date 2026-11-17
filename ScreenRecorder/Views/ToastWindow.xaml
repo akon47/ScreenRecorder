@@ -1,0 +1,88 @@
+<Window
+    x:Class="ScreenRecorder.Views.ToastWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:properties="clr-namespace:ScreenRecorder.Properties"
+    xmlns:theming="clr-namespace:ScreenRecorder.Theming"
+    Title=""
+    Width="330"
+    SizeToContent="Height"
+    WindowStyle="None"
+    ResizeMode="NoResize"
+    ShowActivated="False"
+    ShowInTaskbar="False"
+    Topmost="True"
+    WindowStartupLocation="Manual"
+    Background="Transparent"
+    Cursor="Hand"
+    FontFamily="{StaticResource AppFontFamily}"
+    FontSize="{StaticResource BodyFontSize}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    UseLayoutRounding="True"
+    SnapsToDevicePixels="True"
+    TextOptions.TextFormattingMode="Display"
+    theming:WindowBackdrop.Kind="Acrylic"
+    >
+    <!--
+        "Saved" notification: appears in the corner of the screen when a recording ends, so
+        there is feedback even when the toolbar is minimized (recordings started with the
+        global shortcut). Click it to open the folder with the file selected.
+    -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="0"
+            CornerRadius="0"
+            GlassFrameThickness="-1"
+            ResizeBorderThickness="0"
+            UseAeroCaptionButtons="False"
+            />
+    </WindowChrome.WindowChrome>
+
+    <Border Background="{DynamicResource FlyoutBackgroundBrush}">
+        <Grid Margin="14,12,10,13">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                Style="{StaticResource IconTextBlockStyle}"
+                Margin="0,1,12,0"
+                VerticalAlignment="Top"
+                FontSize="18"
+                Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                Text="{StaticResource Glyph.Completed}"
+                />
+            <StackPanel Grid.Column="1">
+                <TextBlock
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    FontWeight="SemiBold"
+                    Text="{x:Static properties:Resources.RecordingSaved}"
+                    />
+                <TextBlock
+                    x:Name="FileNameText"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Margin="0,2,0,0"
+                    />
+                <TextBlock
+                    x:Name="DetailText"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Margin="0,1,0,0"
+                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                    />
+            </StackPanel>
+            <Button
+                Grid.Column="2"
+                Style="{StaticResource IconButtonStyle}"
+                Width="24"
+                Height="24"
+                Margin="6,-4,0,0"
+                VerticalAlignment="Top"
+                Cursor="Arrow"
+                FontSize="9"
+                Content="{StaticResource Glyph.Close}"
+                Click="CloseButton_Click"
+                />
+        </Grid>
+    </Border>
+</Window>

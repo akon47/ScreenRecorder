@@ -1,0 +1,85 @@
+<Window
+    x:Class="ScreenRecorder.Views.MessageDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:properties="clr-namespace:ScreenRecorder.Properties"
+    xmlns:theming="clr-namespace:ScreenRecorder.Theming"
+    Title="Screen Recorder"
+    Width="380"
+    SizeToContent="Height"
+    WindowStyle="None"
+    ResizeMode="NoResize"
+    ShowInTaskbar="False"
+    Topmost="True"
+    WindowStartupLocation="CenterScreen"
+    Background="Transparent"
+    FontFamily="{StaticResource AppFontFamily}"
+    FontSize="{StaticResource BodyFontSize}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    UseLayoutRounding="True"
+    SnapsToDevicePixels="True"
+    TextOptions.TextFormattingMode="Display"
+    theming:WindowBackdrop.Kind="Mica"
+    >
+    <!--  A small content dialog (WinUI ContentDialog look): message on top, button bar below.  -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="32"
+            CornerRadius="0"
+            GlassFrameThickness="-1"
+            ResizeBorderThickness="0"
+            UseAeroCaptionButtons="False"
+            />
+    </WindowChrome.WindowChrome>
+
+    <Border Background="{DynamicResource WindowBackgroundBrush}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Margin="20,22,20,22">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Style="{StaticResource IconTextBlockStyle}"
+                    Margin="0,1,12,0"
+                    VerticalAlignment="Top"
+                    FontSize="20"
+                    Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                    Text="{StaticResource Glyph.Error}"
+                    />
+                <TextBlock
+                    x:Name="MessageText"
+                    Grid.Column="1"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    FontSize="13"
+                    LineHeight="19"
+                    TextTrimming="None"
+                    TextWrapping="Wrap"
+                    />
+            </Grid>
+
+            <Border
+                Grid.Row="1"
+                Padding="20,14"
+                Background="{DynamicResource LayerFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0"
+                >
+                <Button
+                    MinWidth="96"
+                    HorizontalAlignment="Right"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Content="{x:Static properties:Resources.OK}"
+                    IsCancel="True"
+                    IsDefault="True"
+                    Click="OkButton_Click"
+                    />
+            </Border>
+        </Grid>
+    </Border>
+</Window>
