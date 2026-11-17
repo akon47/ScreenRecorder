@@ -15,7 +15,7 @@
     <!-- Version is stamped from -p:Version at release (build_setup.bat / release.yml);
          this is the local default. AssemblyInfo.cs keeps only the attributes the SDK
          does not generate (ThemeInfo / DPI / ComVisible). -->
-    <Version>2.1.0</Version>
+    <Version>3.0.0</Version>
     <!--
       Runtime tuning for a recorder: concurrent (background) GC so collections do not stall the
       capture/encode threads, tiered PGO for the hot paths. Workstation GC (not Server): this is
