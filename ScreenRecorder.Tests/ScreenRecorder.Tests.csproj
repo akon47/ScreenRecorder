@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Automated tests for the headless engine (ScreenRecorder.Engine). References ONLY the engine:
+    the WPF shell is not needed (and not built) to run them.
+
+    Categories:
+      (none)       pure logic, deterministic, no I/O
+      Integration  real FFmpeg encode/mux into a temp directory (software encoders only)
+      Hardware     needs an interactive desktop session / GPU (Windows.Graphics.Capture)
+
+    FFmpeg-based tests report Inconclusive when the native FFmpeg DLLs are not next to the test
+    assembly (the engine project copies them from Externals\ffmpeg\win-x64 when present).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <RootNamespace>ScreenRecorder.Tests</RootNamespace>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Engine geometry types use System.Windows.Rect. -->
+    <UseWPF>true</UseWPF>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RunSettingsFilePath>$(MSBuildProjectDirectory)\test.runsettings</RunSettingsFilePath>
+    <!-- With "dotnet test" and an artifacts path, keep the results folder out of the source tree, too. -->
+    <VSTestResultsDirectory Condition="'$(ArtifactsPath)' != ''">$(ArtifactsPath)\TestResults</VSTestResultsDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="MSTest" Version="3.8.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The engine copies the native FFmpeg DLLs next to this assembly. -->
+    <ProjectReference Include="..\ScreenRecorder.Engine\ScreenRecorder.Engine.csproj" />
+  </ItemGroup>
+
+</Project>

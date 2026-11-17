@@ -42,8 +42,8 @@ namespace ScreenRecorder.EncoderHarness
             {
                 recorder.Start();
 
-                using var audio = new WasapiAudioSource(loopbackDeviceId: null, micDeviceId: useMic ? "" : null, t0, recorder);
-                audio.Start();
+                using var audio = new WasapiAudioSource(loopbackDeviceId: null, micDeviceId: useMic ? "" : null, recorder);
+                audio.Start(t0);
                 loopbackActive = audio.IsLoopbackActive;
 
                 var videoTask = Task.Run(() => GenerateSyntheticVideo(recorder, videoParams, fps * seconds, t0, freq));

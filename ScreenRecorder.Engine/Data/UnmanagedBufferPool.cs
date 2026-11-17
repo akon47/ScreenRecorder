@@ -1,59 +1,83 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace MediaEncoder
 {
     /// <summary>
-    /// Recycles unmanaged buffers so the mandatory copy of an encoded packet (out of the
-    /// codec-owned, reused packet buffer) into a thread-handover buffer is allocation-free in
-    /// steady state. Rent returns a buffer at least minSize bytes; Return makes it reusable.
-    /// Buffers idle for several generations are freed by <see cref="CleanupOldBuffers"/>.
+    /// Recycles unmanaged buffers so handing a raw frame or an encoded packet across a thread
+    /// boundary costs no allocation in steady state. Rent returns a buffer of at least minSize
+    /// bytes (the smallest free one that fits); Return makes it reusable. Sizes are rounded up
+    /// to a power of two so buffers of slightly different sizes — encoded packets vary from
+    /// frame to frame — still get reused. Buffers left idle for many rents are freed, so a
+    /// burst (one huge keyframe) does not pin memory for the rest of the recording.
+    /// Bookkeeping is a small struct array scanned linearly: no dictionary, no enumerator, no
+    /// garbage.
     /// </summary>
     internal sealed class UnmanagedBufferPool : IDisposable
     {
-        private sealed class Entry
+        private const int MinimumSize = 4096;
+        private const int TrimInterval = 256;
+
+        private struct Entry
         {
             public nint Ptr;
             public int Size;
-            public long LastUsedGeneration;
+            public long LastUsed;
+            public bool InUse;
         }
 
         private readonly object _lock = new object();
-        private readonly SortedList<int, Queue<Entry>> _free = new SortedList<int, Queue<Entry>>();
-        private readonly Dictionary<nint, Entry> _all = new Dictionary<nint, Entry>();
-        private readonly int _retentionGenerations;
-        private long _generation;
+        private readonly int _retentionRents;
+        private Entry[] _entries = new Entry[16];
+        private int _count;
+        private long _rents;
         private bool _disposed;
 
-        public UnmanagedBufferPool(int retentionGenerations = 10)
+        /// <param name="retentionRents">A free buffer untouched for this many rents is released.</param>
+        public UnmanagedBufferPool(int retentionRents = 600)
         {
-            _retentionGenerations = retentionGenerations;
+            _retentionRents = Math.Max(1, retentionRents);
+        }
+
+        /// <summary>Buffers currently allocated (in use + free).</summary>
+        public int BufferCount
+        {
+            get { lock (_lock) return _count; }
         }
 
         public nint Rent(int minSize)
         {
-            if (minSize <= 0)
-                minSize = 1;
+            int size = RoundUp(minSize);
 
             lock (_lock)
             {
-                _generation++;
+                if (_disposed)
+                    throw new ObjectDisposedException(nameof(UnmanagedBufferPool));
 
-                // Smallest free buffer that fits.
-                foreach (var kv in _free)
+                _rents++;
+                if (_rents % TrimInterval == 0)
+                    TrimLocked();
+
+                int best = -1;
+                for (int i = 0; i < _count; i++)
                 {
-                    if (kv.Key >= minSize && kv.Value.Count > 0)
-                    {
-                        var entry = kv.Value.Dequeue();
-                        entry.LastUsedGeneration = _generation;
-                        return entry.Ptr;
-                    }
+                    ref Entry e = ref _entries[i];
+                    if (!e.InUse && e.Size >= size && (best < 0 || e.Size < _entries[best].Size))
+                        best = i;
                 }
 
-                var ptr = Marshal.AllocHGlobal(minSize);
-                var created = new Entry { Ptr = ptr, Size = minSize, LastUsedGeneration = _generation };
-                _all[ptr] = created;
+                if (best >= 0)
+                {
+                    _entries[best].InUse = true;
+                    _entries[best].LastUsed = _rents;
+                    return _entries[best].Ptr;
+                }
+
+                if (_count == _entries.Length)
+                    Array.Resize(ref _entries, _entries.Length * 2);
+
+                nint ptr = Marshal.AllocHGlobal(size);
+                _entries[_count++] = new Entry { Ptr = ptr, Size = size, LastUsed = _rents, InUse = true };
                 return ptr;
             }
         }
@@ -65,43 +89,57 @@ namespace MediaEncoder
 
             lock (_lock)
             {
-                if (!_all.TryGetValue(ptr, out var entry))
-                    return;
+                if (_disposed)
+                    return; // Dispose already freed everything
 
-                entry.LastUsedGeneration = _generation;
-                if (!_free.TryGetValue(entry.Size, out var queue))
+                for (int i = 0; i < _count; i++)
                 {
-                    queue = new Queue<Entry>();
-                    _free[entry.Size] = queue;
-                }
-
-                queue.Enqueue(entry);
-            }
-        }
-
-        public void CleanupOldBuffers()
-        {
-            lock (_lock)
-            {
-                var threshold = _generation - _retentionGenerations;
-                foreach (var queue in _free.Values)
-                {
-                    int count = queue.Count;
-                    for (int i = 0; i < count; i++)
+                    if (_entries[i].Ptr == ptr)
                     {
-                        var entry = queue.Dequeue();
-                        if (entry.LastUsedGeneration < threshold)
-                        {
-                            Marshal.FreeHGlobal(entry.Ptr);
-                            _all.Remove(entry.Ptr);
-                        }
-                        else
-                        {
-                            queue.Enqueue(entry);
-                        }
+                        _entries[i].InUse = false;
+                        _entries[i].LastUsed = _rents;
+                        return;
                     }
                 }
             }
+        }
+
+        /// <summary>Frees buffers that have been idle for longer than the retention window.</summary>
+        public void CleanupOldBuffers()
+        {
+            lock (_lock)
+                TrimLocked();
+        }
+
+        private void TrimLocked()
+        {
+            long threshold = _rents - _retentionRents;
+            for (int i = _count - 1; i >= 0; i--)
+            {
+                if (_entries[i].InUse || _entries[i].LastUsed >= threshold)
+                    continue;
+
+                Marshal.FreeHGlobal(_entries[i].Ptr);
+                _entries[i] = _entries[_count - 1];
+                _entries[_count - 1] = default;
+                _count--;
+            }
+        }
+
+        internal static int RoundUp(int minSize)
+        {
+            if (minSize <= MinimumSize)
+                return MinimumSize;
+            if (minSize > (1 << 30))
+                return minSize;
+
+            // Large buffers (raw frames) are all the same size anyway: round to 1 MiB so a
+            // 5.5 MB frame does not balloon to 8 MB.
+            const int LargeStep = 1 << 20;
+            if (minSize > LargeStep)
+                return (minSize + LargeStep - 1) / LargeStep * LargeStep;
+
+            return (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)minSize);
         }
 
         public void Dispose()
@@ -110,13 +148,12 @@ namespace MediaEncoder
             {
                 if (_disposed)
                     return;
-
-                foreach (var entry in _all.Values)
-                    Marshal.FreeHGlobal(entry.Ptr);
-
-                _all.Clear();
-                _free.Clear();
                 _disposed = true;
+
+                for (int i = 0; i < _count; i++)
+                    Marshal.FreeHGlobal(_entries[i].Ptr);
+
+                _count = 0;
             }
         }
     }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -53,7 +53,7 @@ namespace ScreenRecorder.EncoderHarness
                         Console.WriteLine($"[{phase}]   {m.DeviceName}: virtual {m.Width}x{m.Height}, physical {m.PhysicalWidth}x{m.PhysicalHeight}");
                 }
                 Dump("before probe");
-                MediaEncoder.MediaWriter.CheckHardwareCodec();
+                MediaEncoder.HardwareEncoders.Detect();
                 Dump("after probe ");
                 return 0;
             }
@@ -152,8 +152,7 @@ namespace ScreenRecorder.EncoderHarness
                 // Drives the P4 ScreenEncoder exactly as the WPF shell does (full end-to-end path).
                 var eo = ParseArgs(args);
                 bool mic = Array.Exists(args, a => a.Equals("--mic", StringComparison.OrdinalIgnoreCase));
-                MediaEncoder.MediaWriter.CheckHardwareCodec();
-                ScreenRecorder.Encoder.FrameRateProvider.Framerate = eo.Fps;
+                MediaEncoder.HardwareEncoders.Detect();
                 string monName = GetOptionValue(args, "--monitor");
                 var mon = monName != null
                     ? ScreenRecorder.DirectX.MonitorInfo.GetMonitorInfo(monName)
@@ -165,9 +164,44 @@ namespace ScreenRecorder.EncoderHarness
                 }
                 Console.WriteLine($"=== ScreenEncoder end-to-end: {eo.Seconds}s @{eo.Fps}fps, mic={mic}, monitor {mon.DeviceName} (virtual {mon.Width}x{mon.Height}, physical {mon.PhysicalWidth}x{mon.PhysicalHeight}) ===");
                 var enc = new ScreenRecorder.Encoder.ScreenEncoder();
-                enc.Start("mp4", eo.Output, MediaEncoder.VideoCodec.H264, 8_000_000, MediaEncoder.AudioCodec.Aac, 160_000,
-                    mon.DeviceName, new System.Windows.Rect(0, 0, double.MaxValue, double.MaxValue), drawCursor: true, recordMicrophone: mic,
-                    rateControl: eo.Rc, quality: eo.Quality);
+                bool auto = Array.Exists(args, a => a.Equals("--auto", StringComparison.OrdinalIgnoreCase));
+                bool gif = Array.Exists(args, a => a.Equals("--gif", StringComparison.OrdinalIgnoreCase));
+                bool allDisplays = Array.Exists(args, a => a.Equals("--all-displays", StringComparison.OrdinalIgnoreCase));
+                bool audioOnly = Array.Exists(args, a => a.Equals("--audio-only", StringComparison.OrdinalIgnoreCase));
+                string regionArg = GetOptionValue(args, "--region"); // x,y,w,h in desktop coordinates
+                var options = new RecordingOptions
+                {
+                    Format = gif ? RecordingOptions.GifFormat : audioOnly ? "ipod" : eo.Format,
+                    Url = eo.Output,
+                    VideoCodec = eo.VideoCodec,
+                    VideoBitrate = 8_000_000,
+                    AudioCodec = eo.AudioCodec,
+                    AudioBitrate = 160_000,
+                    DeviceName = mon.DeviceName,
+                    DrawCursor = true,
+                    RecordMicrophone = mic,
+                    RateControl = eo.Rc,
+                    Quality = eo.Quality,
+                    FrameRate = auto ? AutoFrameRate.Auto : eo.Fps,
+                    AudioOnly = audioOnly,
+                };
+                if (gif)
+                    options.FrameRate = auto ? 0 : Math.Min(eo.Fps, 30);
+                if (allDisplays)
+                {
+                    var union = System.Windows.Rect.Empty;
+                    foreach (var m in ScreenRecorder.DirectX.MonitorInfo.GetActiveMonitorInfos())
+                        union.Union(m.Bounds);
+                    options.DesktopRegion = union;
+                }
+                else if (regionArg != null)
+                {
+                    var p = regionArg.Split(',');
+                    options.DesktopRegion = new System.Windows.Rect(double.Parse(p[0]), double.Parse(p[1]), double.Parse(p[2]), double.Parse(p[3]));
+                }
+                enc.Interrupted += (s, e) => Console.WriteLine($"INTERRUPTED: {e.Reason} {e.Error?.Message}");
+                enc.Start(options);
+                Console.WriteLine($"Pipeline: {enc.VideoWidth}x{enc.VideoHeight} grid={enc.GridFrameRate}fps vfr={enc.IsVariableFrameRate} encoder={enc.VideoEncoderName ?? "(none)"} hw={enc.ActiveHwAccel} gpuInput={enc.UsesGpuInput}");
                 bool testPause = Array.Exists(args, a => a.Equals("--pause", StringComparison.OrdinalIgnoreCase));
                 bool sampleSmooth = Array.Exists(args, a => a.Equals("--smooth", StringComparison.OrdinalIgnoreCase));
                 Console.WriteLine($"Recording... status={enc.Status}");
@@ -187,13 +221,13 @@ namespace ScreenRecorder.EncoderHarness
                     // deltas — proves the elapsed-time display advances ~1 frame/tick (smooth),
                     // not in 6-frame jumps like the old 100ms poll.
                     var deltas = new System.Collections.Generic.Dictionary<long, int>();
-                    ulong prev = enc.LiveVideoFrames;
+                    long prev = enc.LiveVideoFrames;
                     var sw = System.Diagnostics.Stopwatch.StartNew();
                     while (sw.Elapsed.TotalSeconds < eo.Seconds)
                     {
                         System.Threading.Thread.Sleep(16);
-                        ulong now = enc.LiveVideoFrames;
-                        long d = (long)(now - prev);
+                        long now = enc.LiveVideoFrames;
+                        long d = now - prev;
                         deltas[d] = deltas.TryGetValue(d, out var c) ? c + 1 : 1;
                         prev = now;
                     }
@@ -214,9 +248,22 @@ namespace ScreenRecorder.EncoderHarness
                 var info = MediaFileVerifier.Probe(eo.Output);
                 Console.WriteLine($"  streams={info.StreamCount} video={info.VideoCodec} {info.Width}x{info.Height} audio={info.AudioCodec} " +
                                   $"vPackets={info.VideoPacketCount} dur={info.DurationSeconds:0.000}s");
-                info.Check(info.StreamCount == 2, "stream count == 2");
-                info.Check(info.VideoCodec == "h264", "video codec h264");
-                info.Check(info.VideoPacketCount > eo.Fps, "recorded multiple seconds of frames");
+                Console.WriteLine($"  completed={enc.LastRecordingCompleted} fileBytes={new FileInfo(eo.Output).Length}");
+                info.Check(enc.LastRecordingCompleted, "recording completed");
+                if (gif)
+                {
+                    info.Check(info.VideoCodec == "gif", "video codec gif");
+                    info.Check(info.VideoPacketCount >= 1, "at least one GIF frame");
+                }
+                else if (audioOnly)
+                {
+                    info.Check(info.StreamCount == 1 && info.AudioCodec == "aac", "one AAC stream, no video");
+                }
+                else
+                {
+                    info.Check(info.StreamCount == (eo.AudioCodec == AudioCodec.None ? 1 : 2), "stream count");
+                    info.Check(info.VideoPacketCount >= eo.Seconds, "recorded frames");
+                }
                 info.Check(info.DurationSeconds > 1.0, "duration > 1s");
                 Console.WriteLine(info.Ok ? "RESULT: ALL CHECKS PASSED" : "RESULT: FAILED");
                 return info.Ok ? 0 : 1;
@@ -226,8 +273,8 @@ namespace ScreenRecorder.EncoderHarness
             {
                 var ao = ParseArgs(args);
                 bool useMic = Array.Exists(args, a => a.Equals("--mic", StringComparison.OrdinalIgnoreCase));
-                MediaEncoder.MediaWriter.CheckHardwareCodec();
-                HwAccel ahw = MediaEncoder.MediaWriter.IsSupportedNvencH264() ? HwAccel.Nvenc : HwAccel.Software;
+                MediaEncoder.HardwareEncoders.Detect();
+                HwAccel ahw = MediaEncoder.HardwareEncoders.IsAvailable(VideoCodec.H264, HwAccel.Nvenc) ? HwAccel.Nvenc : HwAccel.Software;
                 return AudioCaptureSmoke.Run(ao.Seconds, ao.Output, useMic, ahw);
             }
 
@@ -235,10 +282,13 @@ namespace ScreenRecorder.EncoderHarness
             {
                 var so = ParseArgs(args);
                 string png = Path.ChangeExtension(so.Output, ".png");
-                MediaEncoder.MediaWriter.CheckHardwareCodec();
+                MediaEncoder.HardwareEncoders.Detect();
                 return ScreenCaptureSmoke.Run(so.Seconds, so.Fps, so.Output, png, cursor: true,
-                    resolveHw: (codec, hw) => MediaEncoder.MediaWriter.IsSupportedNvencH264() ? HwAccel.Nvenc : HwAccel.Software,
-                    deviceName: GetOptionValue(args, "--monitor"));
+                    resolveHw: (codec, hw) => Array.Exists(args, x => x.Equals("--software", StringComparison.OrdinalIgnoreCase)) ? HwAccel.Software
+                        : MediaEncoder.HardwareEncoders.IsAvailable(VideoCodec.H264, HwAccel.Nvenc) ? HwAccel.Nvenc : HwAccel.Software,
+                    deviceName: GetOptionValue(args, "--monitor"),
+                    variable: Array.Exists(args, x => x.Equals("--vfr", StringComparison.OrdinalIgnoreCase)),
+                    gpu: Array.Exists(args, x => x.Equals("--gpu", StringComparison.OrdinalIgnoreCase)));
             }
 
             var opt = ParseArgs(args);
@@ -386,10 +436,8 @@ namespace ScreenRecorder.EncoderHarness
 
             // auto
             if (opt.VideoCodec == VideoCodec.H264)
-                return MediaWriter.IsSupportedNvencH264() ? HwAccel.Nvenc
-                    : MediaWriter.IsSupportedQsvH264() ? HwAccel.Qsv : HwAccel.Software;
-            return MediaWriter.IsSupportedNvencHEVC() ? HwAccel.Nvenc
-                : MediaWriter.IsSupportedQsvHEVC() ? HwAccel.Qsv : HwAccel.Software;
+                return HardwareEncoders.GetBest(VideoCodec.H264);
+            return HardwareEncoders.GetBest(VideoCodec.Hevc);
         }
 
         private static void PrintEnvironment()
@@ -398,11 +446,10 @@ namespace ScreenRecorder.EncoderHarness
             Console.WriteLine("av_version_info : " + ffmpeg.av_version_info());
             Console.WriteLine();
             Console.WriteLine("=== Hardware encoder probe ===");
-            MediaWriter.CheckHardwareCodec();
-            Console.WriteLine("  NVENC H264 : " + MediaWriter.IsSupportedNvencH264());
-            Console.WriteLine("  QSV   H264 : " + MediaWriter.IsSupportedQsvH264());
-            Console.WriteLine("  NVENC HEVC : " + MediaWriter.IsSupportedNvencHEVC());
-            Console.WriteLine("  QSV   HEVC : " + MediaWriter.IsSupportedQsvHEVC());
+            HardwareEncoders.Detect();
+            foreach (var codec in new[] { VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Av1 })
+                foreach (var backend in new[] { HwAccel.Nvenc, HwAccel.Qsv, HwAccel.Amf })
+                    Console.WriteLine($"  {backend,-6} {codec,-5}: {HardwareEncoders.IsAvailable(codec, backend)}");
         }
 
         private sealed class Options
@@ -456,7 +503,7 @@ namespace ScreenRecorder.EncoderHarness
             if (map.TryGetValue("fps", out var f)) o.Fps = int.Parse(f);
             if (map.TryGetValue("w", out var w)) o.Width = int.Parse(w);
             if (map.TryGetValue("h", out var h)) o.Height = int.Parse(h);
-            if (map.TryGetValue("codec", out var c)) o.VideoCodec = c.Equals("h265", StringComparison.OrdinalIgnoreCase) || c.Equals("hevc", StringComparison.OrdinalIgnoreCase) ? VideoCodec.Hevc : VideoCodec.H264;
+            if (map.TryGetValue("codec", out var c)) o.VideoCodec = c.Equals("av1", StringComparison.OrdinalIgnoreCase) ? VideoCodec.Av1 : c.Equals("h265", StringComparison.OrdinalIgnoreCase) || c.Equals("hevc", StringComparison.OrdinalIgnoreCase) ? VideoCodec.Hevc : VideoCodec.H264;
             if (map.TryGetValue("hw", out var hw)) o.Hw = hw.ToLowerInvariant();
             if (map.TryGetValue("format", out var fmt)) o.Format = fmt;
             if (map.TryGetValue("audio", out var au)) o.AudioCodec = au.Equals("none", StringComparison.OrdinalIgnoreCase) ? AudioCodec.None : au.Equals("mp3", StringComparison.OrdinalIgnoreCase) ? AudioCodec.Mp3 : AudioCodec.Aac;

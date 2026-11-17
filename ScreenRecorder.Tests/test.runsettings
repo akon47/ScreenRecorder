@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <MSTest>
+    <!-- No deployment items are used: do not create a TestResults\Deploy_* folder per run. -->
+    <DeploymentEnabled>false</DeploymentEnabled>
+  </MSTest>
+</RunSettings>

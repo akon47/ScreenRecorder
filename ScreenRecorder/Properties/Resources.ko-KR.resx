@@ -127,7 +127,7 @@
     <value>캡쳐 취소</value>
   </data>
   <data name="CaptureCursor" xml:space="preserve">
-    <value>커서 캡쳐</value>
+    <value>커서</value>
   </data>
   <data name="CaptureDisplay" xml:space="preserve">
     <value>디스플레이 캡쳐</value>
@@ -169,13 +169,13 @@
     <value>녹화 설정</value>
   </data>
   <data name="EncoderStatusPauseMessage" xml:space="preserve">
-    <value>녹화중 (일시정지)</value>
+    <value>일시정지</value>
   </data>
   <data name="EncoderStatusStartMessage" xml:space="preserve">
-    <value>녹화중</value>
+    <value>녹화 중</value>
   </data>
   <data name="EncoderStatusStopMessage" xml:space="preserve">
-    <value>녹화 대기중</value>
+    <value>대기 중</value>
   </data>
   <data name="EncoderVideoBitrate" xml:space="preserve">
     <value>비디오 비트레이트</value>
@@ -238,7 +238,7 @@
     <value>녹화 경로가 설정되어 있지 않습니다. 녹화 경로를 설정해주세요</value>
   </data>
   <data name="Minimize" xml:space="preserve">
-    <value>최소화</value>
+    <value>알림 영역으로 숨기기</value>
   </data>
   <data name="EncoderRateControl" xml:space="preserve">
     <value>레이트 컨트롤</value>
@@ -257,5 +257,137 @@
   </data>
   <data name="RecordDelay" xml:space="preserve">
     <value>녹화 지연 (초)</value>
+  </data>
+  <data name="FrameRateAuto" xml:space="preserve">
+    <value>자동 (변경된 화면만)</value>
+  </data>
+  <data name="FrameRateAutoToolTip" xml:space="preserve">
+    <value>자동은 실제로 바뀐 화면만 녹화하므로 정지된 화면은 용량을 거의 차지하지 않습니다. 고정 프레임이 꼭 필요한 경우에만 숫자를 선택하세요.</value>
+  </data>
+  <data name="RecordDelayNone" xml:space="preserve">
+    <value>없음</value>
+  </data>
+  <data name="SecondsFormat" xml:space="preserve">
+    <value>{0}초</value>
+  </data>
+  <data name="RecordSystemAudio" xml:space="preserve">
+    <value>시스템 소리</value>
+  </data>
+  <data name="AudioOutputDevice" xml:space="preserve">
+    <value>재생 장치</value>
+  </data>
+  <data name="AudioInputDevice" xml:space="preserve">
+    <value>마이크 장치</value>
+  </data>
+  <data name="DefaultDevice" xml:space="preserve">
+    <value>시스템 기본값</value>
+  </data>
+  <data name="AudioOnly" xml:space="preserve">
+    <value>오디오만 녹음 (영상 없음)</value>
+  </data>
+  <data name="ShowRecordingFrame" xml:space="preserve">
+    <value>영역 테두리</value>
+  </data>
+  <data name="ShowRecordingFrameToolTip" xml:space="preserve">
+    <value>녹화 중인 영역이나 창 둘레에 테두리를 표시합니다. 테두리는 녹화되지 않습니다.</value>
+  </data>
+  <data name="RecordingStoppedTargetClosed" xml:space="preserve">
+    <value>녹화 중인 창이 닫혀 녹화를 저장하고 종료했습니다.</value>
+  </data>
+  <data name="RecordingStoppedWriteFailed" xml:space="preserve">
+    <value>파일을 기록할 수 없어 녹화를 종료했습니다. 디스크 여유 공간과 녹화 경로를 확인해 주세요.</value>
+  </data>
+  <data name="RecordingStoppedCaptureFailed" xml:space="preserve">
+    <value>화면 캡처에 실패하여 녹화를 종료했습니다. 지금까지 녹화한 내용은 저장되었습니다.</value>
+  </data>
+  <data name="RecordingStoppedLowDiskSpace" xml:space="preserve">
+    <value>디스크 공간이 부족하여 녹화를 종료했습니다. 지금까지 녹화한 내용은 저장되었습니다.</value>
+  </data>
+  <data name="RecordingSaved" xml:space="preserve">
+    <value>저장됨</value>
+  </data>
+  <data name="AudioOnlyNeedsSource" xml:space="preserve">
+    <value>오디오만 녹음하려면 시스템 소리 또는 마이크를 켜고 오디오 코덱을 선택해 주세요.</value>
+  </data>
+  <data name="EncoderStatusCountdownMessage" xml:space="preserve">
+    <value>곧 시작</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>확인</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>취소</value>
+  </data>
+  <data name="AlreadyRunning" xml:space="preserve">
+    <value>화면 녹화기가 이미 실행 중입니다.</value>
+  </data>
+  <data name="ResumeRecording" xml:space="preserve">
+    <value>녹화 다시 시작</value>
+  </data>
+  <data name="SelectRegionAndRecord" xml:space="preserve">
+    <value>영역 선택 후 녹화</value>
+  </data>
+  <data name="RecordingInfoToolTip" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="DroppedFramesFormat" xml:space="preserve">
+    <value>{0} 프레임 누락</value>
+  </data>
+  <data name="HighlightCaptureWindowHint" xml:space="preserve">
+    <value>녹화할 창을 클릭하세요</value>
+  </data>
+  <data name="HighlightCaptureRegionHint" xml:space="preserve">
+    <value>드래그하여 녹화할 영역을 선택하세요</value>
+  </data>
+  <data name="HighlightCaptureDisplayHint" xml:space="preserve">
+    <value>녹화할 디스플레이를 클릭하세요</value>
+  </data>
+  <data name="SelectRegionAndRecordGif" xml:space="preserve">
+    <value>영역 선택 후 GIF 녹화</value>
+  </data>
+  <data name="GifSettings" xml:space="preserve">
+    <value>GIF (프레임 / 크기)</value>
+  </data>
+  <data name="GifFrameRateToolTip" xml:space="preserve">
+    <value>GIF 녹화의 최대 프레임입니다. 변경된 프레임만 저장되므로 값을 높이면 움직임이 더 부드러워집니다.</value>
+  </data>
+  <data name="GifScaleToolTip" xml:space="preserve">
+    <value>선택한 영역 대비 GIF 크기입니다. 크기를 줄이면 파일이 훨씬 작아집니다.</value>
+  </data>
+  <data name="ShortcutInUse" xml:space="preserve">
+    <value>이 키 조합은 다른 프로그램에서 이미 사용 중입니다.</value>
+  </data>
+  <data name="ShortcutSettingsHint" xml:space="preserve">
+    <value>입력란을 클릭한 뒤 키를 누르세요. 단축키는 다른 프로그램을 사용하는 중에도 동작합니다.</value>
+  </data>
+  <data name="SoftwareEncoder" xml:space="preserve">
+    <value>소프트웨어 (CPU)</value>
+  </data>
+  <data name="AllDisplays" xml:space="preserve">
+    <value>모든 디스플레이</value>
+  </data>
+  <data name="HighlightClicks" xml:space="preserve">
+    <value>클릭 강조</value>
+  </data>
+  <data name="HighlightClicksToolTip" xml:space="preserve">
+    <value>마우스를 클릭한 위치에 링을 표시해 녹화 영상에서 클릭이 보이게 합니다. (디스플레이·영역 녹화)</value>
+  </data>
+  <data name="MicrophoneIsOn" xml:space="preserve">
+    <value>마이크: 켜짐 — 내 목소리도 함께 녹음됩니다</value>
+  </data>
+  <data name="MicrophoneIsOff" xml:space="preserve">
+    <value>마이크: 꺼짐</value>
+  </data>
+  <data name="AudioOptions" xml:space="preserve">
+    <value>오디오</value>
+  </data>
+  <data name="PictureOptions" xml:space="preserve">
+    <value>화면</value>
+  </data>
+  <data name="TrayHint" xml:space="preserve">
+    <value>여기에서 계속 실행 중입니다. 아이콘을 클릭하면 도구 모음이 다시 나타나고, 녹화 단축키는 그대로 동작합니다.</value>
+  </data>
+  <data name="ShowToolbar" xml:space="preserve">
+    <value>Screen Recorder 표시</value>
   </data>
 </root>

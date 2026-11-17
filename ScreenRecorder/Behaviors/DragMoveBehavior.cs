@@ -1,60 +1,39 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
+using System.Windows.Input;
 
 namespace ScreenRecorder.Behaviors
 {
     /// <summary>
-    /// DragMove Behavior
+    /// Lets a borderless window be dragged by an element: set
+    /// <c>behaviors:DragMoveBehavior.IsActivated="True"</c> on it and a left-button press that
+    /// no child control handled starts moving the window.
     /// </summary>
     public static class DragMoveBehavior
     {
-        public static readonly DependencyProperty IsActivatedProperty = DependencyProperty.RegisterAttached
-        (
-            name: "IsActivated",
-            propertyType: typeof(bool),
-            ownerType: typeof(DragMoveBehavior),
-            defaultMetadata: new FrameworkPropertyMetadata(false, IsActivatedPropertyPropertyChanged)
-        );
+        public static readonly DependencyProperty IsActivatedProperty = DependencyProperty.RegisterAttached(
+            "IsActivated", typeof(bool), typeof(DragMoveBehavior), new FrameworkPropertyMetadata(false, OnIsActivatedChanged));
 
-        private static void IsActivatedPropertyPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
+        public static bool GetIsActivated(DependencyObject obj) => (bool)obj.GetValue(IsActivatedProperty);
+
+        public static void SetIsActivated(DependencyObject obj, bool value) => obj.SetValue(IsActivatedProperty, value);
+
+        private static void OnIsActivatedChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
         {
-            Apply(source as FrameworkElement, (bool)e.NewValue);
-        }
-
-        public static bool GetIsActivated(DependencyObject obj)
-        {
-            return (bool)obj.GetValue(IsActivatedProperty);
-        }
-
-        public static void SetIsActivated(DependencyObject obj, bool value)
-        {
-            obj.SetValue(IsActivatedProperty, value);
-        }
-
-        private static void Apply(FrameworkElement element, bool isActivated)
-        {
-            if (element is null)
-                throw new ArgumentNullException(nameof(element));
-
-            element.MouseDown -= ElementOnMouseDown;
-
-            if (isActivated)
-            {
-                element.MouseDown += ElementOnMouseDown;
-            }
-        }
-
-        private static void ElementOnMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            var element = sender as FrameworkElement;
-            if (element == null)
+            if (!(source is UIElement element))
                 return;
 
-            var window = Utils.FindParentWindow(element);
-            if (window == null)
+            element.MouseLeftButtonDown -= OnMouseLeftButtonDown;
+            if ((bool)e.NewValue)
+                element.MouseLeftButtonDown += OnMouseLeftButtonDown;
+        }
+
+        private static void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // DragMove throws unless the left button is (still) down.
+            if (e.ButtonState != MouseButtonState.Pressed || !(sender is DependencyObject element))
                 return;
 
-            window.DragMove();
+            Window.GetWindow(element)?.DragMove();
         }
     }
 }

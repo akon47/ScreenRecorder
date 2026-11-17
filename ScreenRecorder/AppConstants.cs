@@ -5,6 +5,9 @@ internal static class AppConstants
 {
     public const string AppName = "ScreenRecorder";
 
+    /// <summary>The name shown to the user (window title, notification-area icon).</summary>
+    public const string AppDisplayName = "Screen Recorder";
+
     /// <summary>
     /// Where config files live. Default: %APPDATA%\ScreenRecorder. Portable mode: when a
     /// "portable" marker file sits next to the exe (the portable zip ships one), config is kept
