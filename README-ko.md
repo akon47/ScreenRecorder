@@ -99,7 +99,7 @@ dotnet test ScreenRecorder.Tests/ScreenRecorder.Tests.csproj
 dotnet test ScreenRecorder.App.Tests/ScreenRecorder.App.Tests.csproj
 
 # 설치 프로그램과 포터블 zip 빌드 — NSIS(makensis) 필요
-Installers\build_setup.bat 3.0.0
+Installers\build_setup.bat 3.1.0
 ```
 
 | 프로젝트 | 설명 |

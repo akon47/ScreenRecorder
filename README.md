@@ -99,7 +99,7 @@ dotnet test ScreenRecorder.Tests/ScreenRecorder.Tests.csproj
 dotnet test ScreenRecorder.App.Tests/ScreenRecorder.App.Tests.csproj
 
 # Build the installer and the portable zip — requires NSIS (makensis)
-Installers\build_setup.bat 3.0.0
+Installers\build_setup.bat 3.1.0
 ```
 
 | Project | What it is |
