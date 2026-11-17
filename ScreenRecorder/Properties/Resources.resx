@@ -390,4 +390,13 @@
   <data name="ShowToolbar" xml:space="preserve">
     <value>Show Screen Recorder</value>
   </data>
+  <data name="RecordWindow" xml:space="preserve">
+    <value>Record a Window</value>
+  </data>
+  <data name="NoWindowsToRecord" xml:space="preserve">
+    <value>No windows to record</value>
+  </data>
+  <data name="WindowNotAvailable" xml:space="preserve">
+    <value>That window is no longer available (closed or minimized).</value>
+  </data>
 </root>

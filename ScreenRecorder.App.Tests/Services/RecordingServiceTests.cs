@@ -210,6 +210,20 @@ namespace ScreenRecorder.AppTests.Services
         }
 
         [TestMethod]
+        public void StartWindow_WindowThatIsGone_TellsTheUser()
+        {
+            WithService((settings, dialogs, service, temp) =>
+            {
+                service.StartWindowAsync(IntPtr.Zero).Wait();
+                service.StartWindowAsync(new IntPtr(0x7FFFFFF0)).Wait(); // no such window
+
+                CollectionAssert.AreEqual(new[] { Strings.WindowNotAvailable, Strings.WindowNotAvailable }, dialogs.Errors);
+                Assert.AreEqual(0, dialogs.SelectRegionCalls, "a window from the list needs no picking on screen");
+                AssertNothingRecorded(service, temp);
+            });
+        }
+
+        [TestMethod]
         public void StartGif_AlwaysAsksForAnArea_EvenWhenADisplayIsConfigured()
         {
             WithService((settings, dialogs, service, temp) =>

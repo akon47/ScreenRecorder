@@ -109,6 +109,22 @@
                     <TextBlock Style="{StaticResource IconTextBlockStyle}" FontSize="13" Text="{StaticResource Glyph.Region}" />
                 </MenuItem.Icon>
             </MenuItem>
+            <!--
+                The open windows, by name — filled in each time the submenu opens. Reaches
+                windows that cannot be clicked on screen because others cover them.
+            -->
+            <MenuItem
+                x:Name="RecordWindowMenuItem"
+                Header="{x:Static properties:Resources.RecordWindow}"
+                IsEnabled="{Binding Recording.IsIdle}"
+                SubmenuOpened="RecordWindowMenuItem_SubmenuOpened"
+                >
+                <MenuItem.Icon>
+                    <TextBlock Style="{StaticResource IconTextBlockStyle}" FontSize="13" Text="{StaticResource Glyph.Windows}" />
+                </MenuItem.Icon>
+                <!--  Placeholder: an item with children is what makes this a submenu.  -->
+                <MenuItem Header="{x:Static properties:Resources.NoWindowsToRecord}" IsEnabled="False" />
+            </MenuItem>
             <MenuItem
                 Header="{x:Static properties:Resources.SelectRegionAndRecordGif}"
                 Command="{Binding RecordGifCommand}"

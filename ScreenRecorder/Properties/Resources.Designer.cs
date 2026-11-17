@@ -878,5 +878,32 @@ namespace ScreenRecorder.Properties {
                 return ResourceManager.GetString("ShowToolbar", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Record a Window.
+        /// </summary>
+        public static string RecordWindow {
+            get {
+                return ResourceManager.GetString("RecordWindow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No windows to record.
+        /// </summary>
+        public static string NoWindowsToRecord {
+            get {
+                return ResourceManager.GetString("NoWindowsToRecord", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to That window is no longer available (closed or minimized)..
+        /// </summary>
+        public static string WindowNotAvailable {
+            get {
+                return ResourceManager.GetString("WindowNotAvailable", resourceCulture);
+            }
+        }
     }
 }

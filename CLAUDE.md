@@ -179,7 +179,8 @@ second. A recording that never got a packet is deleted instead of leaving a stub
 Video H.264 / H.265 / AV1 · hardware encode NVENC, Quick Sync, AMF with software fallback ·
 containers mp4, mkv, mov, ts, avi · audio AAC / MP3, audio-only m4a / mp3 · frame rate Auto +
 15/24/25/30/48/50/60/120/144 · bitrate or constant-quality rate control · capture **display /
-all displays / area (may span monitors) / window (as itself)** · cursor toggle · own windows
+all displays / area (may span monitors) / window (as itself; picked on screen or from the
+list of open windows in the menu)** · cursor toggle · own windows
 excluded from capture · recording-area border · click highlight · system sound + microphone
 with device selection (microphone toggle on the toolbar) · audio level meter · pre-record
 countdown (0/3/5/10 s) · pause / resume · **GIF recording** (rate, size) · global shortcuts
@@ -232,6 +233,15 @@ NOT) · EN / KO · light / dark / high contrast · software-rendering fallback.
   would put a line on the seam between the monitors.
 - **WASAPI capture restart** (device change) must not block the audio callback thread; restart
   is serialized by an init gate.
+- **winget submission needs the maintainer's fork of `winget-pkgs` to be syncable.** The
+  release workflow's winget job first syncs that fork with upstream; when upstream changed a
+  workflow file, GitHub refuses the sync unless `WINGET_TOKEN` has the `workflow` scope
+  (besides `public_repo`). Symptom: the Release is published but the `winget` job fails with
+  "refusing to allow a Personal Access Token to create or update workflow". Fix the token (or
+  sync the fork by hand), then re-run only the failed job.
+- **Minimized windows cannot be captured** (Windows delivers no frames for them): they are
+  left out of the window list, and a window minimized while it is recorded freezes on its
+  last picture. A window that is closed ends the recording with a message.
 - **winget / installer.** The installer must support silent install (`/S`), keep the ARP values
   `DisplayName=ScreenRecorder`, `Publisher=kimhwan`, and remove the legacy MSI
   (`{EF13AAC9-A649-43B9-9215-11278B23B107}`) in `.onInit`; the manifest carries

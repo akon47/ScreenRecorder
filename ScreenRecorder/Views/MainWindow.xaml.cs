@@ -281,6 +281,29 @@ namespace ScreenRecorder.Views
 
         private void ShowToolbarMenuItem_Click(object sender, RoutedEventArgs e) => RestoreFromTray();
 
+        /// <summary>Lists the windows that are open right now.</summary>
+        private void RecordWindowMenuItem_SubmenuOpened(object sender, RoutedEventArgs e)
+        {
+            if (!ReferenceEquals(e.OriginalSource, RecordWindowMenuItem))
+                return;
+
+            RecordWindowMenuItem.Items.Clear();
+            foreach (Region.WindowListItem window in Region.WindowList.GetWindows())
+            {
+                RecordWindowMenuItem.Items.Add(new MenuItem
+                {
+                    // A TextBlock, not a string: an underscore in a title is not an access key.
+                    Header = new TextBlock { Text = window.Title },
+                    Icon = window.Icon == null ? null : new Image { Source = window.Icon, Width = 16, Height = 16 },
+                    Command = _viewModel.RecordWindowCommand,
+                    CommandParameter = window.Handle,
+                });
+            }
+
+            if (RecordWindowMenuItem.Items.Count == 0)
+                RecordWindowMenuItem.Items.Add(new MenuItem { Header = Properties.Resources.NoWindowsToRecord, IsEnabled = false });
+        }
+
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool SetForegroundWindow(IntPtr hwnd);
