@@ -23,6 +23,7 @@ namespace MediaEncoder
             {
                 case VideoCodec.H264: return AVCodecID.AV_CODEC_ID_H264;
                 case VideoCodec.Hevc: return AVCodecID.AV_CODEC_ID_HEVC; // == H265
+                case VideoCodec.Av1: return AVCodecID.AV_CODEC_ID_AV1;
                 default: throw new ArgumentOutOfRangeException(nameof(codec), codec, "Unsupported video codec");
             }
         }

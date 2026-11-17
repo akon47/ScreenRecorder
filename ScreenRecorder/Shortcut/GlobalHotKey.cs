@@ -1,103 +1,110 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Input;
-using ScreenRecorder.Command;
 
 namespace ScreenRecorder.Shortcut
 {
+    /// <summary>
+    /// One system-wide hot key (RegisterHotKey) that invokes a callback on the UI thread.
+    /// Disposing unregisters it.
+    /// </summary>
     public sealed class GlobalHotKey : IDisposable
     {
+        /// <summary>
+        /// While true, hot keys are not acted on — set while the shortcut editor is open so the
+        /// key combination being typed does not also trigger the command it is bound to.
+        /// </summary>
         public static bool PassthroughGlobalHotKey { get; set; } = false;
 
-        internal class HotKeyControl : System.Windows.Forms.Control
+        private static int _nextId;
+
+        private sealed class HotKeyWindow : Control
         {
-            internal class WinApi
-            {
-                public const int WmHotKey = 0x0312;
+            private const int WmHotKey = 0x0312;
 
-                [DllImport("user32.dll", SetLastError = true)]
-                public static extern bool RegisterHotKey(IntPtr hWnd, int id, ModifierKeys fsModifiers, Keys vk);
-
-                [DllImport("user32.dll", SetLastError = true)]
-                public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
-            }
-
-            private readonly DelegateCommand _delegateCommand;
+            private readonly Action _callback;
             private readonly int _id;
-            private IntPtr _hWnd;
+            private bool _registered;
 
-            public HotKeyControl(DelegateCommand delegateCommand, int id)
+            public HotKeyWindow(KeyGesture gesture, Action callback, int id)
             {
-                _delegateCommand = delegateCommand;
+                _callback = callback;
                 _id = id;
-                RegisterHotKey();
+
+                try
+                {
+                    _registered = RegisterHotKey(Handle, _id, gesture.Modifiers, (Keys)KeyInterop.VirtualKeyFromKey(gesture.Key));
+                }
+                catch
+                {
+                    _registered = false;
+                }
             }
+
+            /// <summary>False when another application already owns this key combination.</summary>
+            public bool IsRegistered => _registered;
 
             protected override void WndProc(ref Message m)
             {
-                try
+                if (m.Msg == WmHotKey && m.WParam.ToInt32() == _id)
                 {
                     if (!PassthroughGlobalHotKey)
                     {
-                        switch (m.Msg)
+                        try
                         {
-                            case WinApi.WmHotKey:
-                                if (m.WParam.ToInt32() == _id)
-                                {
-                                    _delegateCommand?.Execute();
-                                }
-                                m.Result = new IntPtr(1);
-                                return;
+                            _callback();
+                        }
+                        catch
+                        {
+                            // A failing command must not take the message loop down.
                         }
                     }
 
-                    base.WndProc(ref m);
+                    m.Result = new IntPtr(1);
+                    return;
                 }
-                catch { }
+
+                base.WndProc(ref m);
             }
 
             protected override void Dispose(bool disposing)
             {
+                if (_registered && IsHandleCreated)
+                {
+                    try { UnregisterHotKey(Handle, _id); } catch { }
+                    _registered = false;
+                }
+
                 base.Dispose(disposing);
-                UnregisterHotKey();
             }
 
-            private void RegisterHotKey()
-            {
-                try
-                {
-                    if (WinApi.RegisterHotKey(Handle, _id, _delegateCommand.KeyGesture.Modifiers, (System.Windows.Forms.Keys)KeyInterop.VirtualKeyFromKey(_delegateCommand.KeyGesture.Key)))
-                    {
-                        _hWnd = Handle;
-                    }
-                }
-                catch { }
-            }
+            [DllImport("user32.dll", SetLastError = true)]
+            private static extern bool RegisterHotKey(IntPtr hWnd, int id, ModifierKeys fsModifiers, Keys vk);
 
-            private void UnregisterHotKey()
-            {
-                try
-                {
-                    if (_hWnd != IntPtr.Zero)
-                    {
-                        WinApi.UnregisterHotKey(_hWnd, _id);
-                    }
-                }
-                catch { }
-            }
+            [DllImport("user32.dll", SetLastError = true)]
+            private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
         }
 
-        private HotKeyControl _hotKeyControl;
-        public GlobalHotKey(DelegateCommand delegateCommand)
+        private HotKeyWindow _window;
+
+        public GlobalHotKey(KeyGesture gesture, Action callback)
         {
-            _hotKeyControl = new HotKeyControl(delegateCommand, GetHashCode());
+            if (gesture == null)
+                throw new ArgumentNullException(nameof(gesture));
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
+
+            _window = new HotKeyWindow(gesture, callback, Interlocked.Increment(ref _nextId));
         }
+
+        public bool IsRegistered => _window != null && _window.IsRegistered;
 
         public void Dispose()
         {
-            _hotKeyControl?.Dispose();
-            _hotKeyControl = null;
+            _window?.Dispose();
+            _window = null;
         }
     }
 }

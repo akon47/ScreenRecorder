@@ -482,5 +482,401 @@ namespace ScreenRecorder.Properties {
                 return ResourceManager.GetString("RecordDelay", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auto (changes only).
+        /// </summary>
+        public static string FrameRateAuto {
+            get {
+                return ResourceManager.GetString("FrameRateAuto", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auto records only the frames that actually change, so a still screen takes almost no space. Pick a fixed rate only if another tool requires a constant frame rate..
+        /// </summary>
+        public static string FrameRateAutoToolTip {
+            get {
+                return ResourceManager.GetString("FrameRateAutoToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        public static string RecordDelayNone {
+            get {
+                return ResourceManager.GetString("RecordDelayNone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} sec.
+        /// </summary>
+        public static string SecondsFormat {
+            get {
+                return ResourceManager.GetString("SecondsFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System audio.
+        /// </summary>
+        public static string RecordSystemAudio {
+            get {
+                return ResourceManager.GetString("RecordSystemAudio", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Playback Device.
+        /// </summary>
+        public static string AudioOutputDevice {
+            get {
+                return ResourceManager.GetString("AudioOutputDevice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Microphone Device.
+        /// </summary>
+        public static string AudioInputDevice {
+            get {
+                return ResourceManager.GetString("AudioInputDevice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System default.
+        /// </summary>
+        public static string DefaultDevice {
+            get {
+                return ResourceManager.GetString("DefaultDevice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Audio only (no video).
+        /// </summary>
+        public static string AudioOnly {
+            get {
+                return ResourceManager.GetString("AudioOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Area border.
+        /// </summary>
+        public static string ShowRecordingFrame {
+            get {
+                return ResourceManager.GetString("ShowRecordingFrame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows a border around the area or window being recorded. The border itself is not recorded..
+        /// </summary>
+        public static string ShowRecordingFrameToolTip {
+            get {
+                return ResourceManager.GetString("ShowRecordingFrameToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The window being recorded was closed, so the recording has been saved and stopped..
+        /// </summary>
+        public static string RecordingStoppedTargetClosed {
+            get {
+                return ResourceManager.GetString("RecordingStoppedTargetClosed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recording stopped because the file could not be written. Check the free disk space and the recording path..
+        /// </summary>
+        public static string RecordingStoppedWriteFailed {
+            get {
+                return ResourceManager.GetString("RecordingStoppedWriteFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recording stopped because screen capture failed. What was recorded so far has been saved..
+        /// </summary>
+        public static string RecordingStoppedCaptureFailed {
+            get {
+                return ResourceManager.GetString("RecordingStoppedCaptureFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recording stopped because the disk is almost full. What was recorded so far has been saved..
+        /// </summary>
+        public static string RecordingStoppedLowDiskSpace {
+            get {
+                return ResourceManager.GetString("RecordingStoppedLowDiskSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saved.
+        /// </summary>
+        public static string RecordingSaved {
+            get {
+                return ResourceManager.GetString("RecordingSaved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to To record audio only, turn on system audio or the microphone and choose an audio codec..
+        /// </summary>
+        public static string AudioOnlyNeedsSource {
+            get {
+                return ResourceManager.GetString("AudioOnlyNeedsSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starting soon.
+        /// </summary>
+        public static string EncoderStatusCountdownMessage {
+            get {
+                return ResourceManager.GetString("EncoderStatusCountdownMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        public static string OK {
+            get {
+                return ResourceManager.GetString("OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string Cancel {
+            get {
+                return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Screen Recorder is already running..
+        /// </summary>
+        public static string AlreadyRunning {
+            get {
+                return ResourceManager.GetString("AlreadyRunning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resume Recording.
+        /// </summary>
+        public static string ResumeRecording {
+            get {
+                return ResourceManager.GetString("ResumeRecording", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select Area and Record.
+        /// </summary>
+        public static string SelectRegionAndRecord {
+            get {
+                return ResourceManager.GetString("SelectRegionAndRecord", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} · {1}.
+        /// </summary>
+        public static string RecordingInfoToolTip {
+            get {
+                return ResourceManager.GetString("RecordingInfoToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} dropped.
+        /// </summary>
+        public static string DroppedFramesFormat {
+            get {
+                return ResourceManager.GetString("DroppedFramesFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click a window to record it.
+        /// </summary>
+        public static string HighlightCaptureWindowHint {
+            get {
+                return ResourceManager.GetString("HighlightCaptureWindowHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Drag to select the area to record.
+        /// </summary>
+        public static string HighlightCaptureRegionHint {
+            get {
+                return ResourceManager.GetString("HighlightCaptureRegionHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click a display to record it.
+        /// </summary>
+        public static string HighlightCaptureDisplayHint {
+            get {
+                return ResourceManager.GetString("HighlightCaptureDisplayHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select Area and Record GIF.
+        /// </summary>
+        public static string SelectRegionAndRecordGif {
+            get {
+                return ResourceManager.GetString("SelectRegionAndRecordGif", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to GIF (rate / size).
+        /// </summary>
+        public static string GifSettings {
+            get {
+                return ResourceManager.GetString("GifSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Highest frame rate of GIF recordings. Only frames that change are stored, so a higher value mainly makes motion smoother..
+        /// </summary>
+        public static string GifFrameRateToolTip {
+            get {
+                return ResourceManager.GetString("GifFrameRateToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to GIF size relative to the selected area. A smaller size gives a much smaller file..
+        /// </summary>
+        public static string GifScaleToolTip {
+            get {
+                return ResourceManager.GetString("GifScaleToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This key combination is already used by another program..
+        /// </summary>
+        public static string ShortcutInUse {
+            get {
+                return ResourceManager.GetString("ShortcutInUse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click a box and press the keys. Shortcuts work even when another app has focus..
+        /// </summary>
+        public static string ShortcutSettingsHint {
+            get {
+                return ResourceManager.GetString("ShortcutSettingsHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Software (CPU).
+        /// </summary>
+        public static string SoftwareEncoder {
+            get {
+                return ResourceManager.GetString("SoftwareEncoder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All displays.
+        /// </summary>
+        public static string AllDisplays {
+            get {
+                return ResourceManager.GetString("AllDisplays", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click highlight.
+        /// </summary>
+        public static string HighlightClicks {
+            get {
+                return ResourceManager.GetString("HighlightClicks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows a ring where the mouse is clicked so clicks are visible in the recording (display and area recordings)..
+        /// </summary>
+        public static string HighlightClicksToolTip {
+            get {
+                return ResourceManager.GetString("HighlightClicksToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Microphone: on — your voice is recorded too.
+        /// </summary>
+        public static string MicrophoneIsOn {
+            get {
+                return ResourceManager.GetString("MicrophoneIsOn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Microphone: off.
+        /// </summary>
+        public static string MicrophoneIsOff {
+            get {
+                return ResourceManager.GetString("MicrophoneIsOff", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Audio.
+        /// </summary>
+        public static string AudioOptions {
+            get {
+                return ResourceManager.GetString("AudioOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Picture.
+        /// </summary>
+        public static string PictureOptions {
+            get {
+                return ResourceManager.GetString("PictureOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Still running here. Click the icon to bring the toolbar back; the recording shortcuts keep working..
+        /// </summary>
+        public static string TrayHint {
+            get {
+                return ResourceManager.GetString("TrayHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show Screen Recorder.
+        /// </summary>
+        public static string ShowToolbar {
+            get {
+                return ResourceManager.GetString("ShowToolbar", resourceCulture);
+            }
+        }
     }
 }

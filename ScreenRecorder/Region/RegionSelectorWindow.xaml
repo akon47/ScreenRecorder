@@ -2,13 +2,8 @@
     x:Class="ScreenRecorder.Region.RegionSelectorWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="clr-namespace:ScreenRecorder.Region"
-    xmlns:screenRecorder="clr-namespace:ScreenRecorder"
-    xmlns:cc="clr-namespace:CustomConverter"
     xmlns:properties="clr-namespace:ScreenRecorder.Properties"
-    mc:Ignorable="d"
     Loaded="Window_Loaded"
     Name="root"
     ResizeMode="NoResize"
@@ -19,98 +14,130 @@
     ShowInTaskbar="False"
     WindowStartupLocation="Manual"
     Title=""
+    FontFamily="{StaticResource AppFontFamily}"
+    FontSize="{StaticResource BodyFontSize}"
+    UseLayoutRounding="True"
     >
+    <!--
+        One selection overlay per monitor (see RegionSelectorSession). The mode bar — area /
+        window / display / cancel — slides in at the top of the primary monitor's overlay.
+    -->
     <Grid ClipToBounds="True">
         <local:RegionSelector
             x:Name="regionSelector"
             RegionSelected="regionSelector_RegionSelected"
             RegionSelectionMode="{Binding Path=RegionSelectionMode, ElementName=root, Mode=OneWay}"
             />
-        <Canvas>
-            <Grid
-                Name="regionMenuRoot"
-                Width="162"
-                Height="43"
-                ClipToBounds="True"
-                >
+
+        <StackPanel
+            x:Name="regionMenuRoot"
+            Margin="0,14,0,0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            >
+            <StackPanel.RenderTransform>
+                <TranslateTransform Y="-90" />
+            </StackPanel.RenderTransform>
+            <StackPanel.Triggers>
+                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                BeginTime="0:0:0.12"
+                                Duration="0:0:0.22"
+                                Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)"
+                                From="-90"
+                                To="0"
+                                >
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </StackPanel.Triggers>
+
+            <!--  Mode bar  -->
+            <Grid HorizontalAlignment="Center">
                 <Border
-                    Background="#212121"
-                    CornerRadius="0,0,5,5"
+                    Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
+                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                    Effect="{StaticResource FlyoutShadowEffect}"
+                    />
+                <Border
+                    Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                    Padding="5"
                     >
-                    <Border.RenderTransform>
-                        <TranslateTransform Y="-50" />
-                    </Border.RenderTransform>
-                    <Border.Triggers>
-                        <EventTrigger RoutedEvent="Border.Loaded">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation
-                                        BeginTime="00:00:00.300"
-                                        Duration="00:00:00.300"
-                                        Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)"
-                                        From="-50"
-                                        To="0"
-                                        />
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                    </Border.Triggers>
-                    <Grid Margin="3 1 3 3">
-                        <Grid.Resources>
-                            <Style TargetType="{x:Type RadioButton}" BasedOn="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}">
-                                <Setter Property="Focusable" Value="False" />
-                                <Setter Property="Foreground" Value="DarkGray" />
-                                <Setter Property="Margin" Value="2" />
-                                <Setter Property="Padding" Value="6" />
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel.Resources>
+                            <Style TargetType="{x:Type RadioButton}" BasedOn="{StaticResource IconButtonStyle}">
+                                <Setter Property="Width" Value="36" />
+                                <Setter Property="Height" Value="32" />
+                                <Setter Property="Margin" Value="1,0" />
+                                <Setter Property="Padding" Value="9,7" />
                             </Style>
-                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
-                                <Setter Property="Focusable" Value="False" />
-                                <Setter Property="Foreground" Value="DarkGray" />
-                                <Setter Property="Margin" Value="2" />
-                                <Setter Property="Padding" Value="6" />
-                            </Style>
-                        </Grid.Resources>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
+                        </StackPanel.Resources>
                         <RadioButton
-                            Grid.Column="0"
-                            Content="{StaticResource Icon_SquarePlus}"
+                            Content="{StaticResource Icon_Region}"
                             IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=UserRegion}"
                             ToolTip="{x:Static properties:Resources.CaptureRegion}"
                             />
                         <RadioButton
-                            Grid.Column="1"
-                            Content="{StaticResource Icon_WindowMaximize}"
+                            Content="{StaticResource Icon_Window}"
                             IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=WindowRegion}"
                             ToolTip="{x:Static properties:Resources.CaptureWindow}"
                             />
                         <RadioButton
-                            Grid.Column="2"
-                            Content="{StaticResource Icon_MonitorScreenshot}"
+                            Content="{StaticResource Icon_Display}"
                             IsChecked="{Binding Path=RegionSelectionMode, ElementName=root, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DisplayRegion}"
                             ToolTip="{x:Static properties:Resources.CaptureDisplay}"
                             />
-                        <Rectangle
-                            Grid.Column="3"
-                            VerticalAlignment="Stretch"
+                        <Border
                             Width="1"
-                            Margin="2 5"
-                            Stroke="DarkGray"
+                            Margin="6,6"
+                            Background="{DynamicResource DividerStrokeColorDefaultBrush}"
                             />
                         <Button
-                            Grid.Column="4"
-                            Content="{StaticResource Icon_Close}"
+                            Style="{StaticResource IconButtonStyle}"
+                            Width="36"
+                            Height="32"
+                            FontSize="11"
+                            Content="{StaticResource Glyph.Close}"
                             Click="Close_Click"
                             ToolTip="{x:Static properties:Resources.CaptureCancel}"
                             />
-                    </Grid>
+                    </StackPanel>
                 </Border>
             </Grid>
-        </Canvas>
+
+            <!--  What to do in the current mode  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="12,5,12,6"
+                HorizontalAlignment="Center"
+                Background="#E6202020"
+                CornerRadius="12"
+                >
+                <TextBlock Foreground="White">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="Text" Value="{x:Static properties:Resources.HighlightCaptureRegionHint}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=RegionSelectionMode, ElementName=root}" Value="{x:Static local:RegionSelectionMode.WindowRegion}">
+                                    <Setter Property="Text" Value="{x:Static properties:Resources.HighlightCaptureWindowHint}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=RegionSelectionMode, ElementName=root}" Value="{x:Static local:RegionSelectionMode.DisplayRegion}">
+                                    <Setter Property="Text" Value="{x:Static properties:Resources.HighlightCaptureDisplayHint}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Border>
+        </StackPanel>
     </Grid>
 </Window>

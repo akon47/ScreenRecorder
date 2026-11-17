@@ -1,0 +1,33 @@
+name: CI
+
+# Builds everything and runs the automated tests on every push and pull request.
+on:
+  push:
+    branches: [ develop, 'feature/**' ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - uses: ./.github/actions/fetch-ffmpeg
+
+      - name: Build
+        run: dotnet build ScreenRecorder.sln -c Release
+
+      # "Hardware" tests need a GPU and an interactive desktop (screen capture, hardware
+      # encoders); everything else — including real FFmpeg encodes — runs here.
+      - name: Engine tests
+        run: dotnet test ScreenRecorder.Tests/ScreenRecorder.Tests.csproj -c Release --no-build --filter "TestCategory!=Hardware"
+
+      - name: App tests
+        run: dotnet test ScreenRecorder.App.Tests/ScreenRecorder.App.Tests.csproj -c Release --no-build

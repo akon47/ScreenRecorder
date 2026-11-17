@@ -7,11 +7,10 @@ using System.Windows.Forms;
 namespace ScreenRecorder.DirectX
 {
     /// <summary>
-    /// Monitor enumeration. P0: uses <see cref="Screen"/> (SharpDX removed) so the capture-target
-    /// combobox lists real displays. P2 replaces this with DXGI/WGC adapter+output enumeration
-    /// carrying the adapter/output indices needed for real capture targeting.
+    /// A connected monitor: its bounds as this process sees them (possibly DPI-virtualized),
+    /// its real pixel bounds, and the conversions between the two coordinate spaces.
     /// </summary>
-    public class MonitorInfo : ICaptureTarget
+    public class MonitorInfo
     {
         #region Static Methods
 
@@ -25,13 +24,27 @@ namespace ScreenRecorder.DirectX
             return GetActiveMonitorInfos().FirstOrDefault(x => x.DeviceName.Equals(deviceName));
         }
 
+        /// <summary>The monitor a window is (mostly) on, or the primary monitor.</summary>
+        public static MonitorInfo FromWindow(IntPtr hwnd)
+        {
+            try
+            {
+                string deviceName = Screen.FromHandle(hwnd).DeviceName;
+                return GetMonitorInfo(deviceName) ?? GetPrimaryMonitorInfo();
+            }
+            catch
+            {
+                return GetPrimaryMonitorInfo();
+            }
+        }
+
         public static MonitorInfo[] GetActiveMonitorInfos()
         {
             var monitorInfos = new List<MonitorInfo>();
             int outputIndex = 0;
             foreach (var screen in Screen.AllScreens)
             {
-                GetPhysicalBounds(screen, out int physicalLeft, out int physicalTop, out int physicalWidth, out int physicalHeight);
+                GetPhysicalBounds(screen, out int physicalLeft, out int physicalTop, out int physicalWidth, out int physicalHeight, out int refreshRate);
                 monitorInfos.Add(new MonitorInfo()
                 {
                     AdapterDescription = "Display Adapter",
@@ -47,6 +60,7 @@ namespace ScreenRecorder.DirectX
                     PhysicalTop = physicalTop,
                     PhysicalWidth = physicalWidth,
                     PhysicalHeight = physicalHeight,
+                    RefreshRate = refreshRate,
                 });
             }
 
@@ -59,8 +73,9 @@ namespace ScreenRecorder.DirectX
         /// <see cref="Screen.Bounds"/>, EnumDisplaySettings is NOT subject to DPI virtualization,
         /// so this stays correct even in a DPI-unaware process.
         /// </summary>
-        private static void GetPhysicalBounds(Screen screen, out int left, out int top, out int width, out int height)
+        private static void GetPhysicalBounds(Screen screen, out int left, out int top, out int width, out int height, out int refreshRate)
         {
+            refreshRate = 0;
             var mode = new DEVMODE { dmSize = (ushort)Marshal.SizeOf<DEVMODE>() };
             if (EnumDisplaySettings(screen.DeviceName, ENUM_CURRENT_SETTINGS, ref mode)
                 && mode.dmPelsWidth > 0 && mode.dmPelsHeight > 0)
@@ -69,6 +84,7 @@ namespace ScreenRecorder.DirectX
                 top = mode.dmPositionY;
                 width = (int)mode.dmPelsWidth;
                 height = (int)mode.dmPelsHeight;
+                refreshRate = (int)mode.dmDisplayFrequency;
             }
             else
             {
@@ -104,6 +120,12 @@ namespace ScreenRecorder.DirectX
         public int PhysicalWidth { get; set; }
         public int PhysicalHeight { get; set; }
 
+        /// <summary>
+        /// Vertical refresh rate reported by the current display mode (Hz); 0 or 1 means
+        /// "hardware default" (treat as unknown).
+        /// </summary>
+        public int RefreshRate { get; set; }
+
         public System.Windows.Rect Bounds => new System.Windows.Rect(Left, Top, Width, Height);
         public System.Windows.Rect PhysicalBounds => new System.Windows.Rect(PhysicalLeft, PhysicalTop, PhysicalWidth, PhysicalHeight);
         public string Description => $"{AdapterDescription}: {PhysicalWidth}x{PhysicalHeight} @ {Left},{Top}{(IsPrimary ? " (Primary)" : "")}";
@@ -122,7 +144,7 @@ namespace ScreenRecorder.DirectX
 
             // A region covering the whole virtual monitor maps to the whole physical surface
             // exactly, immune to the rounding Windows applies at fractional scale factors.
-            if (region.X <= 0 && region.Y <= 0 && region.Width >= Width && region.Height >= Height)
+            if (region.X <= 0 && region.Y <= 0 && region.Right >= Width && region.Bottom >= Height)
                 return new System.Windows.Rect(0, 0, PhysicalWidth, PhysicalHeight);
 
             double scaleX = (double)PhysicalWidth / Width;

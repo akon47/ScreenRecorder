@@ -19,8 +19,25 @@ namespace MediaEncoder
         private readonly AVSampleFormat _outFmt;
         private bool _disposed;
 
-        public AudioResampler(SampleFormat inFmt, int inRate, int inChannels, AVSampleFormat outFmt, int outRate, int outChannels)
+        /// <summary>Distance (output samples) a compensation is spread over: delta = ppm exactly.</summary>
+        private const int CompensationDistance = 1_000_000;
+
+        private readonly bool _rateCompensation;
+        private int _compensationPpm;
+
+        public int InRate => _inRate;
+        public int InChannels { get; }
+
+        /// <param name="enableRateCompensation">
+        /// Allows <see cref="SetCompensation"/>: tiny run-time ratio corrections used to follow a
+        /// capture device's clock. Forces the resampling stage on even when the rates match —
+        /// otherwise swresample would have to re-initialize on the first correction, mid-stream.
+        /// </param>
+        public AudioResampler(SampleFormat inFmt, int inRate, int inChannels, AVSampleFormat outFmt, int outRate, int outChannels,
+            bool enableRateCompensation = false)
         {
+            _rateCompensation = enableRateCompensation;
+            InChannels = inChannels;
             _inRate = inRate;
             _outRate = outRate;
             _outFmt = outFmt;
@@ -40,6 +57,9 @@ namespace MediaEncoder
                 throw new InvalidOperationException($"swr_alloc_set_opts2 failed: {FFmpegHelper.GetErrorString(result)}");
 
             _swr = swr;
+            if (enableRateCompensation)
+                ffmpeg.av_opt_set_int(_swr, "flags", ffmpeg.SWR_FLAG_RESAMPLE, 0);
+
             int initResult = ffmpeg.swr_init(_swr);
             if (initResult < 0)
                 throw new InvalidOperationException($"swr_init failed: {FFmpegHelper.GetErrorString(initResult)}");
@@ -52,8 +72,23 @@ namespace MediaEncoder
         /// </summary>
         public int Resample(byte** inData, int inSamples)
         {
-            long delay = ffmpeg.swr_get_delay(_swr, _inRate);
-            int maxOut = (int)ffmpeg.av_rescale_rnd(delay + inSamples, _outRate, _inRate, AVRounding.AV_ROUND_UP);
+            int maxOut;
+            if (_rateCompensation)
+            {
+                // A compensation lapses once its distance is used up, so it is re-armed on every
+                // call; 0 ppm with distance 0 restores the nominal ratio.
+                int ppm = _compensationPpm;
+                ffmpeg.swr_set_compensation(_swr, ppm, ppm != 0 ? CompensationDistance : 0);
+
+                // Upper bound that accounts for the correction and for input still buffered inside.
+                maxOut = ffmpeg.swr_get_out_samples(_swr, inSamples);
+            }
+            else
+            {
+                long delay = ffmpeg.swr_get_delay(_swr, _inRate);
+                maxOut = (int)ffmpeg.av_rescale_rnd(delay + inSamples, _outRate, _inRate, AVRounding.AV_ROUND_UP);
+            }
+
             if (maxOut < 1)
                 maxOut = 1;
 
@@ -77,6 +112,12 @@ namespace MediaEncoder
 
             return converted;
         }
+
+        /// <summary>
+        /// Sets the ratio correction in parts per million (positive = more output samples).
+        /// Only effective when the resampler was created with rate compensation enabled.
+        /// </summary>
+        public void SetCompensation(int ppm) => _compensationPpm = ppm;
 
         /// <summary>The native pointer to a converted output plane (stable until the next Resample/Dispose).</summary>
         public byte* GetOutputPlane(int channel) => _outData[(uint)channel];
